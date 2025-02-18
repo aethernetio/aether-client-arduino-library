@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map For Energy Saving
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Aether	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+ArduinoAetherCloudExample	KEYWORD2
+ArduinoAetherKeyLedExample KEYWORD2
+ArduinoArduinoAetherRegisteredExample KEYWORD2
+ArduinoLibbcryptUnitTestsRunner KEYWORD2
+ArduinoLibhydrogenUnitTestsRunner KEYWORD2
+ArduinoLibsodiumUnitTestsRunner KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

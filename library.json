@@ -1,0 +1,20 @@
+{
+  "name": "Aether",
+  "keywords": "iot, esp32, communications",
+  "description": "This is a simple Arduino library used to demonstrate how you can extend the functionality of Arduino.",
+  "homepage": "https://aethernet.io",
+  "license": "Apache",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aethernetio/aether-client-arduino-library"
+  },
+  "authors": {
+    "name": "Dmitriy Kiryanov",
+    "email": "dmitriyk@aethernet.io",
+    "url": "https://aethernet.io",
+    "maintainer": true
+  },
+  "version": "1.0.0",
+  "frameworks": "arduino",
+  "platforms": "espressif32"
+}
