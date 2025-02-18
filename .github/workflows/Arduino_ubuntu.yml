@@ -77,7 +77,7 @@ jobs:
           ENV_DEBUG_COMPILE: true
           ENV_DEBUG_INSTALL: true
         run: |
-          wget --quiet https://github.com/aethernetio/aether-client-arduino-library/main/arduino-test-compile.sh
+          wget --quiet https://raw.githubusercontent.com/aethernetio/aether-client-arduino-library/main/arduino-test-compile.sh
             ls -l arduino-test-compile.sh
             chmod +x arduino-test-compile.sh
             ./arduino-test-compile.sh        
