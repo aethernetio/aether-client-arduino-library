@@ -1,5 +1,5 @@
 
-#include "../include/sodium/version.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/version.h"
 
 const char *
 sodium_version_string(void)
