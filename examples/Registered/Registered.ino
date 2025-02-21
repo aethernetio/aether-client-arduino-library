@@ -17,8 +17,10 @@
 
 #include "aether_lib.h"
 
-static constexpr char kWifiSsid[] = "Test123";
-static constexpr char kWifiPass[] = "Test123";
+// This sets Arduino Stack Size - comment this line to use default 8K stack size
+SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
+
+
 static constexpr int kWaitTime = 1;
 static constexpr int kWaitUntil = 5;
 
@@ -99,13 +101,14 @@ class RegisteredAction : public Action<RegisteredAction> {
    * \brief Perform a client registration.
    * We need a two clients for this test.
    */
-  void LoadClients() { 
-      AE_TELED_INFO("Testing loaded clients"); 
-      for (std::size_t i{0}; i < aether_->clients().size(); i++) {
-          auto msg_str = std::string("Test message for client ") + std::to_string(i); 
-          messages_.insert(messages_.begin() + i, msg_str);
-          }
-      state_ = State::kConfigureSender;
+  void LoadClients() {
+    AE_TELED_INFO("Testing loaded clients");
+    for (std::size_t i{0}; i < aether_->clients().size(); i++) {
+      auto msg_str =
+          std::string("Test message for client ") + std::to_string(i);
+      messages_.insert(messages_.begin() + i, msg_str);
+    }
+    state_ = State::kConfigureSender;
   }
 
   /**
@@ -227,24 +230,14 @@ void AetherRegisteredExample(void)
    * To configure its creation \see AetherAppConstructor.
    */
   aether_app = ae::AetherApp::Construct(
-      ae::AetherAppConstructor {[](){
-        auto fs = ae::MakePtr<ae::FileSystemHeaderFacility>();
-        return fs;
-      }}
-#if defined AE_DISTILLATION
-          .Adapter([](ae::Ptr<ae::Domain> const& domain,
-                      ae::Aether::ptr const& aether) -> ae::Adapter::ptr {
-#  if defined ESP32_WIFI_ADAPTER_ENABLED
-            auto adapter = domain.CreateObj<ae::Esp32WifiAdapter>(
-                ae::GlobalId::kEsp32WiFiAdapter, aether, aether->poller,
-                std::string(kWifiSsid), std::string(kWifiPass));
-#  else
-            auto adapter = domain->CreateObj<ae::EthernetAdapter>(
-                ae::GlobalId::kEthernetAdapter, aether, aether->poller);
-#  endif  // ESP32_WIFI_ADAPTER_ENABLED
-            return adapter;
-          })
-#endif  // AE_DISTILLATION
+              ae::AetherAppConstructor{
+#if !AE_SUPPORT_REGISTRATION
+          []() {
+            auto fs = ae::MakePtr<ae::FileSystemHeaderFacility>(std::string(""));
+            return fs;
+          }
+#endif  // AE_SUPPORT_REGISTRATION
+      }
   );
 
   auto registered_action = ae::registered::RegisteredAction{aether_app};
@@ -267,16 +260,17 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  while (!aether_app->IsExited()) {
-    auto current_time = ae::Now();
-    auto next_time = aether_app->Update(current_time);
-    aether_app->WaitUntil(
-        std::min(next_time, current_time + std::chrono::seconds{kWaitUntil}));
-    Serial.printf("Arduino Stack was set to %d bytes",
-                  getArduinoLoopTaskStackSize());
+  if(aether_app->IsExited()) {
+    Serial.printf("Exit error code: %d", aether_app->ExitCode());
     Serial.println();
+    exit(0);
   }
 
-  Serial.printf("Exit error code: %d", aether_app->ExitCode());
+  auto current_time = ae::Now();
+  auto next_time = aether_app->Update(current_time);
+  aether_app->WaitUntil(
+      std::min(next_time, current_time + std::chrono::seconds{kWaitUntil}));
+  Serial.printf("Arduino Stack was set to %d bytes",
+                getArduinoLoopTaskStackSize());
   Serial.println();
 }
