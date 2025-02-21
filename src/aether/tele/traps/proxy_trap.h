@@ -18,9 +18,11 @@
 #define AETHER_TELE_TRAPS_PROXY_TRAP_H_
 
 #include <utility>
+#include <string_view>
 
 #include "aether/common.h"
 #include "aether/ptr/ptr.h"
+#include "aether/tele/modules.h"
 #include "aether/tele/declaration.h"
 
 namespace ae::tele {
@@ -39,7 +41,7 @@ class ProxyTrap {
     LogStream(Trap1Stream&& stream1, Trap2Stream&& stream2)
         : stream1_(std::move(stream1)), stream2_(std::move(stream2)) {}
 
-    void index(std::size_t index) {
+    void index(std::uint32_t index) {
       stream1_.index(index);
       stream2_.index(index);
     }
@@ -51,11 +53,11 @@ class ProxyTrap {
       stream1_.level(level);
       stream2_.level(level);
     }
-    void module(Module::underlined_t module) {
+    void module(Module const& module) {
       stream1_.module(module);
       stream2_.module(module);
     }
-    void file(char const* file) {
+    void file(std::string_view file) {
       stream1_.file(file);
       stream2_.file(file);
     }
@@ -63,13 +65,13 @@ class ProxyTrap {
       stream1_.line(line);
       stream2_.line(line);
     }
-    void name(char const* name) {
+    void name(std::string_view name) {
       stream1_.name(name);
       stream2_.name(name);
     }
 
     template <typename... TArgs>
-    void blob(char const* format, TArgs const&... args) {
+    void blob(std::string_view format, TArgs const&... args) {
       stream1_.blob(format, args...);
       stream2_.blob(format, args...);
     }

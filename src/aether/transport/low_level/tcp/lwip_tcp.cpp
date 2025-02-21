@@ -24,8 +24,8 @@
 
 #  include "aether/mstream_buffers.h"
 #  include "aether/mstream.h"
-#  include "aether/tele/tele.h"
 #  include "aether/format/format.h"
+#  include "aether/transport/transport_tele.h"
 
 #  include "freertos/FreeRTOS.h"
 #  include "freertos/task.h"
@@ -89,7 +89,7 @@ void LwipTcpTransport::ConnectionAction::Connect() {
   int on = 1;
   int res = 0;
 
-  AE_TELE_DEBUG("TcpTransportConnect", "Connect to {}", endpoint_);
+  AE_TELE_DEBUG(TcpTransportConnect, "Connect to {}", endpoint_);
 
   if ((socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) < 0) {
     AE_TELED_ERROR("Socket not created");
@@ -203,7 +203,7 @@ LwipTcpTransport::LwipTcpTransport(ActionContext action_context,
       poller_{std::move(poller)},
       endpoint_{endpoint},
       connection_info_{} {
-  AE_TELE_DEBUG("TcpTransport");
+  AE_TELE_DEBUG(TcpTransport);
 }
 
 LwipTcpTransport::~LwipTcpTransport() { Disconnect(); }
@@ -242,7 +242,7 @@ ITransport::DataReceiveEvent::Subscriber LwipTcpTransport::ReceiveEvent() {
 
 ActionView<PacketSendAction> LwipTcpTransport::Send(DataBuffer data,
                                                     TimePoint current_time) {
-  AE_TELE_DEBUG("TcpTransportSend", "Send data size {} at {:%Y-%m-%d %H:%M:%S}",
+  AE_TELE_DEBUG(TcpTransportSend, "Send data size {} at {:%Y-%m-%d %H:%M:%S}",
                 data.size(), current_time);
   assert(socket_ != kInvalidSocket);
 
@@ -264,10 +264,14 @@ void LwipTcpTransport::OnConnected(int socket) {
   socket_event_subscription_ = socket_event_action_.SubscribeOnResult(
       [this](auto const &) { OnSocketUpdate(ae::Now()); });
 
-  poller_->Add(PollerEvent{socket_, EventType::ANY}, [this](auto /* event */) {
-    // notify about new event on socket
-    socket_event_action_.Notify();
-  });
+  socket_poll_subscription_ =
+      poller_->Add(socket_).Subscribe([this](auto event) {
+        if (event.descriptor != socket_) {
+          return;
+        }
+        // notify about new event on socket
+        socket_event_action_.Notify();
+      });
 
   connection_info_.max_packet_size =
       LWIP_NETIF_MTU - 2;  // 2 bytes for packet size
@@ -304,7 +308,7 @@ void LwipTcpTransport::ReadSocket(TimePoint current_time) {
     AE_TELED_ERROR("Connection closed");
     Disconnect();
   } else {  // Data received
-    AE_TELE_DEBUG("TcpTransportOnData", "Get data size {}", data.size());
+    AE_TELE_DEBUG(TcpTransportOnData, "Get data size {}", data.size());
     data.resize(static_cast<std::size_t>(r));
     data_packet_collector_.AddData(std::move(data));
     OnDataReceived(current_time);
@@ -314,13 +318,13 @@ void LwipTcpTransport::ReadSocket(TimePoint current_time) {
 void LwipTcpTransport::OnDataReceived(TimePoint current_time) {
   for (auto data = data_packet_collector_.PopPacket(); !data.empty();
        data = data_packet_collector_.PopPacket()) {
-    AE_TELE_DEBUG("TcpTransportReceive", "Receive data size {}", data.size());
+    AE_TELE_DEBUG(TcpTransportReceive, "Receive data size {}", data.size());
     data_receive_event_.Emit(std::move(data), current_time);
   }
 }
 
 void LwipTcpTransport::Disconnect() {
-  AE_TELE_DEBUG("TcpTransportDisconnect", "Disconnect from {}", endpoint_);
+  AE_TELE_DEBUG(TcpTransportDisconnect, "Disconnect from {}", endpoint_);
   connection_info_.connection_state = ConnectionState::kDisconnected;
   if (socket_ == kInvalidSocket) {
     return;
@@ -328,7 +332,7 @@ void LwipTcpTransport::Disconnect() {
 
   socket_event_subscription_.Reset();
 
-  poller_->Remove(PollerEvent{socket_, {}});
+  poller_->Remove(socket_);
 
   if (close(socket_) != 0) {
     return;

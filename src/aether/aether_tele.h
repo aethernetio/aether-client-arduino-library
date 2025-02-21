@@ -14,29 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef AETHER_TELE_DECLARATION_H_
-#define AETHER_TELE_DECLARATION_H_
+#ifndef AETHER_AETHER_TELE_H_
+#define AETHER_AETHER_TELE_H_
 
-#ifndef AETHER_TELE_TELE_H_
-#  error "Include tele.h instead"
-#endif
+#include "aether/tele/tele.h"
 
-#include <cstdint>
-#include <string_view>
+AE_TELE_MODULE(kApp, 2);
+AE_TAG_INDEXED(Started, kApp, 256)
 
-#include "aether/tele/levels.h"
-
-namespace ae::tele {
-struct Declaration {
-  std::uint32_t index_;
-  std::uint32_t module_;
-  Level::underlined_t level_;
-};
-
-struct CompileOption {
-  std::uint32_t index_;
-  std::string_view name_;
-  std::string_view value_;
-};
-}  // namespace ae::tele
-#endif  // AETHER_TELE_DECLARATION_H_ */
+#endif  // AETHER_AETHER_TELE_H_

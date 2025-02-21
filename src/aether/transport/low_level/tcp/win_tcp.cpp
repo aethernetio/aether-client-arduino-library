@@ -29,7 +29,7 @@
 #  include <algorithm>
 
 #  include "aether/env.h"
-#  include "aether/tele/tele.h"
+#  include "aether/transport/transport_tele.h"
 
 namespace ae {
 
@@ -107,7 +107,7 @@ DescriptorType::Socket WinTcpTransport::ConnectionAction::get_socket() const {
 }
 
 void WinTcpTransport::ConnectionAction::Connect() {
-  AE_TELE_DEBUG("TcpTransportConnect", "Connect to {}", endpoint_);
+  AE_TELE_DEBUG(TcpTransportConnect, "Connect to {}", endpoint_);
 
   auto addr = _internal::MakeAddrInfo(endpoint_);
   // ::socket() sets WSA_FLAG_OVERLAPPED by default that allows us to use iocp
@@ -131,7 +131,7 @@ void WinTcpTransport::ConnectionAction::Connect() {
   }
 
   // FIXME: how to make non blocking connect with iocp poller
-  // there is not defined overlapped operation for connect
+  // there is no defined overlapped operation for connect
   if (auto res =
           connect(socket_, addr.ptr.get(), static_cast<int>(addr.addr_len));
       res == SOCKET_ERROR) {
@@ -280,9 +280,9 @@ WinTcpTransport::WinTcpTransport(ActionContext action_context,
     : action_context_{action_context},
       poller_{std::move(poller)},
       endpoint_{endpoint},
-      read_overlapped_{{}, EventType::READ},
-      write_overlapped_{{}, EventType::WRITE} {
-  AE_TELE_DEBUG("TcpTransport", "Created win tcp transport to endpoint {}",
+      read_overlapped_{{}, EventType::kRead},
+      write_overlapped_{{}, EventType::kWrite} {
+  AE_TELE_DEBUG(TcpTransport, "Created win tcp transport to endpoint {}",
                 endpoint_);
   connection_info_.connection_state = ConnectionState::kUndefined;
 }
@@ -327,7 +327,7 @@ ITransport::DataReceiveEvent::Subscriber WinTcpTransport::ReceiveEvent() {
 
 ActionView<PacketSendAction> WinTcpTransport::Send(DataBuffer data,
                                                    TimePoint current_time) {
-  AE_TELE_DEBUG("TcpTransportSend",
+  AE_TELE_DEBUG(TcpTransportSend,
                 "Send data size {} at UTC :{:%Y-%m-%d %H:%M:%S}", data.size(),
                 current_time);
 
@@ -362,15 +362,28 @@ void WinTcpTransport::OnConnect(DescriptorType::Socket socket) {
     auto s = sync_socket_.get();
     assert(*s != INVALID_SOCKET);
 
-    poller_->Add(PollerEvent{*s, EventType::READ}, [this](auto const&) {
-      OnRecv();
-      // call OnSocketRecvEvent in main thread
-      socket_recv_event_action_.Notify();
-    });
-    poller_->Add(PollerEvent{*s, EventType::WRITE}, [this](auto const&) {
-      send_event_.Emit();
-      socket_send_event_action_.Notify();
-    });
+    socket_poll_subscription_ =
+        poller_->Add(*s).Subscribe([this, sock{*s}](auto event) {
+          if (event.descriptor != sock) {
+            return;
+          }
+          switch (event.event_type) {
+            case EventType::kRead:
+              OnRecv();
+              // call OnSocketRecvEvent in main thread
+              socket_recv_event_action_.Notify();
+              break;
+            case EventType::kWrite:
+              send_event_.Emit();
+              socket_send_event_action_.Notify();
+              break;
+            default:
+              AE_TELED_ERROR("Socket unexpected event type {}",
+                             event.event_type);
+              socket_error_action_.Notify();
+              break;
+          }
+        });
   }
 
   // try to read anything
@@ -460,8 +473,7 @@ void WinTcpTransport::Disconnect() {
   if (*socket == INVALID_SOCKET) {
     return;
   }
-  poller_->Remove(PollerEvent{*socket, EventType::READ});
-  poller_->Remove(PollerEvent{*socket, EventType::WRITE});
+  poller_->Remove(*socket);
   closesocket(*socket);
   sync_socket_ = SyncSocket{};
 
@@ -469,7 +481,7 @@ void WinTcpTransport::Disconnect() {
   socket_send_event_subscriptions_.Reset();
   socket_error_subscriptions_.Reset();
 
-  AE_TELE_DEBUG("TcpTransportDisconnect", "Disconnect from {}", endpoint_);
+  AE_TELE_DEBUG(TcpTransportDisconnect, "Disconnect from {}", endpoint_);
   OnConnectionError();
 }
 }  // namespace ae
