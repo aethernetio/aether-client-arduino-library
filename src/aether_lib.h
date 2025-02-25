@@ -48,7 +48,6 @@
 #include "aether/adapters/ethernet.h"
 #include "aether/adapters/parent_wifi.h"
 #include "aether/adapters/proxy.h"
-#include "aether/adapters/register_wifi.h"
 
 #include "aether/ae_actions/get_client_cloud.h"
 #include "aether/ae_actions/get_client_cloud_connection.h"

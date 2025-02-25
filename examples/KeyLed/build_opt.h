@@ -1,5 +1,5 @@
 "-D=AE_PROJECT_VERSION \"1.0.0\""
-"-D=USER_CONFIG \"config/user_config_hydrogen.h\""
+"-D=USER_CONFIG \"config/user_config_optimized.h\""
 "-D=FS_INIT \"config/file_system_init.h\""
 "-ffast-math"
 "-fno-math-errno"
