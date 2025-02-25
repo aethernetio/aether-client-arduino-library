@@ -1,19 +1,18 @@
-///\file Button.ino
-///\brief AetherNet library example
-/// Copyright 2016 Aether authors. All Rights Reserved.
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-/// You may obtain a copy of the License at
-///   http://www.apache.org/licenses/LICENSE-2.0
-/// Unless required by applicable law or agreed to in writing, software
-/// distributed under the License is distributed on an "AS IS" BASIS,
-/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-/// See the License for the specific language governing permissions and
-/// limitations under the License.
-///\author Aether authors
-///\version 1.0.0
-///\date  28.05.2024
-/// =============================================================================
+/*
+ * Copyright 2024 Aethernet Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "aether_lib.h"
 
@@ -311,6 +310,9 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
 void AetherKeyLedExample();
 
 static ae::Ptr<ae::AetherApp> aether_app{};
+static ae::Subscription success{}; 
+static ae::Subscription failed{};
+static ae::Ptr<ae::registered::RegisteredAction> registered_action{};
 
 ///
 ///\brief Test function.
@@ -373,11 +375,11 @@ void AetherKeyLedExample(void) {
 #endif    // AE_DISTILLATION
   );
 
-  auto key_led_test_action = ae::key_led_test::KeyLedTestAction{aether_app};
+  registered_action = ae::MakePtr<ae::registered::RegisteredAction>(aether_app);
 
-  auto success = key_led_test_action.SubscribeOnResult(
+  success = registered_action->SubscribeOnResult(
       [&](auto const&) { aether_app->Exit(0); });
-  auto failed = key_led_test_action.SubscribeOnError(
+  failed = registered_action->SubscribeOnError(
       [&](auto const&) { aether_app->Exit(1); });
 }
 
