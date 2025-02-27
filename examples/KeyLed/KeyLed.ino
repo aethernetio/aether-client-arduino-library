@@ -25,8 +25,8 @@
 // This sets Arduino Stack Size - comment this line to use default 8K stack size
 SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
 
-static constexpr char kWifiSsid = "Test123";
-static constexpr char kWifiPass = "Test123";
+static constexpr std::string_view kWifiSsid = "Test123";
+static constexpr std::string_view kWifiPass = "Test123";
 static constexpr bool kUseAether = true;
 static constexpr int kWaitTime = 100;
 static constexpr int kWaitUntil = 5;
@@ -312,7 +312,7 @@ void AetherKeyLedExample();
 static ae::Ptr<ae::AetherApp> aether_app{};
 static ae::Subscription success{}; 
 static ae::Subscription failed{};
-static ae::Ptr<ae::registered::RegisteredAction> registered_action{};
+static ae::Ptr<ae::key_led_test::KeyLedTestAction> key_led_test_action{};
 
 ///
 ///\brief Test function.
@@ -375,11 +375,11 @@ void AetherKeyLedExample(void) {
 #endif    // AE_DISTILLATION
   );
 
-  registered_action = ae::MakePtr<ae::registered::RegisteredAction>(aether_app);
+  key_led_test_action = ae::MakePtr<ae::key_led_test::KeyLedTestAction>(aether_app);
 
-  success = registered_action->SubscribeOnResult(
+  success = key_led_test_action->SubscribeOnResult(
       [&](auto const&) { aether_app->Exit(0); });
-  failed = registered_action->SubscribeOnError(
+  failed = key_led_test_action->SubscribeOnError(
       [&](auto const&) { aether_app->Exit(1); });
 }
 

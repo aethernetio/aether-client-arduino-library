@@ -259,7 +259,7 @@ void AetherCloudExample();
 static ae::Ptr<ae::AetherApp> aether_app{};
 static ae::Subscription success{}; 
 static ae::Subscription failed{};
-static ae::Ptr<ae::registered::RegisteredAction> registered_action{};
+static ae::Ptr<ae::cloud_test::CloudTestAction> cloud_test_action{};
 
 ///
 ///\brief Test function.
@@ -322,11 +322,11 @@ void AetherCloudExample(void) {
 #endif
   );
 
-  registered_action = ae::MakePtr<ae::registered::RegisteredAction>(aether_app);
+  cloud_test_action = ae::MakePtr<ae::cloud_test::CloudTestAction>(aether_app);
 
-  success = registered_action->SubscribeOnResult(
+  success = cloud_test_action->SubscribeOnResult(
       [&](auto const&) { aether_app->Exit(0); });
-  failed = registered_action->SubscribeOnError(
+  failed = cloud_test_action->SubscribeOnError(
       [&](auto const&) { aether_app->Exit(1); });
 }
 
