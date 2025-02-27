@@ -22,4 +22,3 @@ Select the Partition Scheme Minimal SPIFFS.
 Register clients, using Registrator software. Push the "Verify" button.
 ![](doc/pics/pic8.jpg)
 After sucess compilation, push the "Upload" button.
-![](doc/pics/pic9.jpg)
