@@ -1,19 +1,18 @@
-///\file Button.ino
-///\brief AetherNet library example
-/// Copyright 2016 Aether authors. All Rights Reserved.
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-/// You may obtain a copy of the License at
-///   http://www.apache.org/licenses/LICENSE-2.0
-/// Unless required by applicable law or agreed to in writing, software
-/// distributed under the License is distributed on an "AS IS" BASIS,
-/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-/// See the License for the specific language governing permissions and
-/// limitations under the License.
-///\author Aether authors
-///\version 1.0.0
-///\date  28.05.2024
-/// =============================================================================
+/*
+ * Copyright 2024 Aethernet Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "aether_lib.h"
 
@@ -26,8 +25,8 @@
 // This sets Arduino Stack Size - comment this line to use default 8K stack size
 SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
 
-static constexpr char kWifiSsid[] = "Test123";
-static constexpr char kWifiPass[] = "Test123";
+static constexpr std::string_view kWifiSsid = "Test123";
+static constexpr std::string_view kWifiPass = "Test123";
 static constexpr bool kUseAether = true;
 static constexpr int kWaitTime = 100;
 static constexpr int kWaitUntil = 5;
@@ -311,6 +310,9 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
 void AetherKeyLedExample();
 
 static ae::Ptr<ae::AetherApp> aether_app{};
+static ae::Subscription success{}; 
+static ae::Subscription failed{};
+static ae::Ptr<ae::key_led_test::KeyLedTestAction> key_led_test_action{};
 
 ///
 ///\brief Test function.
@@ -330,7 +332,7 @@ void AetherKeyLedExample(void) {
       ae::AetherAppConstructor{
 #if !AE_SUPPORT_REGISTRATION
           []() {
-            auto fs = ae::MakePtr<ae::FileSystemHeaderFacility>();
+            auto fs = ae::MakePtr<ae::FileSystemHeaderFacility>(std::string(""));
             return fs;
           }
 #endif  // AE_SUPPORT_REGISTRATION
@@ -355,13 +357,13 @@ void AetherKeyLedExample(void) {
                 ae::kRegistrationCloud);
             // localhost
             registration_cloud->AddServerSettings(ae::IpAddressPortProtocol{
-                {ae::IpAddress{ae::IpAddress::Version::kIpV4, {127, 0, 0, 1}},
+                {ae::IpAddress{ae::IpAddress::Version::kIpV4, {{127, 0, 0, 1}}},
                  9010},
                 ae::Protocol::kTcp});
             // cloud address
             registration_cloud->AddServerSettings(ae::IpAddressPortProtocol{
                 {ae::IpAddress{ae::IpAddress::Version::kIpV4,
-                               {35, 224, 1, 127}},
+                               {{34, 60, 244, 148}}},
                  9010},
                 ae::Protocol::kTcp});
             // cloud name address
@@ -373,11 +375,11 @@ void AetherKeyLedExample(void) {
 #endif    // AE_DISTILLATION
   );
 
-  auto key_led_test_action = ae::key_led_test::KeyLedTestAction{aether_app};
+  key_led_test_action = ae::MakePtr<ae::key_led_test::KeyLedTestAction>(aether_app);
 
-  auto success = key_led_test_action.SubscribeOnResult(
+  success = key_led_test_action->SubscribeOnResult(
       [&](auto const&) { aether_app->Exit(0); });
-  auto failed = key_led_test_action.SubscribeOnError(
+  failed = key_led_test_action->SubscribeOnError(
       [&](auto const&) { aether_app->Exit(1); });
 }
 
@@ -394,16 +396,17 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  while (!aether_app->IsExited()) {
-    auto current_time = ae::Now();
-    auto next_time = aether_app->Update(current_time);
-    aether_app->WaitUntil(
-        std::min(next_time, current_time + std::chrono::seconds{kWaitUntil}));
-    Serial.printf("Arduino Stack was set to %d bytes",
-                  getArduinoLoopTaskStackSize());
+  if(aether_app->IsExited()) {
+    Serial.printf("Exit error code: %d", aether_app->ExitCode());
     Serial.println();
+    exit(0);
   }
 
-  Serial.printf("Exit error code: %d", aether_app->ExitCode());
+  auto current_time = ae::Now();
+  auto next_time = aether_app->Update(current_time);
+  aether_app->WaitUntil(
+      std::min(next_time, current_time + std::chrono::seconds{kWaitUntil}));
+  Serial.printf("Arduino Stack was set to %d bytes",
+                getArduinoLoopTaskStackSize());
   Serial.println();
 }

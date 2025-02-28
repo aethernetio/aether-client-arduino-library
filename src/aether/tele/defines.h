@@ -17,65 +17,55 @@
 #ifndef AETHER_TELE_DEFINES_H_
 #define AETHER_TELE_DEFINES_H_
 
+#include "aether/common.h"
+
+#include "aether/tele/tags.h"
+#include "aether/tele/modules.h"
 #include "aether/tele/collectors.h"
 #include "aether/tele/env_collectors.h"
-#include "aether/tele/register.h"
 
-#ifndef TAG_LIST_NAME
-#  error "definition of TAG_LIST_NAME is required to use ae::tele"
+#ifndef AETHER_TELE_TELE_H_
+#  error "Include tele.h instead"
 #endif
 
-#ifndef TELE_SINK
-#  error "definition of TELE_SINK is required to use ae::tele"
-#endif
+namespace ae::tele {
+using ae::tele::EnvTele;
+using ae::tele::Tele;
+}  // namespace ae::tele
 
-#define AE_CAT_(a, b) a##b
-#define AE_CAT(a, b) AE_CAT_(a, b)
-#define AE_UNIQUE_NAME(P) AE_CAT(P, AE_CAT(__LINE__, __COUNTER__))
+/// A special tag for telemetry debug debug
 
-#define AE_TELE_DIAGNOSTIC_(TAG_LIST, LITERAL)          \
-  static_assert((AE_TAG_INDEX(TAG_LIST, LITERAL) >= 0), \
-                #LITERAL " is not registered");
+AE_TELE_MODULE(MLog, AE_LOG_MODULE);
+AE_TAG_INDEXED(kLog, MLog, AE_LOG_MODULE)
 
-#define AE_TELE_(LITERAL, LEVEL, ...)                                        \
-  AE_TELE_DIAGNOSTIC_(TAG_LIST_NAME, LITERAL)                                \
-  [[maybe_unused]] ae::tele::Tele<TELE_SINK, LEVEL,                          \
-                                  AE_TAG_MODULE(TAG_LIST_NAME, LITERAL)>     \
-  AE_UNIQUE_NAME(TELE_) {                                                    \
-    TELE_SINK::Instance(), AE_TAG_INDEX(TAG_LIST_NAME, LITERAL), __VA_ARGS__ \
+#define AE_TELE_(TAG, LEVEL, ...)                                           \
+  [[maybe_unused]] auto AE_UNIQUE_NAME(TELE_) = ::ae::tele::Tele<           \
+      TELE_SINK, typename TELE_SINK::TeleConfig<LEVEL, TAG.module.value>> { \
+    TELE_SINK::Instance(), TAG, LEVEL, __FILE__, __LINE__, __VA_ARGS__      \
   }
 
-#define AE_TELE_DEBUG(LITERAL, ...)                                       \
-  AE_TELE_(LITERAL, ae::tele::Level::kDebug, __FILE__, __LINE__, LITERAL, \
-           __VA_ARGS__)
-#define AE_TELE_INFO(LITERAL, ...)                                       \
-  AE_TELE_(LITERAL, ae::tele::Level::kInfo, __FILE__, __LINE__, LITERAL, \
-           __VA_ARGS__)
-#define AE_TELE_WARNING(LITERAL, ...)                                       \
-  AE_TELE_(LITERAL, ae::tele::Level::kWarning, __FILE__, __LINE__, LITERAL, \
-           __VA_ARGS__)
-#define AE_TELE_ERROR(LITERAL, ...)                                       \
-  AE_TELE_(LITERAL, ae::tele::Level::kError, __FILE__, __LINE__, LITERAL, \
-           __VA_ARGS__)
+#define AE_TELE_DEBUG(TAG_NAME, ...) \
+  AE_TELE_(TAG_NAME, ::ae::tele::Level::kDebug, __VA_ARGS__)
+#define AE_TELE_INFO(TAG_NAME, ...) \
+  AE_TELE_(TAG_NAME, ::ae::tele::Level::kInfo, __VA_ARGS__)
+#define AE_TELE_WARNING(TAG_NAME, ...) \
+  AE_TELE_(TAG_NAME, ::ae::tele::Level::kWarning, __VA_ARGS__)
+#define AE_TELE_ERROR(TAG_NAME, ...) \
+  AE_TELE_(TAG_NAME, ::ae::tele::Level::kError, __VA_ARGS__)
 
 // For simple logging
-#define AE_TELED_DEBUG(...)                                           \
-  AE_TELE_("LOG", ae::tele::Level::kDebug, __FILE__, __LINE__, "LOG", \
-           __VA_ARGS__)
-#define AE_TELED_INFO(...)                                           \
-  AE_TELE_("LOG", ae::tele::Level::kInfo, __FILE__, __LINE__, "LOG", \
-           __VA_ARGS__)
-#define AE_TELED_WARNING(...)                                           \
-  AE_TELE_("LOG", ae::tele::Level::kWarning, __FILE__, __LINE__, "LOG", \
-           __VA_ARGS__)
-#define AE_TELED_ERROR(...)                                           \
-  AE_TELE_("LOG", ae::tele::Level::kError, __FILE__, __LINE__, "LOG", \
-           __VA_ARGS__)
+#define AE_TELED_DEBUG(...) \
+  AE_TELE_(kLog, ::ae::tele::Level::kDebug, __VA_ARGS__)
+#define AE_TELED_INFO(...) AE_TELE_(kLog, ::ae::tele::Level::kInfo, __VA_ARGS__)
+#define AE_TELED_WARNING(...) \
+  AE_TELE_(kLog, ::ae::tele::Level::kWarning, __VA_ARGS__)
+#define AE_TELED_ERROR(...) \
+  AE_TELE_(kLog, ::ae::tele::Level::kError, __VA_ARGS__)
 
 // Log environment data
-#define AE_TELE_ENV(...)                                   \
-  ae::tele::EnvTele<TELE_SINK> AE_UNIQUE_NAME(TELE_ENV_) { \
-    TELE_SINK::Instance() __VA_ARGS__                      \
+#define AE_TELE_ENV(...)                                                      \
+  [[maybe_unused]] ::ae::tele::EnvTele<TELE_SINK> AE_UNIQUE_NAME(TELE_ENV_) { \
+    TELE_SINK::Instance() __VA_ARGS__                                         \
   }
 
 #endif  // AETHER_TELE_DEFINES_H_ */

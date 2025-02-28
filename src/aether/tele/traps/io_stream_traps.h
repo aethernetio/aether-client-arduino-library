@@ -20,12 +20,15 @@
 #include <cstdint>
 #include <iostream>
 #include <ostream>
-#include <unordered_map>
 #include <utility>
+#include <string_view>
+#include <unordered_map>
 
-#include "aether/tele/declaration.h"
-#include "aether/format/format.h"
 #include "aether/common.h"
+#include "aether/format/format.h"
+
+#include "aether/tele/modules.h"
+#include "aether/tele/declaration.h"
 
 namespace ae::tele {
 
@@ -43,8 +46,8 @@ struct IoStreamTrap {
   struct MetricsStream {
     Metric& metric_;
 
-    void add_count(uint32_t count = 1);
-    void add_duration(uint32_t duration);
+    void add_count(std::uint32_t count = 1);
+    void add_duration(std::uint32_t duration);
   };
 
   struct LogStream {
@@ -56,16 +59,16 @@ struct IoStreamTrap {
     LogStream(LogStream&& other) noexcept;
     ~LogStream();
 
-    void index(std::size_t index);
+    void index(std::uint32_t index);
     void start_time(TimePoint const& start);
     void level(Level::underlined_t level);
-    void module(Module::underlined_t module);
-    void file(char const* file);
+    void module(Module const& module);
+    void file(std::string_view file);
     void line(std::uint32_t line);
-    void name(char const* name);
+    void name(std::string_view name);
 
     template <typename... TArgs>
-    void blob(char const* format, TArgs&&... args) {
+    void blob(std::string_view format, TArgs&&... args) {
       delimeter();
       Format(stream_, format, std::forward<TArgs>(args)...);
     }

@@ -17,6 +17,10 @@
 #ifndef AETHER_TELE_DECLARATION_H_
 #define AETHER_TELE_DECLARATION_H_
 
+#ifndef AETHER_TELE_TELE_H_
+#  error "Include tele.h instead"
+#endif
+
 #include <cstdint>
 #include <string_view>
 
@@ -24,21 +28,15 @@
 #include "aether/tele/modules.h"
 
 namespace ae::tele {
-struct Tag {
-  std::uint32_t crc_;
-  Module::underlined_t module_;
-};
-
 struct Declaration {
-  std::size_t index_;
-  Module::underlined_t module_;
-  Level::underlined_t level_;
+  std::uint32_t index;
+  Module module;
 };
 
 struct CompileOption {
-  std::size_t index_;
+  std::uint32_t index_;
   std::string_view name_;
-  std::uint32_t value_;
+  std::string_view value_;
 };
 }  // namespace ae::tele
 #endif  // AETHER_TELE_DECLARATION_H_ */

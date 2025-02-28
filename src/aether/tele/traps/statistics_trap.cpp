@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#define AETHER_TELE_TELE_H_
 
 #include "aether/tele/traps/statistics_trap.h"
 
@@ -170,12 +171,16 @@ void StatisticsTrap::LogStream::start_time(TimePoint const& start) {
 void StatisticsTrap::LogStream::level(Level::underlined_t level) {
   log_writer << level;
 }
-void StatisticsTrap::LogStream::module(Module::underlined_t module) {
-  log_writer << module;
+void StatisticsTrap::LogStream::module(Module const& module) {
+  log_writer << module.value;
 }
-void StatisticsTrap::LogStream::file(char const* file) { log_writer << file; }
+void StatisticsTrap::LogStream::file(std::string_view file) {
+  log_writer << file;
+}
 void StatisticsTrap::LogStream::line(PackedLine line) { log_writer << line; }
-void StatisticsTrap::LogStream::name(char const* name) { log_writer << name; }
+void StatisticsTrap::LogStream::name(std::string_view name) {
+  log_writer << name;
+}
 
 StatisticsTrap::MetricStream::MetricStream(ProxyStatistics<MetricsStore>&& ms,
                                            MetricsStore::Metric& m)
@@ -241,7 +246,7 @@ StatisticsTrap::MetricStream StatisticsTrap::metric_stream(
   auto statistics = statistics_store_.Get();
   auto metrics = ProxyStatistics{statistics, statistics->metrics()};
   auto& m =
-      metrics->metrics[static_cast<MetricsStore::PackedIndex>(decl.index_)];
+      metrics->metrics[static_cast<MetricsStore::PackedIndex>(decl.index)];
   return {std::move(metrics), m};
 }
 

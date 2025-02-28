@@ -2,6 +2,7 @@
 #include "aether/address_parser.h"
 #include "aether/aether.h"
 #include "aether/aether_app.h"
+#include "aether/aether_tele.h"
 #include "aether/async_for_loop.h"
 #include "aether/channel.h"
 #include "aether/client.h"
@@ -35,6 +36,7 @@
 
 #include "aether/actions/action.h"
 #include "aether/actions/action_context.h"
+#include "aether/actions/action_list.h"
 #include "aether/actions/action_processor.h"
 #include "aether/actions/action_registry.h"
 #include "aether/actions/action_trigger.h"
@@ -46,7 +48,6 @@
 #include "aether/adapters/ethernet.h"
 #include "aether/adapters/parent_wifi.h"
 #include "aether/adapters/proxy.h"
-#include "aether/adapters/register_wifi.h"
 
 #include "aether/ae_actions/get_client_cloud.h"
 #include "aether/ae_actions/get_client_cloud_connection.h"
@@ -59,6 +60,7 @@
 #include "aether/api_protocol/child_data.h"
 #include "aether/api_protocol/packet_builder.h"
 #include "aether/api_protocol/protocol_context.h"
+#include "aether/api_protocol/request_id.h"
 #include "aether/api_protocol/send_result.h"
 
 #include "aether/client_connections/client_cloud_connection.h"
@@ -100,6 +102,7 @@
 #include "aether/events/event_handler.h"
 #include "aether/events/event_subscription.h"
 #include "aether/events/events.h"
+#include "aether/events/events_mt.h"
 #include "aether/events/multi_subscription.h"
 
 #include "aether/format/default_formatters.h"
@@ -126,6 +129,7 @@
 #include "aether/obj/obj.h"
 #include "aether/obj/obj_id.h"
 #include "aether/obj/obj_ptr.h"
+#include "aether/obj/obj_tele.h"
 #include "aether/obj/registrar.h"
 #include "aether/obj/registry.h"
 #include "aether/obj/type_index.h"
@@ -148,6 +152,8 @@
 #include "aether/port/file_systems/file_system_spifs_v1.h"
 #include "aether/port/file_systems/file_system_spifs_v2.h"
 #include "aether/port/file_systems/file_system_std.h"
+#include "aether/port/file_systems/drivers/driver_header.h"
+#include "aether/port/file_systems/drivers/driver_spifs.h"
 
 #include "aether/ptr/ptr.h"
 #include "aether/ptr/ptr_management.h"
@@ -190,8 +196,8 @@
 #include "aether/tele/env_collectors.h"
 #include "aether/tele/levels.h"
 #include "aether/tele/modules.h"
-#include "aether/tele/register.h"
 #include "aether/tele/sink.h"
+#include "aether/tele/tags.h"
 #include "aether/tele/tele.h"
 #include "aether/tele/configs/config_provider.h"
 #include "aether/tele/configs/config_selector.h"
@@ -211,6 +217,7 @@
 
 #include "aether/transport/data_buffer.h"
 #include "aether/transport/itransport.h"
+#include "aether/transport/transport_tele.h"
 #include "aether/transport/actions/channel_connection_action.h"
 #include "aether/transport/actions/ip_channel_connection.h"
 #include "aether/transport/actions/name_address_channel_connection.h"

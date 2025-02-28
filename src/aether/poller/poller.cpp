@@ -22,10 +22,16 @@ IPoller::IPoller(Domain* domain) : Obj{domain} {}
 #endif
 IPoller::~IPoller() = default;
 
-void IPoller::Add(PollerEvent /* event */, Callback /* callback */) {
-  assert(false);
+[[noreturn]] IPoller::OnPollEventSubscriber no_return_subscriber() {
+  std::abort();
 }
 
-void IPoller::Remove(PollerEvent /* event */) { assert(false); }
+IPoller::OnPollEventSubscriber IPoller::Add(DescriptorType /* descriptor */) {
+  assert(false);
+  // this must never invoked
+  return no_return_subscriber();
+}
+
+void IPoller::Remove(DescriptorType /* descriptor */) { assert(false); }
 
 }  // namespace ae

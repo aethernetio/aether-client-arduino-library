@@ -17,18 +17,21 @@
 #ifndef AETHER_TELE_ENV_COLLECTORS_H_
 #define AETHER_TELE_ENV_COLLECTORS_H_
 
-#include <type_traits>
+#ifndef AETHER_TELE_TELE_H_
+#  error "Include tele.h instead"
+#endif
+
+#include <array>
 #include <cstdint>
 #include <utility>
-#include <array>
 
-#include "aether/tele/env/compiler.h"
-#include "aether/tele/env/compilation_options.h"
-#include "aether/tele/env/library_version.h"
-#include "aether/tele/env/platform_type.h"
-#include "aether/tele/env/cpu_architecture.h"
-#include "aether/tele/declaration.h"
 #include "aether/env.h"
+#include "aether/tele/declaration.h"
+#include "aether/tele/env/compiler.h"
+#include "aether/tele/env/platform_type.h"
+#include "aether/tele/env/library_version.h"
+#include "aether/tele/env/cpu_architecture.h"
+#include "aether/tele/env/compilation_options.h"
 
 namespace ae::tele {
 /**
@@ -47,19 +50,20 @@ namespace ae::tele {
  */
 
 template <typename TEnvConfig>
-constexpr bool IsCompilation(TEnvConfig config) {
-  return config.compiler_ || config.compilation_options_ ||
-         config.library_version_ || config.api_version_;
+constexpr bool IsCompilation() {
+  return TEnvConfig::kCompiler || TEnvConfig::kCompilationOptions ||
+         TEnvConfig::kLibraryVersion || TEnvConfig::kApiVersion;
 }
 
 template <typename TEnvConfig>
-constexpr bool IsRuntime(TEnvConfig /* config */) {
+constexpr bool IsRuntime() {
   return false;
 }
 
 template <typename TEnvConfig>
-constexpr bool IsAnyEnvCollection(TEnvConfig config) {
-  return IsCompilation(config) || IsRuntime(config) || config.custom_data_;
+constexpr bool IsAnyEnvCollection() {
+  return IsCompilation<TEnvConfig>() || IsRuntime<TEnvConfig>() ||
+         TEnvConfig::kCustomData;
 }
 
 constexpr auto PlatformType() { return AE_PLATFORM_TYPE; }
@@ -86,41 +90,41 @@ constexpr auto ApiVersion() {
 constexpr auto PlatformEndianness() { return AE_ENDIANNESS; }
 constexpr auto CpuType() { return AE_CPU_TYPE; }
 
-template <typename TSink, auto Enabled = IsAnyEnvCollection(TSink::EnvConfig)>
+template <typename TSink,
+          auto Enabled = IsAnyEnvCollection<typename TSink::EnvConfig>()>
 struct EnvTele {
   using Sink = TSink;
   using EnvStream = decltype(std::declval<Sink>().trap()->env_stream());
-
-  static constexpr auto SinkConfig = Sink::EnvConfig;
+  using SinkConfig = typename Sink::EnvConfig;
 
   template <typename... TValues>
-  EnvTele(Sink& sink,
-          [[maybe_unused]] std::pair<std::size_t, TValues>&&... args) {
+  constexpr explicit EnvTele(
+      Sink& sink, [[maybe_unused]] std::pair<std::size_t, TValues>&&... args) {
     auto stream = sink.trap()->env_stream();
-    if constexpr (SinkConfig.platform_type_) {
+    if constexpr (SinkConfig::kPlatformType) {
       stream.platform_type(PlatformType());
     }
-    if constexpr (SinkConfig.compiler_) {
+    if constexpr (SinkConfig::kCompiler) {
       stream.compiler(CompilerName());
       stream.compiler_version(CompilerVersion());
     }
-    if constexpr (SinkConfig.compilation_options_) {
+    if constexpr (SinkConfig::kCompilationOptions) {
       for (auto opt : CompilationOptions()) {
         stream.compilation_option(opt);
       }
     }
-    if constexpr (SinkConfig.library_version_) {
+    if constexpr (SinkConfig::kLibraryVersion) {
       stream.library_version(LibraryVersion());
     }
-    if constexpr (SinkConfig.api_version_) {
+    if constexpr (SinkConfig::kApiVersion) {
       stream.api_version(ApiVersion());
     }
-    if constexpr (SinkConfig.cpu_type_) {
+    if constexpr (SinkConfig::kCpuType) {
       stream.cpu_type(CpuType());
       stream.endianness(static_cast<uint8_t>(PlatformEndianness()));
     }
 
-    if constexpr (SinkConfig.custom_data_) {
+    if constexpr (SinkConfig::kCustomData) {
       (stream.custom_data(args.first, args.second), ...);
     }
   }
@@ -129,7 +133,7 @@ struct EnvTele {
 template <typename TSink>
 struct EnvTele<TSink, false> {
   template <typename... TArgs>
-  EnvTele(TArgs&&... /* args */) {}
+  constexpr explicit EnvTele(TArgs&&... /* args */) {}
 };
 }  // namespace ae::tele
 
