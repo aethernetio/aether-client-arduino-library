@@ -399,7 +399,7 @@ void loop() {
   if(aether_app->IsExited()) {
     Serial.printf("Exit error code: %d", aether_app->ExitCode());
     Serial.println();
-    exit(0);
+    while(1){};
   }
 
   auto current_time = ae::Now();
