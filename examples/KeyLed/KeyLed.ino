@@ -16,14 +16,13 @@
 
 #include "aether_lib.h"
 
+#include "examples/key_led/key_led_esp.h"
+#include "examples/key_led/key_led_mac.h"
 #include "examples/key_led/key_led_nix.h"
 #include "examples/key_led/key_led_win.h"
-#include "examples/key_led/key_led_mac.h"
-#include "examples/key_led/key_led_esp.h"
-
 
 // This sets Arduino Stack Size - comment this line to use default 8K stack size
-SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
+SET_LOOP_TASK_STACK_SIZE(16 * 1024); // 16KB
 
 static constexpr std::string_view kWifiSsid = "Test123";
 static constexpr std::string_view kWifiPass = "Test123";
@@ -33,13 +32,13 @@ static constexpr int kWaitUntil = 5;
 
 namespace ae::key_led_test {
 constexpr ae::SafeStreamConfig kSafeStreamConfig{
-    std::numeric_limits<std::uint16_t>::max(),                // buffer_capacity
-    (std::numeric_limits<std::uint16_t>::max() / 2) - 1,      // window_size
-    (std::numeric_limits<std::uint16_t>::max() / 2) - 1 - 1,  // max_data_size
-    4,                               // max_repeat_count
-    std::chrono::milliseconds{200},  // wait_confirm_timeout
-    {},                              // send_confirm_timeout
-    std::chrono::milliseconds{200},  // send_repeat_timeout
+    std::numeric_limits<std::uint16_t>::max(),               // buffer_capacity
+    (std::numeric_limits<std::uint16_t>::max() / 2) - 1,     // window_size
+    (std::numeric_limits<std::uint16_t>::max() / 2) - 1 - 1, // max_data_size
+    10,                                                      // max_repeat_count
+    std::chrono::milliseconds{600}, // wait_confirm_timeout
+    {},                             // send_confirm_timeout
+    std::chrono::milliseconds{400}, // send_repeat_timeout
 };
 
 /**
@@ -56,12 +55,10 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
     kError,
   };
 
- public:
-  explicit KeyLedTestAction(Ptr<AetherApp> const& aether_app)
-      : Action{*aether_app},
-        aether_{aether_app->aether()},
-        state_{State::kRegistration},
-        messages_{"LED on", "LED off"},
+public:
+  explicit KeyLedTestAction(Ptr<AetherApp> const &aether_app)
+      : Action{*aether_app}, aether_{aether_app->aether()},
+        state_{State::kRegistration}, messages_{"LED on", "LED off"},
         key_action_{
 #if defined KEY_LED_NIX
             ae::KeyLedNix {
@@ -93,26 +90,26 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
   TimePoint Update(TimePoint current_time) override {
     if (state_.changed()) {
       switch (state_.Acquire()) {
-        case State::kRegistration:
-          RegisterClients();
-          break;
-        case State::kConfigureReceiver:
-          ConfigureReceiver();
-          break;
-        case State::kConfigureSender:
-          ConfigureSender();
-          break;
-        case State::kSendMessages:
-          SendMessages(current_time);
-          break;
-        case State::kWaitDone:
-          break;
-        case State::kResult:
-          Action::Result(*this);
-          return current_time;
-        case State::kError:
-          Action::Error(*this);
-          return current_time;
+      case State::kRegistration:
+        RegisterClients();
+        break;
+      case State::kConfigureReceiver:
+        ConfigureReceiver();
+        break;
+      case State::kConfigureSender:
+        ConfigureSender();
+        break;
+      case State::kSendMessages:
+        SendMessages(current_time);
+        break;
+      case State::kWaitDone:
+        break;
+      case State::kResult:
+        Action::Result(*this);
+        return current_time;
+      case State::kError:
+        Action::Error(*this);
+        return current_time;
       }
     }
     // wait till all sent messages received and confirmed
@@ -127,7 +124,7 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
     return current_time;
   }
 
- private:
+private:
   /**
    * \brief Perform a client registration.
    * We need a two clients for this test.
@@ -143,13 +140,13 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
         auto reg_action = aether_->RegisterClient(
             Uid{MakeLiteralArray("3ac931653d37497087a6fa4ee27744e4")});
         registration_subscriptions_.Push(
-            reg_action->SubscribeOnResult([&](auto const&) {
+            reg_action->SubscribeOnResult([&](auto const &) {
               ++clients_registered_;
               if (clients_registered_ == 2) {
                 state_ = State::kConfigureReceiver;
               }
             }),
-            reg_action->SubscribeOnError([&](auto const&) {
+            reg_action->SubscribeOnError([&](auto const &) {
               AE_TELED_ERROR("Registration error");
               state_ = State::kError;
             }));
@@ -179,39 +176,40 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
     receiver_ = aether_->clients()[0];
     auto receiver_connection = receiver_->client_connection();
     receiver_new_stream_subscription_ =
-        receiver_connection->new_stream_event().Subscribe(
-            [&](auto uid, auto stream_id, auto raw_stream) {
-              receiver_stream_ = MakePtr<P2pSafeStream>(
-                  *aether_->action_processor, kSafeStreamConfig,
-                  MakePtr<P2pStream>(*aether_->action_processor, receiver_, uid,
+        receiver_connection->new_stream_event().Subscribe([&](auto uid,
+                                                              auto stream_id,
+                                                              auto raw_stream) {
+          receiver_stream_ = make_unique<P2pSafeStream>(
+              *aether_->action_processor, kSafeStreamConfig,
+              make_unique<P2pStream>(*aether_->action_processor, receiver_, uid,
                                      stream_id, std::move(raw_stream)));
-              receiver_message_subscription_ =
-                  receiver_stream_->in().out_data_event().Subscribe(
-                      [&](auto const& data) {
-                        auto str_msg = std::string(
-                            reinterpret_cast<const char*>(data.data()),
-                            data.size());
-                        AE_TELED_DEBUG("Received a message [{}]", str_msg);
-                        receive_count_++;
-                        auto confirm_msg = std::string{"confirmed "} + str_msg;
-                        if ((str_msg.compare(messages_[0])) == 0) {
-                          key_action_.SetLed(1);
-                          AE_TELED_INFO("LED is on");
-                        } else if ((str_msg.compare(messages_[1])) == 0) {
-                          key_action_.SetLed(0);
-                          AE_TELED_INFO("LED is off");
-                        }
-                        auto response_action = receiver_stream_->in().Write(
-                            {confirm_msg.data(),
-                             confirm_msg.data() + confirm_msg.size()},
-                            ae::Now());
-                        response_subscriptions_.Push(
-                            response_action->SubscribeOnError([&](auto const&) {
-                              AE_TELED_ERROR("Send response failed");
-                              state_ = State::kError;
-                            }));
-                      });
-            });
+          receiver_message_subscription_ =
+              receiver_stream_->in().out_data_event().Subscribe(
+                  [&](auto const &data) {
+                    auto str_msg =
+                        std::string(reinterpret_cast<const char *>(data.data()),
+                                    data.size());
+                    AE_TELED_DEBUG("Received a message [{}]", str_msg);
+                    receive_count_++;
+                    auto confirm_msg = std::string{"confirmed "} + str_msg;
+                    if ((str_msg.compare(messages_[0])) == 0) {
+                      key_action_.SetLed(1);
+                      AE_TELED_INFO("LED is on");
+                    } else if ((str_msg.compare(messages_[1])) == 0) {
+                      key_action_.SetLed(0);
+                      AE_TELED_INFO("LED is off");
+                    }
+                    auto response_action = receiver_stream_->in().Write(
+                        {confirm_msg.data(),
+                         confirm_msg.data() + confirm_msg.size()},
+                        ae::Now());
+                    response_subscriptions_.Push(
+                        response_action->SubscribeOnError([&](auto const &) {
+                          AE_TELED_ERROR("Send response failed");
+                          state_ = State::kError;
+                        }));
+                  });
+        });
     state_ = State::kConfigureSender;
   }
 
@@ -226,14 +224,14 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
     confirm_count_ = 0;
     assert(aether_->clients().size() > 1);
     sender_ = aether_->clients()[1];
-    sender_stream_ = MakePtr<P2pSafeStream>(
+    sender_stream_ = make_unique<P2pSafeStream>(
         *aether_->action_processor, kSafeStreamConfig,
-        MakePtr<P2pStream>(*aether_->action_processor, sender_,
-                           receiver_->uid(), StreamId{0}));
+        make_unique<P2pStream>(*aether_->action_processor, sender_,
+                               receiver_->uid(), StreamId{0}));
     sender_message_subscription_ =
-        sender_stream_->in().out_data_event().Subscribe([&](auto const& data) {
+        sender_stream_->in().out_data_event().Subscribe([&](auto const &data) {
           auto str_response = std::string(
-              reinterpret_cast<const char*>(data.data()), data.size());
+              reinterpret_cast<const char *>(data.data()), data.size());
           AE_TELED_DEBUG("Received a response [{}], confirm_count {}",
                          str_response, confirm_count_);
           confirm_count_++;
@@ -248,7 +246,7 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
     AE_TELED_INFO("Send messages");
 
     key_action_subscription_ = key_action_.SubscribeOnResult(
-        [&, sender_stream_{std::move(sender_stream_)}](auto const&) {
+        [&](auto const &) {
           if (key_action_.GetKey()) {
             AE_TELED_INFO("Hi level press");
             if (kUseAether) {
@@ -276,9 +274,9 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
   Aether::ptr aether_;
 
   Client::ptr receiver_;
-  Ptr<ByteStream> receiver_stream_;
+  std::unique_ptr<ByteStream> receiver_stream_;
   Client::ptr sender_;
-  Ptr<ByteStream> sender_stream_;
+  std::unique_ptr<ByteStream> sender_stream_;
   std::size_t clients_registered_;
   std::size_t receive_count_;
   std::size_t confirm_count_;
@@ -305,14 +303,15 @@ class KeyLedTestAction : public Action<KeyLedTestAction> {
   Subscription state_changed_;
 };
 
-}  // namespace ae::key_led_test
+} // namespace ae::key_led_test
 
 void AetherKeyLedExample();
 
 static ae::Ptr<ae::AetherApp> aether_app{};
-static ae::Subscription success{}; 
+static ae::Subscription success{};
 static ae::Subscription failed{};
-static ae::Ptr<ae::key_led_test::KeyLedTestAction> key_led_test_action{};
+static std::unique_ptr<ae::key_led_test::KeyLedTestAction>
+    key_led_test_action{};
 
 ///
 ///\brief Test function.
@@ -332,55 +331,35 @@ void AetherKeyLedExample(void) {
       ae::AetherAppConstructor{
 #if !AE_SUPPORT_REGISTRATION
           []() {
-            auto fs = ae::MakePtr<ae::FileSystemHeaderFacility>(std::string(""));
+            auto fs =
+                ae::make_unique<ae::FileSystemHeaderFacility>(std::string(""));
             return fs;
           }
-#endif  // AE_SUPPORT_REGISTRATION
+#endif // AE_SUPPORT_REGISTRATION
       }
 #if defined AE_DISTILLATION
-          .Adapter([](ae::Ptr<ae::Domain> const& domain,
-                      ae::Aether::ptr const& aether) -> ae::Adapter::ptr {
-#  if defined ESP32_WIFI_ADAPTER_ENABLED
+          .Adapter([](ae::Domain *domain,
+                      ae::Aether::ptr const &aether) -> ae::Adapter::ptr {
+#if defined ESP32_WIFI_ADAPTER_ENABLED
             auto adapter = domain.CreateObj<ae::Esp32WifiAdapter>(
                 ae::GlobalId::kEsp32WiFiAdapter, aether, aether->poller,
                 std::string(kWifiSsid), std::string(kWifiPass));
-#  else
+#else
             auto adapter = domain->CreateObj<ae::EthernetAdapter>(
                 ae::GlobalId::kEthernetAdapter, aether, aether->poller);
-#  endif  // ESP32_WIFI_ADAPTER_ENABLED
+#endif // ESP32_WIFI_ADAPTER_ENABLED
             return adapter;
           })
-#  if AE_SUPPORT_REGISTRATION
-          .RegCloud([](ae::Ptr<ae::Domain> const& domain,
-                       ae::Aether::ptr const& /* aether */) {
-            auto registration_cloud = domain->CreateObj<ae::RegistrationCloud>(
-                ae::kRegistrationCloud);
-            // localhost
-            registration_cloud->AddServerSettings(ae::IpAddressPortProtocol{
-                {ae::IpAddress{ae::IpAddress::Version::kIpV4, {{127, 0, 0, 1}}},
-                 9010},
-                ae::Protocol::kTcp});
-            // cloud address
-            registration_cloud->AddServerSettings(ae::IpAddressPortProtocol{
-                {ae::IpAddress{ae::IpAddress::Version::kIpV4,
-                               {{34, 60, 244, 148}}},
-                 9010},
-                ae::Protocol::kTcp});
-            // cloud name address
-            registration_cloud->AddServerSettings(ae::NameAddress{
-                "registration.aethernet.io", 9010, ae::Protocol::kTcp});
-            return registration_cloud;
-          })
-#  endif  // AE_SUPPORT_REGISTRATION
-#endif    // AE_DISTILLATION
+#endif // AE_DISTILLATION
   );
 
-  key_led_test_action = ae::MakePtr<ae::key_led_test::KeyLedTestAction>(aether_app);
+  key_led_test_action =
+      ae::make_unique<ae::key_led_test::KeyLedTestAction>(aether_app);
 
   success = key_led_test_action->SubscribeOnResult(
-      [&](auto const&) { aether_app->Exit(0); });
+      [&](auto const &) { aether_app->Exit(0); });
   failed = key_led_test_action->SubscribeOnError(
-      [&](auto const&) { aether_app->Exit(1); });
+      [&](auto const &) { aether_app->Exit(1); });
 }
 
 void setup() {
@@ -396,10 +375,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(aether_app->IsExited()) {
+  if (aether_app->IsExited()) {
     Serial.printf("Exit error code: %d", aether_app->ExitCode());
     Serial.println();
-    while(1){};
+    while (1) {
+    };
   }
 
   auto current_time = ae::Now();
