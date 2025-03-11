@@ -14,14 +14,14 @@
 ///\date  10.04.2024
 ///
 
-#include "libbcrypt_unit_tests.h"
+#include "third_party/libbcrypt_unit_tests/libbcrypt_unit_tests.h"
 
 #include <time.h>
 
-// #include "aether/tele/tele.h"
 #include "third_party/libbcrypt/bcrypt.h"
-#include "third_party/Unity/src/unity.h"
+
 #include <string.h>
+#include "unity.h"
 
 #define DEBUG_OUT 1
 #define LOG(TAG, ...) {\
@@ -35,7 +35,7 @@
 
 static const char *TAG = "BCRYPT UNITY";
 
-#if DEBUG_OUT==1    
+#if DEBUG_OUT==1
     #define DebugPrint(format, ...) LOG(TAG, format, ##__VA_ARGS__)
 #elif DEBUG_OUT==2
     #define DebugPrint(format, ...) AE_TELED_DEBUG(TAG, format, ##__VA_ARGS__)
@@ -72,7 +72,7 @@ void _libbcrypt_unit_tests_test_1()
 
     ret = bcrypt_hashpw(pass, hash1, hash);
 	TEST_ASSERT(ret == 0);
-    DebugPrint("First hash check: %s", (strcmp(hash1, hash) == 0)?"OK":"FAIL");
+    DebugPrint("Time taken: %s seconds", (strcmp(hash1, hash) == 0)?"OK":"FAIL");
 	ret = bcrypt_hashpw(pass, hash2, hash);
 	TEST_ASSERT(ret == 0);
     DebugPrint("Second hash check: %s", (strcmp(hash2, hash) == 0)?"OK":"FAIL");

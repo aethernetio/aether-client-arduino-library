@@ -9,13 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/sodium/core.h"
-#include "../../../include/sodium/crypto_stream_chacha20.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "../stream_chacha20.h"
-#include "chacha20_ref.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/ref/chacha20_ref.h"
 
 struct chacha_ctx {
     uint32_t input[16];

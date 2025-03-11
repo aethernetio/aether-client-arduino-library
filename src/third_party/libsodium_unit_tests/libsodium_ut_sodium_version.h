@@ -11,7 +11,7 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_SODIUM_VERSION_H
 #define THIRD_PARTY_LIBSODIUM_UT_SODIUM_VERSION_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace sodium_version
 {    

@@ -1,13 +1,13 @@
 
-#include "../../include/sodium/crypto_scalarmult_curve25519.h"
-#include "../../include/sodium/private/implementations.h"
-#include "scalarmult_curve25519.h"
-#include "../../include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_scalarmult_curve25519.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/scalarmult_curve25519.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
 
 #ifdef HAVE_AVX_ASM
-# include "sandy2x/curve25519_sandy2x.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/curve25519_sandy2x.h"
 #endif
-#include "ref10/x25519_ref10.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10/x25519_ref10.h"
 static const crypto_scalarmult_curve25519_implementation *implementation =
     &crypto_scalarmult_curve25519_ref10_implementation;
 

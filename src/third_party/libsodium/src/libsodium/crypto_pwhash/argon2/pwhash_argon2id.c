@@ -5,12 +5,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "argon2-core.h"
-#include "argon2.h"
-#include "../../include/sodium/crypto_pwhash_argon2id.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_pwhash_argon2id.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #define STR_HASHBYTES 32U
 

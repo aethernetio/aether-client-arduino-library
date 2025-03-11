@@ -2,8 +2,8 @@
 #define crypto_auth_hmacsha256_H
 
 #include <stddef.h>
-#include "crypto_hash_sha256.h"
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
 #ifdef __cplusplus
 # ifdef __GNUC__

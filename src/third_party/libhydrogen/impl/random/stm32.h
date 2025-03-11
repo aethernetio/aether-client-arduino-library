@@ -4,9 +4,9 @@
 #if defined(STM32F4) || defined(STM32L4)
 
 #    if defined(STM32F4)
-#        include "stm32f4xx.h"
+#include "stm32f4xx.h"
 #    elif defined(STM32L4)
-#        include "stm32l4xx_hal_rng.h"
+#include "stm32l4xx_hal_rng.h"
 
 static RNG_HandleTypeDef RngHandle;
 #    endif

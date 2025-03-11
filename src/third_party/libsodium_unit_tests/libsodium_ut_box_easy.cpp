@@ -1,4 +1,4 @@
-#include "libsodium_ut_box_easy.h"
+#include "third_party/libsodium_unit_tests/libsodium_ut_box_easy.h"
 
 #include "unity.h"
 //#include "aether/tele/tele.h"

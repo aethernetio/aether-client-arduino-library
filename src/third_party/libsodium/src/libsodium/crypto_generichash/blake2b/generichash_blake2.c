@@ -1,5 +1,5 @@
-#include "../../include/sodium/crypto_generichash_blake2b.h"
-#include "../../include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 
 size_t
 crypto_generichash_blake2b_bytes_min(void) {

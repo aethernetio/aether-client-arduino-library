@@ -33,9 +33,9 @@
 
 #include <sys/types.h>
 
-#include "../../../include/sodium/crypto_hash_sha256.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 static void
 be32enc_vect(unsigned char *dst, const uint32_t *src, size_t len)

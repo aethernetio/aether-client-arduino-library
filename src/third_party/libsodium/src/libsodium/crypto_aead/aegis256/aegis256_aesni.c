@@ -4,18 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_aead_aegis256.h"
-#include "../../include/sodium/crypto_verify_16.h"
-#include "../../include/sodium/crypto_verify_32.h"
-#include "../../include/sodium/export.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aegis256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_16.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #if defined(HAVE_AVXINTRIN_H) && defined(HAVE_WMMINTRIN_H)
 
-#include "aegis256_aesni.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_aesni.h"
 
 #ifdef __clang__
 #pragma clang attribute push(__attribute__((target("aes,avx"))), apply_to = function)
@@ -23,7 +23,7 @@
 #pragma GCC target("aes,avx")
 #endif
 
-#include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 #include <immintrin.h>
 #include <wmmintrin.h>
 
@@ -51,7 +51,7 @@ aegis256_update(aes_block_t *const state, const aes_block_t d)
     state[0] = AES_BLOCK_XOR(AES_ENC(tmp, state[0]), d);
 }
 
-#include "aegis256_common.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_common.h"
 
 struct aegis256_implementation aegis256_aesni_implementation = { SODIUM_C99(.encrypt_detached =)
                                                                      encrypt_detached,

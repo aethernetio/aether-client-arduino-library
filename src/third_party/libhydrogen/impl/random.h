@@ -6,7 +6,7 @@ static TLS struct {
 } hydro_random_context;
 
 #if defined(AVR) && !defined(__unix__)
-#    include "random/avr.h"
+#include "third_party/libhydrogen/impl/random/avr.h"
 #elif (defined(CONFIG_IDF_TARGET_ESP32) || \
        defined(ESP8266) || \
        defined(CONFIG_IDF_TARGET_ESP32S2) || \
@@ -17,33 +17,33 @@ static TLS struct {
        defined(CONFIG_IDF_TARGET_ESP32C6) || \
        defined(CONFIG_IDF_TARGET_ESP32H2) || \
        defined(CONFIG_IDF_TARGET_ESP32P4)) && !defined(__unix__)
-#    include "random/esp32.h"
+#include "third_party/libhydrogen/impl/random/esp32.h"
 #elif defined(PARTICLE) && defined(PLATFORM_ID) && PLATFORM_ID > 2 && !defined(__unix__)
-#    include "random/particle.h"
+#include "third_party/libhydrogen/impl/random/particle.h"
 #elif defined(__ZEPHYR__)
-#    include "random/zephyr.h"
+#include "third_party/libhydrogen/impl/random/zephyr.h"
 #elif (defined(NRF52832_XXAA) || defined(NRF52832_XXAB)) && !defined(__unix__)
-#    include "random/nrf52832.h"
+#include "third_party/libhydrogen/impl/random/nrf52832.h"
 #elif defined(_WIN32)
-#    include "random/windows.h"
+#include "third_party/libhydrogen/impl/random/windows.h"
 #elif defined(__wasi__)
-#    include "random/wasi.h"
+#include "third_party/libhydrogen/impl/random/wasi.h"
 #elif defined(__linux__) && defined(__KERNEL__)
-#    include "random/linux_kernel.h"
+#include "third_party/libhydrogen/impl/random/linux_kernel.h"
 #elif defined(__unix__)
-#    include "random/unix.h"
+#include "third_party/libhydrogen/impl/random/unix.h"
 #elif defined(TARGET_LIKE_MBED)
-#    include "random/mbed.h"
+#include "third_party/libhydrogen/impl/random/mbed.h"
 #elif defined(RIOT_VERSION)
-#    include "random/riot.h"
+#include "third_party/libhydrogen/impl/random/riot.h"
 #elif defined(STM32F4) || defined(STM32L4)
-#    include "random/stm32.h"
+#include "third_party/libhydrogen/impl/random/stm32.h"
 #elif defined(__RTTHREAD__)
-#    include "random/rtthread.h"
+#include "third_party/libhydrogen/impl/random/rtthread.h"
 #elif defined(CH32V30x_D8) || defined(CH32V30x_D8C)
-#    include "random/ch32.h"
+#include "third_party/libhydrogen/impl/random/ch32.h"
 #elif defined(CHIBIOS)
-#    include "random/chibios.h"
+#include "third_party/libhydrogen/impl/random/chibios.h"
 #else
 #    error Unsupported platform
 #endif

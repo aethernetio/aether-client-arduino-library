@@ -14,14 +14,13 @@
 ///\date  10.04.2024
 ///
 
-#include "libhydrogen_unit_tests.h"
+#include "third_party/libhydrogen_unit_tests/libhydrogen_unit_tests.h"
 
 #include <string.h>
 #include <time.h>
 
-// #include "aether/tele/tele.h"
 #include "third_party/libhydrogen/hydrogen.h"
-#include "third_party/Unity/src/unity.h"
+#include "unity.h"
 
 #define DEBUG_OUT 1
 #define LOG(TAG, ...) {\

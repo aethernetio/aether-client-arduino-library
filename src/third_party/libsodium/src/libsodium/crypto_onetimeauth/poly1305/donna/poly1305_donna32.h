@@ -11,7 +11,7 @@
 # define POLY1305_NOINLINE
 #endif
 
-#include "../../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #define poly1305_block_size 16
 

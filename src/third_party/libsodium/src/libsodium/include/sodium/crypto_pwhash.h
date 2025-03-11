@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-#include "crypto_pwhash_argon2i.h"
-#include "crypto_pwhash_argon2id.h"
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_pwhash_argon2i.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_pwhash_argon2id.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
 #ifdef __cplusplus
 # ifdef __GNUC__

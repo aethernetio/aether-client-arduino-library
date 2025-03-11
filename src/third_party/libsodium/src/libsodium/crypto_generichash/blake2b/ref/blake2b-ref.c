@@ -19,11 +19,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "blake2.h"
-#include "../../../include/sodium/core.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/runtime.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_generichash/blake2b/ref/blake2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 static blake2b_compress_fn blake2b_compress = blake2b_compress_ref;
 

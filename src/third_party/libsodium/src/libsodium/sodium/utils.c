@@ -49,12 +49,12 @@ void *alloca (size_t);
 # endif
 #endif
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/crypto_generichash.h"
-#include "../include/sodium/crypto_stream.h"
-#include "../include/sodium/randombytes.h"
-#include "../include/sodium/private/common.h"
-#include "../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #ifndef ENOSYS
 # define ENOSYS ENXIO

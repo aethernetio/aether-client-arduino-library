@@ -1,4 +1,4 @@
-#include "libsodium_ut_aead_chacha20poly13052.h"
+#include "third_party/libsodium_unit_tests/libsodium_ut_aead_chacha20poly13052.h"
 
 #include "unity.h"
 //#include "aether/tele/tele.h"

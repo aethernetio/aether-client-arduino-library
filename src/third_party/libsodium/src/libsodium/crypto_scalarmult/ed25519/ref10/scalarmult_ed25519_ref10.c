@@ -1,9 +1,9 @@
 
 #include <string.h>
 
-#include "../../../include/sodium/crypto_scalarmult_ed25519.h"
-#include "../../../include/sodium/private/ed25519_ref10.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_scalarmult_ed25519.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/ed25519_ref10.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 static int
 _crypto_scalarmult_ed25519_is_inf(const unsigned char s[32])

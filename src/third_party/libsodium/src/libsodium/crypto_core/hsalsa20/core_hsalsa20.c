@@ -1,4 +1,4 @@
-#include "../../include/sodium/crypto_core_hsalsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hsalsa20.h"
 
 size_t
 crypto_core_hsalsa20_outputbytes(void) {

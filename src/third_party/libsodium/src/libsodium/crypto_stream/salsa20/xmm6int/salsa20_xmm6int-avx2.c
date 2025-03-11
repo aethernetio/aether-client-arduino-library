@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/sodium/crypto_stream_salsa20.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #if defined(HAVE_AVX2INTRIN_H) && defined(HAVE_EMMINTRIN_H) && \
     defined(HAVE_TMMINTRIN_H) && defined(HAVE_SMMINTRIN_H)
@@ -20,10 +20,10 @@
 # include <immintrin.h>
 # include <smmintrin.h>
 # include <tmmintrin.h>
-# include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
-# include "../stream_salsa20.h"
-# include "salsa20_xmm6int-avx2.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/salsa20_xmm6int-avx2.h"
 
 # define ROUNDS 20
 
@@ -71,10 +71,10 @@ salsa20_encrypt_bytes(salsa_ctx *ctx, const uint8_t *m, uint8_t *c,
         return; /* LCOV_EXCL_LINE */
     }
 
-#include "u8.h"
-#include "u4.h"
-#include "u1.h"
-#include "u0.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/u8.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/u4.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/u1.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/u0.h"
 }
 
 static int

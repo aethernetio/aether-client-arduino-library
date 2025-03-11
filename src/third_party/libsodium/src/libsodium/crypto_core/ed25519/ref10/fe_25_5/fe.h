@@ -1,4 +1,4 @@
-#include "../../../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 /*
  Ignores top bit of s.

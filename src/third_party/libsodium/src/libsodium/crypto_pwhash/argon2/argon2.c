@@ -17,12 +17,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "argon2-core.h"
-#include "argon2-encoding.h"
-#include "argon2.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-encoding.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
 
 int
 argon2_ctx(argon2_context *context, argon2_type type)

@@ -1,4 +1,4 @@
-#include "libsodium_ut_auth3.h"
+#include "third_party/libsodium_unit_tests/libsodium_ut_auth3.h"
 /* "Test Case AUTH256-4" from RFC 4868 */
 
 #include "unity.h"

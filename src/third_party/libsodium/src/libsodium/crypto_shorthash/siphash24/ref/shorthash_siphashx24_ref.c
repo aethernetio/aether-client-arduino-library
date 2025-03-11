@@ -1,6 +1,6 @@
-#include "../../../include/sodium/crypto_shorthash_siphash24.h"
-#include "../../../include/sodium/private/common.h"
-#include "shorthash_siphash_ref.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_shorthash_siphash24.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_shorthash/siphash24/ref/shorthash_siphash_ref.h"
 
 int
 crypto_shorthash_siphashx24(unsigned char *out, const unsigned char *in,

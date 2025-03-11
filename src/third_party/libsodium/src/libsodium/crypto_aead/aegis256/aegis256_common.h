@@ -35,12 +35,12 @@ aegis256_init(const uint8_t *key, const uint8_t *nonce, aes_block_t *const state
 }
 
 static int
-aegis256_mac(uint8_t *mac, size_t maclen, size_t adlen, size_t mlen, aes_block_t *const state)
+aegis256_mac(uint8_t *mac, size_t maclen, uint64_t adlen, uint64_t mlen, aes_block_t *const state)
 {
     aes_block_t tmp;
     int         i;
 
-    tmp = AES_BLOCK_LOAD_64x2(((uint64_t) mlen) << 3, ((uint64_t) adlen) << 3);
+    tmp = AES_BLOCK_LOAD_64x2(mlen << 3, adlen << 3);
     tmp = AES_BLOCK_XOR(tmp, state[3]);
 
     for (i = 0; i < 7; i++) {
@@ -71,6 +71,17 @@ aegis256_absorb(const uint8_t *const src, aes_block_t *const state)
 
     msg = AES_BLOCK_LOAD(src);
     aegis256_update(state, msg);
+}
+
+static inline void
+aegis256_absorb2(const uint8_t *const src, aes_block_t *const state)
+{
+    aes_block_t msg, msg2;
+
+    msg  = AES_BLOCK_LOAD(src + 0 * AES_BLOCK_LENGTH);
+    msg2 = AES_BLOCK_LOAD(src + 1 * AES_BLOCK_LENGTH);
+    aegis256_update(state, msg);
+    aegis256_update(state, msg2);
 }
 
 static void
@@ -139,7 +150,10 @@ encrypt_detached(uint8_t *c, uint8_t *mac, size_t maclen, const uint8_t *m, size
 
     aegis256_init(k, npub, state);
 
-    for (i = 0; i + RATE <= adlen; i += RATE) {
+    for (i = 0; i + 2 * RATE <= adlen; i += 2 * RATE) {
+        aegis256_absorb2(ad + i, state);
+    }
+    for (; i + RATE <= adlen; i += RATE) {
         aegis256_absorb(ad + i, state);
     }
     if (adlen % RATE) {
@@ -174,7 +188,10 @@ decrypt_detached(uint8_t *m, const uint8_t *c, size_t clen, const uint8_t *mac, 
 
     aegis256_init(k, npub, state);
 
-    for (i = 0; i + RATE <= adlen; i += RATE) {
+    for (i = 0; i + 2 * RATE <= adlen; i += 2 * RATE) {
+        aegis256_absorb2(ad + i, state);
+    }
+    for (; i + RATE <= adlen; i += RATE) {
         aegis256_absorb(ad + i, state);
     }
     if (adlen % RATE) {

@@ -3,7 +3,7 @@
    and 128 bit addition
 */
 
-#include "../../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #define MUL(out, x, y) out = ((uint128_t) x * y)
 #define ADD(out, in) out += in

@@ -11,12 +11,12 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_KEYGEN_H
 #define THIRD_PARTY_LIBSODIUM_UT_KEYGEN_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace keygen
 {    
     #define TEST_NAME41 "keygen"
-    #include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
     typedef struct KeygenTV_ {
         void (*fn)(unsigned char *k);

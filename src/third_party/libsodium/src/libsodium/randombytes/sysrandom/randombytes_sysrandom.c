@@ -50,11 +50,11 @@
 #include <esp_random.h>
 #endif
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/randombytes_sysrandom.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes_sysrandom.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #ifdef _WIN32
 /* `RtlGenRandom` is used over `CryptGenRandom` on Microsoft Windows based systems:

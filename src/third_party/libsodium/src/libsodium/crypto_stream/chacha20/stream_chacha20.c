@@ -1,19 +1,19 @@
-#include "../../include/sodium/crypto_stream_chacha20.h"
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/private/chacha20_ietf_ext.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/implementations.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/runtime.h"
-#include "stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/chacha20_ietf_ext.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/stream_chacha20.h"
 
-#include "ref/chacha20_ref.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/ref/chacha20_ref.h"
 #if defined(HAVE_AVX2INTRIN_H) && defined(HAVE_EMMINTRIN_H) && \
     defined(HAVE_TMMINTRIN_H) && defined(HAVE_SMMINTRIN_H)
-# include "dolbeau/chacha20_dolbeau-avx2.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/dolbeau/chacha20_dolbeau-avx2.h"
 #endif
 #if defined(HAVE_EMMINTRIN_H) && defined(HAVE_TMMINTRIN_H)
-# include "dolbeau/chacha20_dolbeau-ssse3.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/dolbeau/chacha20_dolbeau-ssse3.h"
 #endif
 
 static const crypto_stream_chacha20_implementation *implementation =

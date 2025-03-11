@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core_h2c.h"
-#include "../../include/sodium/crypto_core_ed25519.h"
-#include "../../include/sodium/crypto_hash_sha512.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/ed25519_ref10.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/core_h2c.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_ed25519.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha512.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/ed25519_ref10.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_core_ed25519_is_valid_point(const unsigned char *p)

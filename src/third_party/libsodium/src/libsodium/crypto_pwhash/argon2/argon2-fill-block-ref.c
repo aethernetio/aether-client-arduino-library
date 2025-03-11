@@ -15,10 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "argon2-core.h"
-#include "argon2.h"
-#include "blamka-round-ref.h"
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/blamka-round-ref.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 static void
 fill_block(const block *prev_block, const block *ref_block, block *next_block)

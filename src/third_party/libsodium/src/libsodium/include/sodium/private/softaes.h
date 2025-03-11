@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 typedef struct SoftAesBlock {
     uint32_t w0;

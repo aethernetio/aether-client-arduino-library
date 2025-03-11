@@ -1,21 +1,21 @@
-#include "../../include/sodium/crypto_stream_salsa20.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/implementations.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/runtime.h"
-#include "stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/stream_salsa20.h"
 
 #ifdef HAVE_AMD64_ASM
-# include "xmm6/salsa20_xmm6.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6/salsa20_xmm6.h"
 #else
-# include "ref/salsa20_ref.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/ref/salsa20_ref.h"
 #endif
 #if !defined(HAVE_AMD64_ASM) && defined(HAVE_EMMINTRIN_H)
-# include "xmm6int/salsa20_xmm6int-sse2.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/salsa20_xmm6int-sse2.h"
 #endif
 #if defined(HAVE_AVX2INTRIN_H) && defined(HAVE_EMMINTRIN_H) && \
     defined(HAVE_TMMINTRIN_H) && defined(HAVE_SMMINTRIN_H)
-# include "xmm6int/salsa20_xmm6int-avx2.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6int/salsa20_xmm6int-avx2.h"
 #endif
 
 #if HAVE_AMD64_ASM

@@ -1,9 +1,9 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "../../include/sodium/crypto_aead_aes256gcm.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aes256gcm.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 
 size_t
 crypto_aead_aes256gcm_keybytes(void)

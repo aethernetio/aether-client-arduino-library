@@ -1,10 +1,10 @@
 
 #include <string.h>
 
-#include "../../include/sodium/crypto_box_curve25519xchacha20poly1305.h"
-#include "../../include/sodium/crypto_generichash.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_box_curve25519xchacha20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 static int
 _crypto_box_curve25519xchacha20poly1305_seal_nonce(unsigned char *nonce,

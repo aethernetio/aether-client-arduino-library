@@ -1,7 +1,7 @@
 #ifndef sign_ed25519_ref10_H
 #define sign_ed25519_ref10_H
 
-#include "../../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 void _crypto_sign_ed25519_ref10_hinit(crypto_hash_sha512_state *hs,
                                       int prehashed);

@@ -20,9 +20,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../../../include/sodium/crypto_generichash_blake2b.h"
-#include "../../../include/sodium/export.h"
-#include "../../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 enum blake2b_constant {
     BLAKE2B_BLOCKBYTES    = 128,

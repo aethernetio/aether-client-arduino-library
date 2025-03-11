@@ -22,14 +22,14 @@
 # include <sys/mman.h>
 #endif
 
-#include "../../include/sodium/crypto_generichash_blake2b.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/implementations.h"
-#include "../../include/sodium/runtime.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "argon2-core.h"
-#include "blake2b-long.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/blake2b-long.h"
 
 #if !defined(MAP_ANON) && defined(MAP_ANONYMOUS)
 # define MAP_ANON MAP_ANONYMOUS

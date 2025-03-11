@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../../include/sodium/crypto_core_hchacha20.h"
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #define QUARTERROUND(A, B, C, D)     \
   do {                               \

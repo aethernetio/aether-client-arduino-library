@@ -2,21 +2,21 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_aead_aegis256.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/implementations.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aegis256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
 
-#include "aegis256_soft.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_soft.h"
 
 #if defined(HAVE_ARMCRYPTO) && defined(NATIVE_LITTLE_ENDIAN)
-#include "aegis256_armcrypto.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_armcrypto.h"
 #endif
 
 #if defined(HAVE_AVXINTRIN_H) && defined(HAVE_WMMINTRIN_H)
-#include "aegis256_aesni.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_aesni.h"
 #endif
 
 static const aegis256_implementation *implementation = &aegis256_soft_implementation;

@@ -40,14 +40,14 @@
 #if defined(__GLIBC__) && defined(_LIBC)
 #define __SKIP_GNU
 #endif
-#include "ow-crypt.h"
+#include "third_party/libbcrypt/crypt_blowfish/ow-crypt.h"
 
-#include "crypt_blowfish.h"
-#include "crypt_gensalt.h"
+#include "third_party/libbcrypt/crypt_blowfish/crypt_blowfish.h"
+#include "third_party/libbcrypt/crypt_blowfish/crypt_gensalt.h"
 
 #if defined(__GLIBC__) && defined(_LIBC)
 /* crypt.h from glibc-crypt-2.1 will define struct crypt_data for us */
-#include "crypt.h"
+#include "third_party/libbcrypt/crypt_blowfish/crypt.h"
 extern char *__md5_crypt_r(const char *key, const char *salt,
 	char *buffer, int buflen);
 /* crypt-entry.c needs to be patched to define __des_crypt_r rather than

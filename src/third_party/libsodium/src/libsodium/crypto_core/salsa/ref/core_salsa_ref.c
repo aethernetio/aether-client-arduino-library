@@ -2,10 +2,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../../../include/sodium/crypto_core_salsa20.h"
-#include "../../../include/sodium/crypto_core_salsa2012.h"
-#include "../../../include/sodium/crypto_core_salsa208.h"
-#include "../../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_salsa2012.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_salsa208.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 static void
 crypto_core_salsa(unsigned char *out, const unsigned char *in,

@@ -1,11 +1,11 @@
 #include <errno.h>
 #include <string.h>
 
-#include "../../include/sodium/crypto_auth_hmacsha256.h"
-#include "../../include/sodium/crypto_kdf.h"
-#include "../../include/sodium/crypto_kdf_hkdf_sha256.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_auth_hmacsha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_kdf.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_kdf_hkdf_sha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_kdf_hkdf_sha256_extract_init(crypto_kdf_hkdf_sha256_state *state,
@@ -26,7 +26,7 @@ crypto_kdf_hkdf_sha256_extract_final(crypto_kdf_hkdf_sha256_state *state,
                                      unsigned char prk[crypto_kdf_hkdf_sha256_KEYBYTES])
 {
     crypto_auth_hmacsha256_final(&state->st, prk);
-    sodium_memzero(state, sizeof state);
+    sodium_memzero(state, sizeof *state);
 
     return 0;
 }

@@ -2,13 +2,13 @@
 #ifndef sodium_version_H
 #define sodium_version_H
 
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
-#define SODIUM_VERSION_STRING "1.0.21"
+#define SODIUM_VERSION_STRING "1.0.19"
 
 #define SODIUM_LIBRARY_VERSION_MAJOR 28
 #define SODIUM_LIBRARY_VERSION_MINOR 0
-//#define SODIUM_LIBRARY_MINIMAL 0
+
 
 #ifdef __cplusplus
 extern "C" {

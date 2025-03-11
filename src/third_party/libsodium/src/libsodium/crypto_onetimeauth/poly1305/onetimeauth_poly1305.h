@@ -2,7 +2,7 @@
 #ifndef onetimeauth_poly1305_H
 #define onetimeauth_poly1305_H
 
-#include "../../include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
 
 typedef struct crypto_onetimeauth_poly1305_implementation {
     int (*onetimeauth)(unsigned char *out, const unsigned char *in,

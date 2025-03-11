@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #ifdef HAVE_EMMINTRIN_H
 
@@ -46,10 +46,10 @@
 
 # include <emmintrin.h>
 
-# include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
-# include "../crypto_scrypt.h"
-# include "../pbkdf2-sha256.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/scryptsalsa208sha256/crypto_scrypt.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/scryptsalsa208sha256/pbkdf2-sha256.h"
 
 # define ARX(out, in1, in2, s)                                     \
     {                                                              \

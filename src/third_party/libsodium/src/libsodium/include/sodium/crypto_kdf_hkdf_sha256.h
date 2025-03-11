@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "crypto_kdf.h"
-#include "crypto_auth_hmacsha256.h"
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_kdf.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_auth_hmacsha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
 #ifdef __cplusplus
 # ifdef __GNUC__

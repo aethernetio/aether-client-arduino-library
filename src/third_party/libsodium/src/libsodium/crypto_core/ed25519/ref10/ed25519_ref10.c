@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/sodium/crypto_verify_32.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/private/ed25519_ref10.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/ed25519_ref10.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 static inline uint64_t
 load_3(const unsigned char *in)
@@ -43,11 +43,11 @@ load_4(const unsigned char *in)
  */
 
 #ifdef HAVE_TI_MODE
-# include "fe_51/constants.h"
-# include "fe_51/fe.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_51/constants.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_51/fe.h"
 #else
-# include "fe_25_5/constants.h"
-# include "fe_25_5/fe.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_25_5/constants.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_25_5/fe.h"
 #endif
 
 static inline void
@@ -172,19 +172,18 @@ fe25519_pow22523(fe25519 out, const fe25519 z)
 }
 
 static inline void
-fe25519_cneg(fe25519 h, const fe25519 f, unsigned int b)
+fe25519_cneg(fe25519 h, unsigned int b)
 {
     fe25519 negf;
 
-    fe25519_neg(negf, f);
-    fe25519_copy(h, f);
+    fe25519_neg(negf, h);
     fe25519_cmov(h, negf, b);
 }
 
 static inline void
-fe25519_abs(fe25519 h, const fe25519 f)
+fe25519_abs(fe25519 h)
 {
-    fe25519_cneg(h, f, fe25519_isnegative(f));
+    fe25519_cneg(h, fe25519_isnegative(h));
 }
 
 static void
@@ -321,6 +320,8 @@ slide_vartime(signed char *r, const unsigned char *a)
     }
 }
 
+static volatile unsigned char optblocker_u8;
+
 int
 ge25519_frombytes(ge25519_p3 *h, const unsigned char *s)
 {
@@ -353,7 +354,7 @@ ge25519_frombytes(ge25519_p3 *h, const unsigned char *s)
     fe25519_cmov(h->X, x_sqrtm1, 1 - has_m_root);
 
     fe25519_neg(negx, h->X);
-    fe25519_cmov(h->X, negx, fe25519_isnegative(h->X) ^ (s[31] >> 7));
+    fe25519_cmov(h->X, negx, fe25519_isnegative(h->X) ^ (((s[31] >> 5) ^ optblocker_u8) >> 2));
     fe25519_mul(h->T, h->X, h->Y);
 
     return (has_m_root | has_p_root) - 1;
@@ -608,26 +609,39 @@ ge25519_precomp_0(ge25519_precomp *h)
 static unsigned char
 equal(signed char b, signed char c)
 {
-    unsigned char ub = b;
-    unsigned char uc = c;
-    unsigned char x  = ub ^ uc; /* 0: yes; 1..255: no */
-    uint32_t      y  = (uint32_t) x; /* 0: yes; 1..255: no */
+#if defined(HAVE_INLINE_ASM) && defined(__x86_64__)
+    int32_t b32 = (int32_t) b, c32 = (int32_t) c, q32, z32;
+    __asm__ ("xorl %0,%0\n movl $1,%1\n cmpb %b3,%b2\n cmovel %1,%0" :
+             "=&r"(z32), "=&r"(q32) : "q"(b32), "q"(c32) : "cc");
+    return (unsigned char) z32;
+#elif defined(HAVE_INLINE_ASM) && defined(__aarch64__)
+    unsigned char z;
+    __asm__ ("and %w0,%w1,255\n cmp %w0,%w2,uxtb\n cset %w0,eq" :
+             "=&r"(z) : "r"(b), "r"(c) : "cc");
+    return z;
+#else
+    const unsigned char x  = (unsigned char) b ^ (unsigned char) c; /* 0: yes; 1..255: no */
+    uint32_t            y  = (uint32_t) x; /* 0: yes; 1..255: no */
 
-    y -= 1;   /* 4294967295: yes; 0..254: no */
-    y >>= 31; /* 1: yes; 0: no */
-
-    return y;
+    y--;
+    return ((y >> 29) ^ optblocker_u8) >> 2; /* 1: yes; 0: no */
+#endif
 }
 
 static unsigned char
 negative(signed char b)
 {
-    /* 18446744073709551361..18446744073709551615: yes; 0..255: no */
-    uint64_t x = b;
-
-    x >>= 63; /* 1: yes; 0: no */
-
+#if defined(HAVE_INLINE_ASM) && defined(__x86_64__)
+    __asm__ ("shrb $7,%0" : "+r"(b) : : "cc");
+    return b;
+#elif defined(HAVE_INLINE_ASM) && defined(__aarch64__)
+    uint8_t x;
+    __asm__ ("ubfx %w0,%w1,7,1" : "=r"(x) : "r"(b) : );
     return x;
+#else
+    const uint8_t x = (uint8_t) b; /* 0..127: no 128..255: yes */
+    return ((x >> 5) ^ optblocker_u8) >> 2; /* 1: yes; 0: no */
+#endif
 }
 
 static void
@@ -674,9 +688,9 @@ ge25519_cmov8_base(ge25519_precomp *t, const int pos, const signed char b)
 {
     static const ge25519_precomp base[32][8] = { /* base[i][j] = (j+1)*256^i*B */
 #ifdef HAVE_TI_MODE
-# include "fe_51/base.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_51/base.h"
 #else
-# include "fe_25_5/base.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_25_5/base.h"
 #endif
     };
     ge25519_cmov8(t, base[pos], b);
@@ -756,9 +770,9 @@ ge25519_double_scalarmult_vartime(ge25519_p2 *r, const unsigned char *a,
 {
     static const ge25519_precomp Bi[8] = {
 #ifdef HAVE_TI_MODE
-# include "fe_51/base2.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_51/base2.h"
 #else
-# include "fe_25_5/base2.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/ref10/fe_25_5/base2.h"
 #endif
     };
     signed char    aslide[256];
@@ -2778,7 +2792,7 @@ ristretto255_sqrt_ratio_m1(fe25519 x, const fe25519 u, const fe25519 v)
     fe25519_mul(x_sqrtm1, x, fe25519_sqrtm1); /* x*sqrt(-1) */
 
     fe25519_cmov(x, x_sqrtm1, has_p_root | has_f_root);
-    fe25519_abs(x, x);
+    fe25519_abs(x);
 
     return has_m_root | has_p_root;
 }
@@ -2843,7 +2857,7 @@ ristretto255_frombytes(ge25519_p3 *h, const unsigned char *s)
 
     fe25519_mul(h->X, h->X, s_);
     fe25519_add(h->X, h->X, h->X);
-    fe25519_abs(h->X, h->X);
+    fe25519_abs(h->X);
     fe25519_mul(h->Y, u1, h->Y);
     fe25519_1(h->Z);
     fe25519_mul(h->T, h->X, h->Y);
@@ -2902,11 +2916,11 @@ ristretto255_p3_tobytes(unsigned char *s, const ge25519_p3 *h)
     fe25519_cmov(den_inv, eden, rotate);
 
     fe25519_mul(x_z_inv, x_, z_inv);
-    fe25519_cneg(y_, y_, fe25519_isnegative(x_z_inv));
+    fe25519_cneg(y_, fe25519_isnegative(x_z_inv));
 
     fe25519_sub(s_, h->Z, y_);
     fe25519_mul(s_, den_inv, s_);
-    fe25519_abs(s_, s_);
+    fe25519_abs(s_);
     fe25519_tobytes(s, s_);
 }
 
@@ -2938,7 +2952,7 @@ ristretto255_elligator(ge25519_p3 *p, const fe25519 t)
 
     wasnt_square = 1 - ristretto255_sqrt_ratio_m1(s, u, v);
     fe25519_mul(s_prime, s, t);
-    fe25519_abs(s_prime, s_prime);
+    fe25519_abs(s_prime);
     fe25519_neg(s_prime, s_prime);     /* s_prime = -|s*t| */
     fe25519_cmov(s, s_prime, wasnt_square);
     fe25519_cmov(c, r, wasnt_square);

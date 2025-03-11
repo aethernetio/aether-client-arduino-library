@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/sodium/core.h"
-#include "../../../include/sodium/crypto_stream_chacha20.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #if defined(HAVE_EMMINTRIN_H) && defined(HAVE_TMMINTRIN_H)
 
@@ -18,10 +18,10 @@
 
 # include <emmintrin.h>
 # include <tmmintrin.h>
-# include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
-# include "../stream_chacha20.h"
-# include "chacha20_dolbeau-ssse3.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/dolbeau/chacha20_dolbeau-ssse3.h"
 
 # define ROUNDS 20
 
@@ -73,9 +73,9 @@ chacha20_encrypt_bytes(chacha_ctx *ctx, const uint8_t *m, uint8_t *c,
     if (!bytes) {
         return; /* LCOV_EXCL_LINE */
     }
-# include "u4.h"
-# include "u1.h"
-# include "u0.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/dolbeau/u4.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/dolbeau/u1.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/chacha20/dolbeau/u0.h"
 }
 
 static int

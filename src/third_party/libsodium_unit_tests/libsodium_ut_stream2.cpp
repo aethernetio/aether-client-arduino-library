@@ -1,4 +1,4 @@
-#include "libsodium_ut_stream2.h"
+#include "third_party/libsodium_unit_tests/libsodium_ut_stream2.h"
 
 #include "unity.h"
 //#include "aether/tele/tele.h"
@@ -32,11 +32,7 @@ namespace stream2
         char          *hex;
         unsigned char  h[32];
         size_t         sizeof_hex = 32 * 2 + 1;
-#if (defined(ESP_PLATFORM))
-        size_t         sizeof_output = 4096;
-#else
         size_t         sizeof_output = 4194304;
-#endif
         int            i;
 
         output = (unsigned char *) sodium_malloc(sizeof_output);

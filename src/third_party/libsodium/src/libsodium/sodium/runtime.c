@@ -12,8 +12,8 @@
 # include <sys/auxv.h>
 #endif
 
-#include "../include/sodium/private/common.h"
-#include "../include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
 
 typedef struct CPUFeatures_ {
     int initialized;

@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 typedef struct crypto_stream_salsa20_implementation {
     int (*stream)(unsigned char *c, unsigned long long clen,

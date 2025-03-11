@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/private/common.h"
-#include "../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 /* Derived from original code by CodesInChaos */
 char *
