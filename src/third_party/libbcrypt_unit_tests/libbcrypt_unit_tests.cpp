@@ -17,10 +17,10 @@
 #include "third_party/libbcrypt_unit_tests/libbcrypt_unit_tests.h"
 
 #include <time.h>
+#include <string.h>
 
 #include "third_party/libbcrypt/bcrypt.h"
 
-#include <string.h>
 #include "unity.h"
 
 #define DEBUG_OUT 1
