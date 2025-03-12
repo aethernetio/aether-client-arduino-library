@@ -2,21 +2,21 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_aead_aegis128l.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/implementations.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aegis128l.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis128l/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
 
-#include "aegis128l_soft.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis128l/aegis128l_soft.h"
 
 #if defined(HAVE_ARMCRYPTO) && defined(NATIVE_LITTLE_ENDIAN)
-#include "aegis128l_armcrypto.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis128l/aegis128l_armcrypto.h"
 #endif
 
 #if defined(HAVE_AVXINTRIN_H) && defined(HAVE_WMMINTRIN_H)
-#include "aegis128l_aesni.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis128l/aegis128l_aesni.h"
 #endif
 
 static const aegis128l_implementation *implementation = &aegis128l_soft_implementation;

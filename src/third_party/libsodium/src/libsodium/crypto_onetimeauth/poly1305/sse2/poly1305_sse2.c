@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../onetimeauth_poly1305.h"
-#include "../../../include/sodium/crypto_verify_16.h"
-#include "poly1305_sse2.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_16.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/sse2/poly1305_sse2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #if defined(HAVE_TI_MODE) && defined(HAVE_EMMINTRIN_H)
 
@@ -17,7 +17,7 @@
 # endif
 
 # include <emmintrin.h>
-# include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
 typedef __m128i xmmi;
 
@@ -193,6 +193,8 @@ poly1305_init_ext(poly1305_state_internal_t *st, const unsigned char key[32],
     st->flags    = 0;
     st->leftover = 0U;
 }
+
+static volatile uint64_t optblocker_u64;
 
 static POLY1305_NOINLINE void
 poly1305_blocks(poly1305_state_internal_t *st, const unsigned char *m,
@@ -745,7 +747,7 @@ poly1305_blocks(poly1305_state_internal_t *st, const unsigned char *m,
         g1 &= 0xfffffffffff;
         g2 = h2 + c - ((uint64_t) 1 << 42);
 
-        c  = (g2 >> 63) - 1;
+        c  = (((g2 >> 61) ^ optblocker_u64) >> 2) - 1;
         nc = ~c;
         h0 = (h0 & nc) | (g0 & c);
         h1 = (h1 & nc) | (g1 & c);

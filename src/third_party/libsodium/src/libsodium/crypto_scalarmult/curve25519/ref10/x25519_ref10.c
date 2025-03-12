@@ -2,11 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../scalarmult_curve25519.h"
-#include "../../../include/sodium/export.h"
-#include "../../../include/sodium/private/ed25519_ref10.h"
-#include "../../../include/sodium/utils.h"
-#include "x25519_ref10.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/scalarmult_curve25519.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/ed25519_ref10.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10/x25519_ref10.h"
 
 /*
  * Reject small order points early to mitigate the implications of

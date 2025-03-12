@@ -2,7 +2,7 @@
 #ifndef sodium_runtime_H
 #define sodium_runtime_H
 
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
 #ifdef __cplusplus
 extern "C" {

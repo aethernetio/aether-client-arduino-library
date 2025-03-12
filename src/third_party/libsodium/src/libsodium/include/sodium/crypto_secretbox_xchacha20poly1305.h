@@ -2,8 +2,8 @@
 #define crypto_secretbox_xchacha20poly1305_H
 
 #include <stddef.h>
-#include "crypto_stream_xchacha20.h"
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_xchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
 #ifdef __cplusplus
 # ifdef __GNUC__

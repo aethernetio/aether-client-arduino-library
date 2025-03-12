@@ -1,8 +1,8 @@
-#include "../../include/sodium/crypto_core_hsalsa20.h"
-#include "../../include/sodium/crypto_stream_salsa20.h"
-#include "../../include/sodium/crypto_stream_xsalsa20.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hsalsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_xsalsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_stream_xsalsa20(unsigned char *c, unsigned long long clen,

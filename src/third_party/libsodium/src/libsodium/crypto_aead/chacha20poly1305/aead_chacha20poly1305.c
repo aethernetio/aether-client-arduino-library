@@ -4,16 +4,16 @@
 #include <limits.h>
 #include <string.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_aead_chacha20poly1305.h"
-#include "../../include/sodium/crypto_onetimeauth_poly1305.h"
-#include "../../include/sodium/crypto_stream_chacha20.h"
-#include "../../include/sodium/crypto_verify_16.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_chacha20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_16.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "../../include/sodium/private/chacha20_ietf_ext.h"
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/chacha20_ietf_ext.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 static const unsigned char _pad0[16] = { 0 };
 

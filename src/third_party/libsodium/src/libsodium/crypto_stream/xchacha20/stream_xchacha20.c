@@ -1,11 +1,11 @@
 
 #include <stdlib.h>
 
-#include "../../include/sodium/crypto_core_hchacha20.h"
-#include "../../include/sodium/crypto_stream_chacha20.h"
-#include "../../include/sodium/crypto_stream_xchacha20.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_xchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 
 size_t
 crypto_stream_xchacha20_keybytes(void)

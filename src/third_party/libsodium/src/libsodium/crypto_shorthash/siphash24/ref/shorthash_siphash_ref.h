@@ -1,7 +1,7 @@
 #ifndef shorthash_siphash_H
 #define shorthash_siphash_H
 
-#include "../../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #define SIPROUND             \
     do {                     \

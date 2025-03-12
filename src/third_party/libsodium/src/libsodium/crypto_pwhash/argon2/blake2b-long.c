@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/sodium/crypto_generichash_blake2b.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "blake2b-long.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/blake2b-long.h"
 
 int
 blake2b_long(void *pout, size_t outlen, const void *in, size_t inlen)

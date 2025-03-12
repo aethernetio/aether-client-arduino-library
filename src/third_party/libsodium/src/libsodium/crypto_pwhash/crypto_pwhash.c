@@ -2,8 +2,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/crypto_pwhash.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_pwhash.h"
 
 int
 crypto_pwhash_alg_argon2i13(void)

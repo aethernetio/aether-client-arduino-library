@@ -3,7 +3,7 @@
    Loops of squares are replaced by nsquares for better performance.
 */
 
-#include "fe51.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51.h"
 
 #ifdef HAVE_AVX_ASM
 

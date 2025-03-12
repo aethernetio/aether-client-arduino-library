@@ -49,23 +49,15 @@
 #ifdef BLOCK_ON_DEV_RANDOM
 # include <poll.h>
 #endif
-#ifdef HAVE_RDRAND
-# ifdef __clang__
-#  pragma clang attribute push(__attribute__((target("rdrnd"))), apply_to = function)
-# elif defined(__GNUC__)
-#  pragma GCC target("rdrnd")
-# endif
-# include <immintrin.h>
-#endif
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_core_hchacha20.h"
-#include "../../include/sodium/crypto_stream_chacha20.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/randombytes_internal_random.h"
-#include "../../include/sodium/runtime.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes_internal_random.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #ifdef _WIN32
 # include <windows.h>
@@ -112,6 +104,15 @@ BOOLEAN NTAPI RtlGenRandom(PVOID RandomBuffer, ULONG RandomBufferLength);
 # else
 #  define TLS
 # endif
+#endif
+
+#ifdef HAVE_RDRAND
+# ifdef __clang__
+#  pragma clang attribute push(__attribute__((target("rdrnd"))), apply_to = function)
+# elif defined(__GNUC__)
+#  pragma GCC target("rdrnd")
+# endif
+# include <immintrin.h>
 #endif
 
 typedef struct InternalRandomGlobal_ {

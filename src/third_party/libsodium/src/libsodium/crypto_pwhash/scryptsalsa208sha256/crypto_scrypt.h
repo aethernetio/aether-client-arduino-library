@@ -34,7 +34,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 #define crypto_pwhash_scryptsalsa208sha256_STRPREFIXBYTES 14
 #define crypto_pwhash_scryptsalsa208sha256_STRSETTINGBYTES 57

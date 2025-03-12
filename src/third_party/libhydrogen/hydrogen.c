@@ -1,19 +1,19 @@
-#include "hydrogen.h"
+#include "third_party/libhydrogen/hydrogen.h"
 
-#include "impl/common.h"
-#include "impl/hydrogen_p.h"
+#include "third_party/libhydrogen/impl/common.h"
+#include "third_party/libhydrogen/impl/hydrogen_p.h"
 
-#include "impl/random.h"
+#include "third_party/libhydrogen/impl/random.h"
 
-#include "impl/core.h"
-#include "impl/gimli-core.h"
+#include "third_party/libhydrogen/impl/core.h"
+#include "third_party/libhydrogen/impl/gimli-core.h"
 
-#include "impl/hash.h"
-#include "impl/kdf.h"
-#include "impl/secretbox.h"
+#include "third_party/libhydrogen/impl/hash.h"
+#include "third_party/libhydrogen/impl/kdf.h"
+#include "third_party/libhydrogen/impl/secretbox.h"
 
-#include "impl/x25519.h"
+#include "third_party/libhydrogen/impl/x25519.h"
 
-#include "impl/kx.h"
-#include "impl/pwhash.h"
-#include "impl/sign.h"
+#include "third_party/libhydrogen/impl/kx.h"
+#include "third_party/libhydrogen/impl/pwhash.h"
+#include "third_party/libhydrogen/impl/sign.h"

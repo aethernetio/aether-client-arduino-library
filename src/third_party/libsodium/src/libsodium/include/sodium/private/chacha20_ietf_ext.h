@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 /* The ietf_ext variant allows the internal counter to overflow into the IV */
 

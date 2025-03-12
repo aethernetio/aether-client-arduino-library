@@ -10,16 +10,16 @@
 # include <emscripten.h>
 #endif
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/crypto_stream_chacha20.h"
-#include "../include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 #ifndef RANDOMBYTES_CUSTOM_IMPLEMENTATION
 # ifdef RANDOMBYTES_DEFAULT_IMPLEMENTATION
-#  include "../include/sodium/randombytes_internal.h"
+#include "randombytes_internal.h"
 # endif
-# include "../include/sodium/randombytes_sysrandom.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes_sysrandom.h"
 #endif
-#include "../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 /* C++Builder defines a "random" macro */
 #undef random
@@ -57,6 +57,7 @@ javascript_stir(void)
             try {
                 var window_ = 'object' === typeof window ? window : self;
                 var crypto_ = typeof window_.crypto !== 'undefined' ? window_.crypto : window_.msCrypto;
+                crypto_ = (crypto_ === undefined) ? crypto : crypto_;
                 var randomValuesStandard = function() {
                     var buf = new Uint32Array(1);
                     crypto_.getRandomValues(buf);

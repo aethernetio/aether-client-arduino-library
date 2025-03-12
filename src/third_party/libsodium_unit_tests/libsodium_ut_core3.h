@@ -11,7 +11,7 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_CORE3_H
 #define THIRD_PARTY_LIBSODIUM_UT_CORE3_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace core3
 {    

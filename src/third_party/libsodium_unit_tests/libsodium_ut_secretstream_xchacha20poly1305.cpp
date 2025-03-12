@@ -1,4 +1,4 @@
-#include "libsodium_ut_secretstream_xchacha20poly1305.h"
+#include "third_party/libsodium_unit_tests/libsodium_ut_secretstream_xchacha20poly1305.h"
 
 #include "unity.h"
 //#include "aether/tele/tele.h"

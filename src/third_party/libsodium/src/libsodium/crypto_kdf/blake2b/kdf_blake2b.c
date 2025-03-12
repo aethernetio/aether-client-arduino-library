@@ -1,8 +1,8 @@
 #include <errno.h>
 
-#include "../../include/sodium/crypto_kdf_blake2b.h"
-#include "../../include/sodium/crypto_generichash_blake2b.h"
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_kdf_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 size_t
 crypto_kdf_blake2b_bytes_min(void)

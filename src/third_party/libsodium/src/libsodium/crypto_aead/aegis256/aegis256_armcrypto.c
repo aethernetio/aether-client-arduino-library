@@ -4,18 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_aead_aegis256.h"
-#include "../../include/sodium/crypto_verify_16.h"
-#include "../../include/sodium/crypto_verify_32.h"
-#include "../../include/sodium/export.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aegis256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_16.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #if defined(HAVE_ARMCRYPTO) && defined(NATIVE_LITTLE_ENDIAN)
 
-#include "aegis256_armcrypto.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_armcrypto.h"
 
 #ifndef __ARM_FEATURE_CRYPTO
 #define __ARM_FEATURE_CRYPTO 1
@@ -56,7 +56,7 @@ aegis256_update(aes_block_t *const state, const aes_block_t d)
     state[0] = AES_BLOCK_XOR(AES_ENC(tmp, state[0]), d);
 }
 
-#include "aegis256_common.h"
+#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/aegis256_common.h"
 
 struct aegis256_implementation aegis256_armcrypto_implementation = { SODIUM_C99(.encrypt_detached =)
                                                                          encrypt_detached,

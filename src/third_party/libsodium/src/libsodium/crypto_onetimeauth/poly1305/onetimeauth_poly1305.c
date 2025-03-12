@@ -1,14 +1,14 @@
 
-#include "onetimeauth_poly1305.h"
-#include "../../include/sodium/crypto_onetimeauth_poly1305.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/implementations.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
 
-#include "donna/poly1305_donna.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna/poly1305_donna.h"
 #if defined(HAVE_TI_MODE) && defined(HAVE_EMMINTRIN_H)
-# include "sse2/poly1305_sse2.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/sse2/poly1305_sse2.h"
 #endif
 
 static const crypto_onetimeauth_poly1305_implementation *implementation =

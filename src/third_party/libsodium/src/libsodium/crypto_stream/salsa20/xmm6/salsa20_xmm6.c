@@ -1,10 +1,10 @@
 
 #include <stdint.h>
 
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "../stream_salsa20.h"
-#include "salsa20_xmm6.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/crypto_stream/salsa20/xmm6/salsa20_xmm6.h"
 
 #ifdef HAVE_AMD64_ASM
 

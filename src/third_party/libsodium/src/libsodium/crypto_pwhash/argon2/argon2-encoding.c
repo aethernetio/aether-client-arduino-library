@@ -1,6 +1,6 @@
-#include "argon2-encoding.h"
-#include "argon2-core.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-encoding.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>

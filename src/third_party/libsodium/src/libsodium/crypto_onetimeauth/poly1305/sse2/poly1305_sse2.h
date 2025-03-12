@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-#include "../onetimeauth_poly1305.h"
-#include "../../../include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
 
 extern struct crypto_onetimeauth_poly1305_implementation
     crypto_onetimeauth_poly1305_sse2_implementation;

@@ -51,7 +51,7 @@
 #endif
 
 /* Just to make sure the prototypes match the actual definitions */
-#include "crypt_blowfish.h"
+#include "third_party/libbcrypt/crypt_blowfish/crypt_blowfish.h"
 
 #ifdef __i386__
 #define BF_ASM				1

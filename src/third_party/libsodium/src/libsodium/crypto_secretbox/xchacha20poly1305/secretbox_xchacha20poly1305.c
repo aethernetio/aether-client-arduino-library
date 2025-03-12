@@ -5,13 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_core_hchacha20.h"
-#include "../../include/sodium/crypto_onetimeauth_poly1305.h"
-#include "../../include/sodium/crypto_secretbox_xchacha20poly1305.h"
-#include "../../include/sodium/crypto_stream_chacha20.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_secretbox_xchacha20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #define crypto_secretbox_xchacha20poly1305_ZEROBYTES 32U
 

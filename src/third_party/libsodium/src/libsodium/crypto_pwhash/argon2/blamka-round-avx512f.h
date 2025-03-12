@@ -1,8 +1,8 @@
 #ifndef blamka_round_avx512f_H
 #define blamka_round_avx512f_H
 
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
 #define ror64(x, n) _mm512_ror_epi64((x), (n))
 

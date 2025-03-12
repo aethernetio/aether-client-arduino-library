@@ -1,7 +1,7 @@
 #ifndef core_h2c_H
 #define core_h2c_H
 
-#include "../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 #define CORE_H2C_SHA256 1
 #define CORE_H2C_SHA512 2

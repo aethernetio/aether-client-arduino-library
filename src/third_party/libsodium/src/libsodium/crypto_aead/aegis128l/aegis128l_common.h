@@ -33,12 +33,12 @@ aegis128l_init(const uint8_t *key, const uint8_t *nonce, aes_block_t *const stat
 }
 
 static int
-aegis128l_mac(uint8_t *mac, size_t maclen, size_t adlen, size_t mlen, aes_block_t *const state)
+aegis128l_mac(uint8_t *mac, size_t maclen, uint64_t adlen, uint64_t mlen, aes_block_t *const state)
 {
     aes_block_t tmp;
     int         i;
 
-    tmp = AES_BLOCK_LOAD_64x2(((uint64_t) mlen) << 3, ((uint64_t) adlen) << 3);
+    tmp = AES_BLOCK_LOAD_64x2(mlen << 3, adlen << 3);
     tmp = AES_BLOCK_XOR(tmp, state[2]);
 
     for (i = 0; i < 7; i++) {
@@ -72,6 +72,19 @@ aegis128l_absorb(const uint8_t *const src, aes_block_t *const state)
     msg0 = AES_BLOCK_LOAD(src);
     msg1 = AES_BLOCK_LOAD(src + AES_BLOCK_LENGTH);
     aegis128l_update(state, msg0, msg1);
+}
+
+static inline void
+aegis128l_absorb2(const uint8_t *const src, aes_block_t *const state)
+{
+    aes_block_t msg0, msg1, msg2, msg3;
+
+    msg0 = AES_BLOCK_LOAD(src + 0 * AES_BLOCK_LENGTH);
+    msg1 = AES_BLOCK_LOAD(src + 1 * AES_BLOCK_LENGTH);
+    msg2 = AES_BLOCK_LOAD(src + 2 * AES_BLOCK_LENGTH);
+    msg3 = AES_BLOCK_LOAD(src + 3 * AES_BLOCK_LENGTH);
+    aegis128l_update(state, msg0, msg1);
+    aegis128l_update(state, msg2, msg3);
 }
 
 static void
@@ -154,7 +167,10 @@ encrypt_detached(uint8_t *c, uint8_t *mac, size_t maclen, const uint8_t *m, size
 
     aegis128l_init(k, npub, state);
 
-    for (i = 0; i + RATE <= adlen; i += RATE) {
+    for (i = 0; i + RATE * 2 <= adlen; i += RATE * 2) {
+        aegis128l_absorb2(ad + i, state);
+    }
+    for (; i + RATE <= adlen; i += RATE) {
         aegis128l_absorb(ad + i, state);
     }
     if (adlen % RATE) {
@@ -189,7 +205,10 @@ decrypt_detached(uint8_t *m, const uint8_t *c, size_t clen, const uint8_t *mac, 
 
     aegis128l_init(k, npub, state);
 
-    for (i = 0; i + RATE <= adlen; i += RATE) {
+    for (i = 0; i + RATE * 2 <= adlen; i += RATE * 2) {
+        aegis128l_absorb2(ad + i, state);
+    }
+    for (; i + RATE <= adlen; i += RATE) {
         aegis128l_absorb(ad + i, state);
     }
     if (adlen % RATE) {

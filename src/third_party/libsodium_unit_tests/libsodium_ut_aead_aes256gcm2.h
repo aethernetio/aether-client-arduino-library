@@ -11,7 +11,7 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_AEAD_AES256GCM2_H
 #define THIRD_PARTY_LIBSODIUM_UT_AEAD_AES256GCM2_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace aead_aes256gcm2
 {    

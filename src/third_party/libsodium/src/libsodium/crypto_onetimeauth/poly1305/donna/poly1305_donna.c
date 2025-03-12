@@ -1,15 +1,15 @@
 
-#include "poly1305_donna.h"
-#include "../../../include/sodium/crypto_verify_16.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna/poly1305_donna.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_16.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #ifdef HAVE_TI_MODE
-#include "poly1305_donna64.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna/poly1305_donna64.h"
 #else
-#include "poly1305_donna32.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna/poly1305_donna32.h"
 #endif
-#include "../onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/crypto_onetimeauth/poly1305/onetimeauth_poly1305.h"
 
 static void
 poly1305_update(poly1305_state_internal_t *st, const unsigned char *m,

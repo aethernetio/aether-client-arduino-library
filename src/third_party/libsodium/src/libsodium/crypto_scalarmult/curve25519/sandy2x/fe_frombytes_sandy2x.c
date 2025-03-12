@@ -2,7 +2,7 @@
    This file is basically ref10/fe_frombytes.h.
 */
 
-#include "fe.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe.h"
 
 #ifdef HAVE_AVX_ASM
 

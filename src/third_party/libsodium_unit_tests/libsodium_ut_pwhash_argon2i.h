@@ -11,7 +11,7 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_PWHASH_ARGON2I_H
 #define THIRD_PARTY_LIBSODIUM_UT_PWHASH_ARGON2I_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace pwhash_argon2i
 {    

@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "blake2.h"
-#include "../../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_generichash/blake2b/ref/blake2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #if defined(HAVE_AVX2INTRIN_H) && defined(HAVE_EMMINTRIN_H) && \
     defined(HAVE_TMMINTRIN_H) && defined(HAVE_SMMINTRIN_H)
@@ -22,9 +22,9 @@
 # include <immintrin.h>
 # include <smmintrin.h>
 # include <tmmintrin.h>
-# include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
-# include "blake2b-compress-avx2.h"
+#include "third_party/libsodium/src/libsodium/crypto_generichash/blake2b/ref/blake2b-compress-avx2.h"
 
 CRYPTO_ALIGN(64)
 static const uint64_t blake2b_IV[8] = {

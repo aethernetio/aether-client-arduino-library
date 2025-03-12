@@ -10,8 +10,8 @@
 
 #include <stddef.h>
 
-#include "crypto_box_curve25519xsalsa20poly1305.h"
-#include "export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_box_curve25519xsalsa20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
 
 #ifdef __cplusplus
 # ifdef __GNUC__

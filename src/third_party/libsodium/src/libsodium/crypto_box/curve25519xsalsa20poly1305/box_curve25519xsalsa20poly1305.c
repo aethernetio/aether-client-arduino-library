@@ -1,12 +1,12 @@
 #include <string.h>
 
-#include "../../include/sodium/crypto_box_curve25519xsalsa20poly1305.h"
-#include "../../include/sodium/crypto_core_hsalsa20.h"
-#include "../../include/sodium/crypto_hash_sha512.h"
-#include "../../include/sodium/crypto_scalarmult_curve25519.h"
-#include "../../include/sodium/crypto_secretbox_xsalsa20poly1305.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_box_curve25519xsalsa20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hsalsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha512.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_scalarmult_curve25519.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_secretbox_xsalsa20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_box_curve25519xsalsa20poly1305_seed_keypair(unsigned char *pk,

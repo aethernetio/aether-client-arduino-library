@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core_h2c.h"
-#include "../../include/sodium/crypto_hash_sha256.h"
-#include "../../include/sodium/crypto_hash_sha512.h"
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_core/ed25519/core_h2c.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha512.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #define HASH_BYTES      crypto_hash_sha256_BYTES
 #define HASH_BLOCKBYTES 64U

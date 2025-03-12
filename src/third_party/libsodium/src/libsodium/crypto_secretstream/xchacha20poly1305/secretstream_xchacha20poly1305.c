@@ -3,16 +3,16 @@
 #include <limits.h>
 #include <string.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_aead_chacha20poly1305.h"
-#include "../../include/sodium/crypto_aead_xchacha20poly1305.h"
-#include "../../include/sodium/crypto_core_hchacha20.h"
-#include "../../include/sodium/crypto_onetimeauth_poly1305.h"
-#include "../../include/sodium/crypto_secretstream_xchacha20poly1305.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_chacha20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_xchacha20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hchacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_secretstream_xchacha20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #define crypto_secretstream_xchacha20poly1305_COUNTERBYTES  4U
 #define crypto_secretstream_xchacha20poly1305_INONCEBYTES   8U

@@ -5,6 +5,7 @@
 #define CONFIGURED 1
 //#define _MSC_VER 1
 
+
 #if !defined(_MSC_VER) && !defined(DEV_MODE) && 1
 # warning *** This is unstable, untested, development code.
 # warning It might not compile. It might not work as expected.
@@ -24,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 #define COMPILER_ASSERT(X) (void) sizeof(char[(X) ? 1 : -1])
 
@@ -36,33 +37,44 @@ typedef unsigned uint128_t __attribute__((mode(TI)));
 # endif
 #endif
 
-#define ROTL32(X, B) rotl32((X), (B))
+#ifdef _MSC_VER
+
+# define ROTL32(X, B) _rotl((X), (B))
+# define ROTL64(X, B) _rotl64((X), (B))
+# define ROTR32(X, B) _rotr((X), (B))
+# define ROTR64(X, B) _rotr64((X), (B))
+
+#else
+
+# define ROTL32(X, B) rotl32((X), (B))
 static inline uint32_t
 rotl32(const uint32_t x, const int b)
 {
     return (x << b) | (x >> (32 - b));
 }
 
-#define ROTL64(X, B) rotl64((X), (B))
+# define ROTL64(X, B) rotl64((X), (B))
 static inline uint64_t
 rotl64(const uint64_t x, const int b)
 {
     return (x << b) | (x >> (64 - b));
 }
 
-#define ROTR32(X, B) rotr32((X), (B))
+# define ROTR32(X, B) rotr32((X), (B))
 static inline uint32_t
 rotr32(const uint32_t x, const int b)
 {
     return (x >> b) | (x << (32 - b));
 }
 
-#define ROTR64(X, B) rotr64((X), (B))
+# define ROTR64(X, B) rotr64((X), (B))
 static inline uint64_t
 rotr64(const uint64_t x, const int b)
 {
     return (x >> b) | (x << (64 - b));
 }
+
+#endif /* _MSC_VER */
 
 #define LOAD64_LE(SRC) load64_le(SRC)
 static inline uint64_t

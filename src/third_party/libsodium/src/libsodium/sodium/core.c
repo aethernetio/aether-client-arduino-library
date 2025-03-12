@@ -9,17 +9,17 @@
 # include <pthread.h>
 #endif
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/crypto_generichash.h"
-#include "../include/sodium/crypto_onetimeauth.h"
-#include "../include/sodium/crypto_scalarmult.h"
-#include "../include/sodium/crypto_stream_chacha20.h"
-#include "../include/sodium/crypto_stream_salsa20.h"
-#include "../include/sodium/randombytes.h"
-#include "../include/sodium/runtime.h"
-#include "../include/sodium/utils.h"
-#include "../include/sodium/private/implementations.h"
-#include "../include/sodium/private/mutex.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_scalarmult.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_chacha20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/mutex.h"
 
 static volatile int initialized;
 static volatile int locked;

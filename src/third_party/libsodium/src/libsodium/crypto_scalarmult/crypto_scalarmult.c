@@ -1,5 +1,5 @@
 
-#include "../include/sodium/crypto_scalarmult.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_scalarmult.h"
 
 const char *
 crypto_scalarmult_primitive(void)

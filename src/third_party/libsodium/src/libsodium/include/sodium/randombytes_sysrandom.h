@@ -2,8 +2,8 @@
 #ifndef randombytes_sysrandom_H
 #define randombytes_sysrandom_H
 
-#include "export.h"
-#include "randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 
 #ifdef __cplusplus
 extern "C" {

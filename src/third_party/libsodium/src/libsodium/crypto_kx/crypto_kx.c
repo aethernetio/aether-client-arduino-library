@@ -1,13 +1,13 @@
 
 #include <stddef.h>
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/crypto_generichash.h"
-#include "../include/sodium/crypto_kx.h"
-#include "../include/sodium/crypto_scalarmult.h"
-#include "../include/sodium/private/common.h"
-#include "../include/sodium/randombytes.h"
-#include "../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_kx.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_scalarmult.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_kx_seed_keypair(unsigned char pk[crypto_kx_PUBLICKEYBYTES],

@@ -11,7 +11,7 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_AEAD_CHACHA20POLY1305_H
 #define THIRD_PARTY_LIBSODIUM_UT_AEAD_CHACHA20POLY1305_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace aead_chacha20poly1305
 {

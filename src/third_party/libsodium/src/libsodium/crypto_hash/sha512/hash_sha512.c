@@ -1,4 +1,4 @@
-#include "../../include/sodium/crypto_hash_sha512.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha512.h"
 
 size_t
 crypto_hash_sha512_bytes(void)

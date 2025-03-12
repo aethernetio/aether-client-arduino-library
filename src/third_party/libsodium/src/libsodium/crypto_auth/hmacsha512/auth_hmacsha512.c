@@ -3,11 +3,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../../include/sodium/crypto_auth_hmacsha512.h"
-#include "../../include/sodium/crypto_hash_sha512.h"
-#include "../../include/sodium/crypto_verify_64.h"
-#include "../../include/sodium/randombytes.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_auth_hmacsha512.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_hash_sha512.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_64.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 size_t
 crypto_auth_hmacsha512_bytes(void)

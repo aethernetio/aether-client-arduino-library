@@ -9,12 +9,12 @@
 
 #ifdef HAVE_AVX_ASM
 
-#include "../../../include/sodium/utils.h"
-#include "curve25519_sandy2x.h"
-#include "../scalarmult_curve25519.h"
-#include "fe.h"
-#include "fe51.h"
-#include "ladder.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/curve25519_sandy2x.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/scalarmult_curve25519.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/ladder.h"
 
 #define x1 var[0]
 #define x2 var[1]

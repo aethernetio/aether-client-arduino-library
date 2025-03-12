@@ -32,8 +32,8 @@
 
 #include <sys/types.h>
 
-#include "../../include/sodium/crypto_auth_hmacsha256.h"
-#include "../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_auth_hmacsha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 /**
  * escrypt_PBKDF2_SHA256(passwd, passwdlen, salt, saltlen, c, buf, dkLen):

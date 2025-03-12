@@ -3,10 +3,10 @@
 #include <limits.h>
 #include <stdint.h>
 
-#include "blake2.h"
-#include "../../../include/sodium/crypto_generichash_blake2b.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/private/implementations.h"
+#include "third_party/libsodium/src/libsodium/crypto_generichash/blake2b/ref/blake2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_generichash_blake2b.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
 
 int
 crypto_generichash_blake2b(unsigned char *out, size_t outlen,

@@ -6,9 +6,9 @@ Public domain.
 
 #include <stdint.h>
 
-#include "../../../include/sodium/crypto_core_salsa208.h"
-#include "../../../include/sodium/crypto_stream_salsa208.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_salsa208.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa208.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_stream_salsa208(unsigned char *c, unsigned long long clen,

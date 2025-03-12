@@ -11,7 +11,7 @@
 #ifndef THIRD_PARTY_LIBSODIUM_UT_SECRETSTREAM_XCHACHA20POLY1305_H
 #define THIRD_PARTY_LIBSODIUM_UT_SECRETSTREAM_XCHACHA20POLY1305_H
 
-#include "cmptest.h"
+#include "third_party/libsodium_unit_tests/cmptest.h"
 
 namespace secretstream_xchacha20poly1305
 {    

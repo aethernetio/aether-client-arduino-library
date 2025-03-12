@@ -15,9 +15,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "argon2-core.h"
-#include "argon2.h"
-#include "../../include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
 
 #if defined(HAVE_AVX2INTRIN_H) && defined(HAVE_EMMINTRIN_H) && \
     defined(HAVE_TMMINTRIN_H) && defined(HAVE_SMMINTRIN_H)
@@ -35,9 +35,9 @@
 # include <immintrin.h>
 # include <smmintrin.h>
 # include <tmmintrin.h>
-# include "private/sse2_64_32.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/sse2_64_32.h"
 
-# include "blamka-round-avx2.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/blamka-round-avx2.h"
 
 static void
 fill_block(__m256i *state, const uint8_t *ref_block, uint8_t *next_block)

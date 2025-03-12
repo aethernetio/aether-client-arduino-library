@@ -15,7 +15,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "fe51_namespace.h"
+#include "third_party/libsodium/src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51_namespace.h"
 
 typedef struct
 {

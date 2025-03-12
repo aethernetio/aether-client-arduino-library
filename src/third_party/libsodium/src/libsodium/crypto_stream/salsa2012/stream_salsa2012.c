@@ -1,5 +1,5 @@
-#include "../../include/sodium/crypto_stream_salsa2012.h"
-#include "../../include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa2012.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 
 size_t
 crypto_stream_salsa2012_keybytes(void)

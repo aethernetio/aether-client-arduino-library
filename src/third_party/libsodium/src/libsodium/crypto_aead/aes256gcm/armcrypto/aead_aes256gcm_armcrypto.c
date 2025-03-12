@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/sodium/core.h"
-#include "../../../include/sodium/crypto_aead_aes256gcm.h"
-#include "../../../include/sodium/crypto_verify_16.h"
-#include "../../../include/sodium/export.h"
-#include "../../../include/sodium/private/common.h"
-#include "../../../include/sodium/randombytes.h"
-#include "../../../include/sodium/runtime.h"
-#include "../../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aes256gcm.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_verify_16.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/export.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 #if defined(HAVE_ARMCRYPTO) && defined(__clang__) && defined(NATIVE_LITTLE_ENDIAN)
 

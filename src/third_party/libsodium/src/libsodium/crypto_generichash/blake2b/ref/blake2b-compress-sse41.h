@@ -89,7 +89,7 @@
     row4l = t1;                                                               \
     row4h = t0;
 
-#include "blake2b-load-sse41.h"
+#include "third_party/libsodium/src/libsodium/crypto_generichash/blake2b/ref/blake2b-load-sse41.h"
 
 #define ROUND(r)                                                         \
     LOAD_MSG_##r##_1(b0, b1);                                            \

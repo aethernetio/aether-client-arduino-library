@@ -80,7 +80,7 @@ LOADU64(const void *p)
         c = _mm256_permute4x64_epi64(c, _MM_SHUFFLE(2, 1, 0, 3)); \
     } while(0)
 
-#include "blake2b-load-avx2.h"
+#include "third_party/libsodium/src/libsodium/crypto_generichash/blake2b/ref/blake2b-load-avx2.h"
 
 #define BLAKE2B_ROUND_V1(a, b, c, d, r, m) \
     do {                                   \

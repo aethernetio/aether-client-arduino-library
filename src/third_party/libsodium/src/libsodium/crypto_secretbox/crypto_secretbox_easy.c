@@ -5,13 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/sodium/core.h"
-#include "../include/sodium/crypto_core_hsalsa20.h"
-#include "../include/sodium/crypto_onetimeauth_poly1305.h"
-#include "../include/sodium/crypto_secretbox.h"
-#include "../include/sodium/crypto_stream_salsa20.h"
-#include "../include/sodium/private/common.h"
-#include "../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_core_hsalsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_secretbox.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_salsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 int
 crypto_secretbox_detached(unsigned char *c, unsigned char *mac,

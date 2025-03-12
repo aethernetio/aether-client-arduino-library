@@ -31,12 +31,12 @@
 
 #include <sys/types.h>
 
-#include "../../include/sodium/core.h"
-#include "../../include/sodium/crypto_auth_hmacsha256.h"
-#include "../../include/sodium/crypto_pwhash_scryptsalsa208sha256.h"
-#include "pbkdf2-sha256.h"
-#include "../../include/sodium/private/common.h"
-#include "../../include/sodium/utils.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/core.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_auth_hmacsha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_pwhash_scryptsalsa208sha256.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/scryptsalsa208sha256/pbkdf2-sha256.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 
 /**
  * escrypt_PBKDF2_SHA256(passwd, passwdlen, salt, saltlen, c, buf, dkLen):

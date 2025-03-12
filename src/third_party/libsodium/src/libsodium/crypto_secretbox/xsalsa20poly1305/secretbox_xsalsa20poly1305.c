@@ -1,7 +1,7 @@
-#include "../../include/sodium/crypto_onetimeauth_poly1305.h"
-#include "../../include/sodium/crypto_secretbox_xsalsa20poly1305.h"
-#include "../../include/sodium/crypto_stream_xsalsa20.h"
-#include "../../include/sodium/randombytes.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_onetimeauth_poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_secretbox_xsalsa20poly1305.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/crypto_stream_xsalsa20.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 
 int
 crypto_secretbox_xsalsa20poly1305(unsigned char *c, const unsigned char *m,

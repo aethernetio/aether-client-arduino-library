@@ -1,8 +1,8 @@
 #ifndef argon2_encoding_H
 #define argon2_encoding_H
 
-#include "argon2.h"
-#include "../../include/sodium/private/quirks.h"
+#include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/quirks.h"
 
 /*
  * encode an Argon2 hash string into the provided buffer. 'dst_len'
