@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-#include "aether/adapters/adapter_factory.h"
+#ifndef AETHER_POLLER_POLLER_TELE_H_
+#define AETHER_POLLER_POLLER_TELE_H_
 
-#if defined AE_DISTILLATION
-#  include "aether/global_ids.h"
+#include "aether/tele/tele.h"
 
-namespace ae {
-Adapter::ptr AdapterFactory::Create(Domain* domain, Aether::ptr const& aether) {
-  return domain->CreateObj<EthernetAdapter>(kEthernetAdapter, aether,
-                                            aether->poller);
-}
-}  // namespace ae
-#endif
+AE_TELE_MODULE(kPoller, 25);
+
+AE_TAG_INDEXED(PollerWorkerCreate, kPoller, 90)
+AE_TAG(PollerWorkerDestroyed, kPoller)
+AE_TAG(PollerAddDescriptor, kPoller)
+AE_TAG(PollerRemoveDescriptor, kPoller)
+AE_TAG(PollerAddFailed, kPoller)
+AE_TAG(PollerRemoveFailed, kPoller)
+AE_TAG(PollerCreateWakeUpFailed, kPoller)
+AE_TAG(PollerWakeUpFailed, kPoller)
+AE_TAG(PollerInitFailed, kPoller)
+AE_TAG(PollerWaitFailed, kPoller)
+AE_TAG(PollerUnknownType, kPoller)
+
+#endif  // AETHER_POLLER_POLLER_TELE_H_

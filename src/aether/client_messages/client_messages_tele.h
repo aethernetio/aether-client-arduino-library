@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-#ifndef AETHER_PORT_FILE_SYSTEMS_FILE_SYSTEM_BASE_H_
-#define AETHER_PORT_FILE_SYSTEMS_FILE_SYSTEM_BASE_H_
+#ifndef AETHER_CLIENT_MESSAGES_CLIENT_MESSAGES_TELE_H_
+#define AETHER_CLIENT_MESSAGES_CLIENT_MESSAGES_TELE_H_
 
-#include "aether/obj/domain.h"
+#include "aether/tele/tele.h"
 
-namespace ae {
-class FileSystemBase : public ae::IDomainFacility {
- public:
-  virtual void remove_all() = 0;
-};
-}  // namespace ae
+AE_TELE_MODULE(kClientMessages, 35);
 
-#endif  // AETHER_PORT_FILE_SYSTEMS_FILE_SYSTEM_BASE_H_ */
+AE_TAG_INDEXED(kMessageStream, kClientMessages, 100)
+AE_TAG(kMessageStreamChangeId, kClientMessages)
+
+AE_TAG(kP2pMessageStreamNew, kClientMessages)
+AE_TAG(kP2pMessageStreamRec, kClientMessages)
+
+#endif  // AETHER_CLIENT_MESSAGES_CLIENT_MESSAGES_TELE_H_

@@ -5,7 +5,7 @@
 #include "third_party/libsodium/src/libsodium/include/sodium/core.h"
 #include "third_party/libsodium/src/libsodium/include/sodium/crypto_aead_aegis256.h"
 #include "third_party/libsodium/src/libsodium/include/sodium/private/common.h"
-#include "third_party/libsodium/src/libsodium/crypto_aead/aegis256/implementations.h"
+#include "third_party/libsodium/src/libsodium/include/sodium/private/implementations.h"
 #include "third_party/libsodium/src/libsodium/include/sodium/randombytes.h"
 #include "third_party/libsodium/src/libsodium/include/sodium/runtime.h"
 
