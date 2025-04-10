@@ -63,6 +63,7 @@
   #include "aether/events/barrier_event.h"
 
   #include "aether/adapters/esp32_wifi.h"
+  #include "aether/adapters/adapter_tele.h"
   #include "aether/adapters/ethernet.h"
   #include "aether/adapters/adapter_factory.h"
   #include "aether/adapters/proxy.h"
@@ -72,6 +73,7 @@
   #include "aether/client_connections/iserver_connection_factory.h"
   #include "aether/client_connections/client_connection.h"
   #include "aether/client_connections/client_to_server_stream.h"
+  #include "aether/client_connections/client_connections_tele.h"
   #include "aether/client_connections/cloud_cache.h"
   #include "aether/client_connections/client_server_connection_pool.h"
   #include "aether/client_connections/client_cloud_connection.h"
@@ -105,7 +107,6 @@
   #include "aether/obj/obj_id.h"
   #include "aether/obj/registry.h"
   #include "aether/obj/domain.h"
-  #include "aether/obj/type_index.h"
   #include "aether/obj/version_iterator.h"
   #include "aether/obj/obj_ptr.h"
   #include "aether/obj/obj.h"
@@ -125,9 +126,9 @@
   #include "aether/port/file_systems/facility_factory.h"
   #include "aether/port/file_systems/file_system_std.h"
   #include "aether/port/file_systems/file_system_header.h"
+  #include "aether/port/file_systems/file_systems_tele.h"
   #include "aether/port/file_systems/file_system_spifs_v2.h"
   #include "aether/port/file_systems/file_system_ram.h"
-  #include "aether/port/file_systems/file_system_base.h"
   #include "aether/port/file_systems/file_system_spifs_v1.h"
 
   #include "aether/port/file_systems/drivers/driver_header.h"
@@ -153,6 +154,7 @@
   #include "aether/client_messages/message_stream.h"
   #include "aether/client_messages/message_stream_dispatcher.h"
   #include "aether/client_messages/p2p_message_stream.h"
+  #include "aether/client_messages/client_messages_tele.h"
   #include "aether/client_messages/p2p_safe_message_stream.h"
 
   #include "aether/format/default_formatters.h"
@@ -198,6 +200,7 @@
   #include "aether/actions/action_context.h"
 
   #include "aether/poller/poller.h"
+  #include "aether/poller/poller_tele.h"
   #include "aether/poller/win_poller.h"
   #include "aether/poller/epoll_poller.h"
   #include "aether/poller/kqueue_poller.h"
@@ -228,6 +231,7 @@
   #include "aether/ae_actions/registration/registration.h"
 
   #include "aether/dns/dns_resolve.h"
+  #include "aether/dns/dns_tele.h"
   #include "aether/dns/esp32_dns_resolve.h"
   #include "aether/dns/dns_c_ares.h"
 

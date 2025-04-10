@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-#include "aether/adapters/adapter_factory.h"
+#ifndef AETHER_DNS_DNS_TELE_H_
+#define AETHER_DNS_DNS_TELE_H_
 
-#if defined AE_DISTILLATION
-#  include "aether/global_ids.h"
+#include "aether/tele/tele.h"
 
-namespace ae {
-Adapter::ptr AdapterFactory::Create(Domain* domain, Aether::ptr const& aether) {
-  return domain->CreateObj<EthernetAdapter>(kEthernetAdapter, aether,
-                                            aether->poller);
-}
-}  // namespace ae
-#endif
+AE_TELE_MODULE(kDns, 20);
+
+AE_TAG_INDEXED(DnsQueryHost, kDns, 80)
+AE_TAG(DnsQueryError, kDns)
+AE_TAG(DnsQuerySuccess, kDns)
+AE_TAG(DnsCAresFailedInitialize, kDns)
+
+#endif  // AETHER_DNS_DNS_TELE_H_
