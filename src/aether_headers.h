@@ -36,7 +36,6 @@
   #include "aether/proof_of_work.h"
   #include "aether/config.h"
   #include "aether/literal_array.h"
-  #include "aether/statistics.h"
   #include "aether/aether_tele.h"
   #include "aether/global_ids.h"
   #include "aether/client.h"
@@ -61,6 +60,9 @@
   #include "aether/events/event_subscription.h"
   #include "aether/events/events.h"
   #include "aether/events/barrier_event.h"
+
+  #include "aether/statistics/statistic_counter.h"
+  #include "aether/statistics/channel_statistics.h"
 
   #include "aether/adapters/esp32_wifi.h"
   #include "aether/adapters/adapter_tele.h"
@@ -191,7 +193,9 @@
   #include "aether/tele/env/library_version.h"
   #include "aether/tele/env/cpu_architecture.h"
 
+  #include "aether/actions/timer_action.h"
   #include "aether/actions/action.h"
+  #include "aether/actions/notify_action.h"
   #include "aether/actions/action_list.h"
   #include "aether/actions/action_view.h"
   #include "aether/actions/action_registry.h"

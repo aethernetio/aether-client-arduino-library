@@ -79,6 +79,8 @@ inline bool SetNonblocking(int sock) {
 }
 
 struct SockAddr {
+  sockaddr* addr() { return reinterpret_cast<sockaddr*>(&data); }
+
   union {
 #  if AE_SUPPORT_IPV4 == 1
     struct sockaddr_in ipv4;
@@ -87,7 +89,7 @@ struct SockAddr {
     struct sockaddr_in6 ipv6;
 #  endif
   } data;
-  sockaddr* addr;
+
   std::size_t size;
 };
 
@@ -96,18 +98,17 @@ inline SockAddr GetSockAddr(IpAddressPort const& ip_address_port) {
     case IpAddress::Version::kIpV4:
 #  if AE_SUPPORT_IPV4 == 1
     {
-      SockAddr sock_addr;
-      sock_addr.addr = reinterpret_cast<sockaddr*>(&sock_addr.data.ipv4);
+      SockAddr sock_addr{};
       sock_addr.size = sizeof(sock_addr.data.ipv4);
       auto& addr = sock_addr.data.ipv4;
 
 #    ifndef __unix__
       addr.sin_len = sizeof(sockaddr_in);
 #    endif  // __unix__
-      addr.sin_family = AF_INET;
       std::memcpy(&addr.sin_addr.s_addr, ip_address_port.ip.value.ipv4_value,
                   4);
       addr.sin_port = ae::SwapToInet(ip_address_port.port);
+      addr.sin_family = AF_INET;
 
       return sock_addr;
     }
@@ -120,15 +121,14 @@ inline SockAddr GetSockAddr(IpAddressPort const& ip_address_port) {
     case IpAddress::Version::kIpV6: {
 #  if AE_SUPPORT_IPV6 == 1
       SockAddr sock_addr;
-      sock_addr.addr = reinterpret_cast<sockaddr*>(&sock_addr.data.ipv6);
       sock_addr.size = sizeof(sock_addr.data.ipv6);
       auto& addr = sock_addr.data.ipv6;
 #    ifndef __unix__
       addr.sin6_len = sizeof(sockaddr_in6);
 #    endif  // __unix__
-      addr.sin6_family = AF_INET;
       std::memcpy(&addr.sin6_addr, ip_address_port.ip.value.ipv6_value, 16);
       addr.sin6_port = ae::SwapToInet(ip_address_port.port);
+      addr.sin6_family = AF_INET6;
 
       return sock_addr;
     }
@@ -207,7 +207,7 @@ void UnixTcpTransport::ConnectionAction::Connect() {
   }
 
   auto addr = unix_tcp_internal::GetSockAddr(transport_->endpoint_);
-  auto res = connect(socket_, addr.addr, static_cast<socklen_t>(addr.size));
+  auto res = connect(socket_, addr.addr(), static_cast<socklen_t>(addr.size));
   if (res == -1) {
     if ((errno == EAGAIN) || (errno == EINPROGRESS)) {
       AE_TELED_DEBUG("Wait connection");
@@ -279,20 +279,27 @@ UnixTcpTransport::UnixPacketSendAction::UnixPacketSendAction(
     : SocketPacketSendAction{action_context},
       transport_{&transport},
       data_{std::move(data)},
-      current_time_{current_time} {
-  state_changed_subscription_ =
-      state_.changed_event().Subscribe([this](auto) { Action::Trigger(); });
-}
+      current_time_{current_time},
+      state_changed_subscription_{state_.changed_event().Subscribe(
+          [this](auto) { Action::Trigger(); })} {}
+
+UnixTcpTransport::UnixPacketSendAction::UnixPacketSendAction(
+    UnixPacketSendAction&& other) noexcept
+    : SocketPacketSendAction{std::move(other)},
+      transport_{other.transport_},
+      data_{std::move(other.data_)},
+      current_time_{other.current_time_},
+      state_changed_subscription_{state_.changed_event().Subscribe(
+          [this](auto) { Action::Trigger(); })} {}
 
 void UnixTcpTransport::UnixPacketSendAction::Send() {
+  state_ = State::kProgress;
+
   if (!transport_->socket_lock_.try_lock()) {
+    Action::Trigger();
     return;
   }
   auto lock = std::lock_guard{transport_->socket_lock_, std::adopt_lock};
-
-  if (state_.get() == State::kQueued) {
-    state_.Set(State::kProgress);
-  }
 
   auto size_to_send = data_.size() - sent_offset_;
   // add nosignal to prevent throw SIGPIPE and handle it manually
@@ -307,12 +314,11 @@ void UnixTcpTransport::UnixPacketSendAction::Send() {
   if (res == -1) {
     if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
       AE_TELED_ERROR("Send to socket error {} {}", errno, strerror(errno));
-      state_.Set(State::kFailed);
+      state_ = State::kFailed;
     }
     return;
   }
-  AE_TELED_DEBUG("Data was sent");
-  state_.Set(State::kSuccess);
+  state_ = State::kSuccess;
 }
 
 UnixTcpTransport::UnixPacketReadAction::UnixPacketReadAction(
@@ -347,6 +353,12 @@ void UnixTcpTransport::UnixPacketReadAction::Read() {
       error_ = true;
       break;
     }
+    if (res == 0) {
+      // socket shutdown
+      AE_TELED_ERROR("Recv shutdown");
+      error_ = true;
+      break;
+    }
     data_packet_collector_.AddData(read_buffer_.data(),
                                    static_cast<std::size_t>(res));
     read_event_ = true;
@@ -372,7 +384,8 @@ UnixTcpTransport::UnixTcpTransport(ActionContext action_context,
     : action_context_{action_context},
       poller_{std::move(poller)},
       endpoint_{endpoint},
-      connection_info_{} {
+      connection_info_{},
+      socket_packet_queue_manager_{action_context_} {
   AE_TELE_DEBUG(TcpTransport, "Created unix tcp transport to endpoint {}",
                 endpoint_);
   connection_info_.connection_state = ConnectionState::kUndefined;
@@ -455,6 +468,7 @@ void UnixTcpTransport::OnConnected(int socket) {
         if (event.descriptor != socket_) {
           return;
         }
+
         switch (event.event_type) {
           case EventType::kRead:
             ReadSocket();
@@ -517,6 +531,8 @@ void UnixTcpTransport::Disconnect() {
     return;
   }
   socket_ = kInvalidSocket;
+
+  OnConnectionFailed();
 }
 }  // namespace ae
 #endif
