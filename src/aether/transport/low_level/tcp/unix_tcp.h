@@ -28,6 +28,7 @@
 #  include "aether/common.h"
 #  include "aether/poller/poller.h"
 #  include "aether/actions/action.h"
+#  include "aether/actions/notify_action.h"
 #  include "aether/actions/action_context.h"
 #  include "aether/events/multi_subscription.h"
 
@@ -73,6 +74,8 @@ class UnixTcpTransport : public ITransport {
     UnixPacketSendAction(ActionContext action_context,
                          UnixTcpTransport& transport, DataBuffer data,
                          TimePoint current_time);
+
+    UnixPacketSendAction(UnixPacketSendAction&& other) noexcept;
 
     void Send() override;
 

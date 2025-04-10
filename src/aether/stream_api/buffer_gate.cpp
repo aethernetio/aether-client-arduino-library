@@ -136,6 +136,18 @@ void BufferGate::LinkOut(OutGate& out) {
   UpdateGate();
 }
 
+void BufferGate::Unlink() {
+  out_ = nullptr;
+  out_data_subscription_.Reset();
+  gate_update_subscription_.Reset();
+
+  stream_info_.is_linked = false;
+  stream_info_.is_writeble = false;
+  stream_info_.max_element_size = 0;
+  stream_info_.is_soft_writable = write_in_buffer_.size() < buffer_max_;
+  gate_update_event_.Emit();
+}
+
 StreamInfo BufferGate::stream_info() const { return stream_info_; }
 
 void BufferGate::SetSoftWriteable(bool value) {

@@ -30,6 +30,7 @@
 #  include "aether/events/events.h"
 #  include "aether/events/multi_subscription.h"
 
+#  include "aether/actions/notify_action.h"
 #  include "aether/actions/action_context.h"
 
 #  include "aether/transport/itransport.h"
@@ -78,6 +79,8 @@ class LwipTcpTransport : public ITransport {
     LwipTcpPacketSendAction(ActionContext action_context,
                             LwipTcpTransport& transport, DataBuffer data,
                             TimePoint current_time);
+
+    LwipTcpPacketSendAction(LwipTcpPacketSendAction&& other) noexcept;
 
     void Send() override;
 
