@@ -54,11 +54,13 @@
   #include "aether/type_traits.h"
 
   #include "aether/events/delegate.h"
+  #include "aether/events/event_impl.h"
   #include "aether/events/event_handler.h"
   #include "aether/events/events_mt.h"
   #include "aether/events/multi_subscription.h"
   #include "aether/events/event_subscription.h"
   #include "aether/events/events.h"
+  #include "aether/events/event_deleter.h"
   #include "aether/events/barrier_event.h"
 
   #include "aether/statistics/statistic_counter.h"
@@ -115,13 +117,18 @@
   #include "aether/obj/dummy_obj.h"
   #include "aether/obj/obj_tele.h"
 
+  #include "aether/api_protocol/return_result_api.h"
   #include "aether/api_protocol/api_protocol.h"
   #include "aether/api_protocol/packet_builder.h"
+  #include "aether/api_protocol/promise_action.h"
   #include "aether/api_protocol/api_message.h"
   #include "aether/api_protocol/send_result.h"
   #include "aether/api_protocol/request_id.h"
   #include "aether/api_protocol/protocol_context.h"
+  #include "aether/api_protocol/api_context.h"
   #include "aether/api_protocol/child_data.h"
+  #include "aether/api_protocol/api_class_impl.h"
+  #include "aether/api_protocol/api_method.h"
 
   #include "aether/port/tele_init.h"
 
@@ -217,16 +224,19 @@
   #include "aether/methods/work_server_api/authorized_api.h"
   #include "aether/methods/work_server_api/login_api.h"
 
+  #include "aether/methods/client_api/client_root_api.h"
   #include "aether/methods/client_api/client_safe_api.h"
 
   #include "aether/methods/server_reg_api/root_api.h"
   #include "aether/methods/server_reg_api/server_registration_api.h"
   #include "aether/methods/server_reg_api/global_reg_server_api.h"
 
+  #include "aether/methods/client_reg_api/client_reg_root_api.h"
   #include "aether/methods/client_reg_api/client_global_reg_api.h"
   #include "aether/methods/client_reg_api/client_reg_api.h"
 
   #include "aether/ae_actions/get_client_cloud_connection.h"
+  #include "aether/ae_actions/check_access_for_send_message.h"
   #include "aether/ae_actions/ping.h"
   #include "aether/ae_actions/get_client_cloud.h"
   #include "aether/ae_actions/ae_actions_tele.h"
@@ -245,10 +255,12 @@
   #include "aether/stream_api/debug_gate.h"
   #include "aether/stream_api/protocol_stream.h"
   #include "aether/stream_api/istream.h"
+  #include "aether/stream_api/event_subscribe_gate.h"
   #include "aether/stream_api/tied_stream.h"
   #include "aether/stream_api/one_gate_stream.h"
   #include "aether/stream_api/header_gate.h"
   #include "aether/stream_api/stream_api.h"
+  #include "aether/stream_api/inject_gate.h"
   #include "aether/stream_api/crypto_stream.h"
   #include "aether/stream_api/unidirectional_gate.h"
   #include "aether/stream_api/stream_write_action.h"

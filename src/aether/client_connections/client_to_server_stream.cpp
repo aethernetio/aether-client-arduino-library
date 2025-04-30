@@ -23,16 +23,6 @@
 #include "aether/crypto/ikey_provider.h"
 #include "aether/crypto/sync_crypto_provider.h"
 
-#include "aether/stream_api/debug_gate.h"
-#include "aether/stream_api/stream_api.h"
-#include "aether/stream_api/tied_stream.h"
-#include "aether/stream_api/crypto_stream.h"
-#include "aether/stream_api/protocol_stream.h"
-
-#include "aether/methods/work_server_api/login_api.h"
-#include "aether/methods/client_api/client_safe_api.h"
-#include "aether/methods/work_server_api/authorized_api.h"
-
 #include "aether/client_connections/client_connections_tele.h"
 
 namespace ae {
@@ -88,14 +78,19 @@ class ClientDecryptKeyProvider : public ClientKeyProvider {
 ClientToServerStream::ClientToServerStream(
     ActionContext action_context, Ptr<Client> const& client, ServerId server_id,
     std::unique_ptr<ByteStream> server_stream)
-    : action_context_{action_context}, client_{client}, server_id_{server_id} {
+    : action_context_{action_context},
+      client_{client},
+      server_id_{server_id},
+      client_root_api_{protocol_context_},
+      client_safe_api_{protocol_context_},
+      login_api_{protocol_context_},
+      authorized_api_{protocol_context_, action_context_} {
   AE_TELE_INFO(ClientServerStreamCreate, "Create ClientToServerStreamGate");
-
-  auto stream_id = StreamIdGenerator::GetNextClientStreamId();
 
   auto client_ptr = client_.Lock();
 
   client_auth_stream_.emplace(
+      ProtocolReadGate{protocol_context_, client_safe_api_},
       DebugGate{
           Format("ClientToServerStreamGate server id {} client_uid {} \nwrite "
                  "{{}}",
@@ -109,11 +104,18 @@ ClientToServerStream::ClientToServerStream(
                  make_unique<SyncDecryptProvider>(
                      make_unique<_internal::ClientDecryptKeyProvider>(
                          client_ptr, server_id_))},
-      StreamApiGate{protocol_context_, stream_id},
-      // start streams with login by uid
-      ProtocolWriteGate{protocol_context_, LoginApi{},
-                        LoginApi::LoginByUid{{}, stream_id, client_ptr->uid()}},
-      ProtocolReadGate{protocol_context_, ClientSafeApi{}},
+      // start streams with login by alias
+      ProtocolWriteMessageGate<DataBuffer>{
+          protocol_context_,
+          [&, alias{client_ptr->ephemeral_uid()}](
+              ProtocolContext& context, DataBuffer&& data) -> DataBuffer {
+            auto api_context = ApiContext{context, login_api_};
+            api_context->login_by_alias(alias, std::move(data));
+            return DataBuffer{std::move(api_context)};
+          }},
+      EventSubscribeGate<DataBuffer>{
+          EventSubscriber{client_root_api_.send_safe_api_data_event}},
+      ProtocolReadGate{protocol_context_, client_root_api_},
       std::move(server_stream));
 }
 
@@ -125,4 +127,17 @@ ClientToServerStream::InGate& ClientToServerStream::in() {
 }
 
 void ClientToServerStream::LinkOut(OutGate& /* out */) { assert(false); }
+
+ProtocolContext& ClientToServerStream::protocol_context() {
+  return protocol_context_;
+}
+
+ClientSafeApi& ClientToServerStream::client_safe_api() {
+  return client_safe_api_;
+}
+
+AuthorizedApi& ClientToServerStream::authorized_api() {
+  return authorized_api_;
+}
+
 }  // namespace ae

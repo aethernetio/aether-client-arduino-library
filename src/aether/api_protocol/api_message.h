@@ -57,6 +57,31 @@ struct Message {
   void Save(message_ostream& ms) const { ms << static_cast<T const&>(*this); }
 };
 
+/**
+ * \brief A message formed from template parameters
+ */
+template <typename... Ts>
+struct GenericMessage : Message<GenericMessage<Ts...>> {
+  explicit GenericMessage() = default;
+  explicit GenericMessage(Ts... args) : fields{std::forward<Ts>(args)...} {}
+
+  template <typename Ib>
+  friend imstream<Ib>& operator>>(imstream<Ib>& is, GenericMessage& mesassge) {
+    std::apply([&](auto&... args) { ((is >> args), ...); }, mesassge.fields);
+    return is;
+  }
+
+  template <typename Ob>
+  friend omstream<Ob>& operator<<(omstream<Ob>& os,
+                                  GenericMessage const& mesassge) {
+    std::apply([&](auto const&... args) { ((os << args), ...); },
+               mesassge.fields);
+    return os;
+  }
+
+  std::tuple<Ts...> fields;
+};
+
 }  // namespace ae
 
 #endif  // AETHER_API_PROTOCOL_API_MESSAGE_H_

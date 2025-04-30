@@ -140,13 +140,13 @@ private:
         auto reg_action = aether_->RegisterClient(
             Uid{MakeLiteralArray("3ac931653d37497087a6fa4ee27744e4")});
         registration_subscriptions_.Push(
-            reg_action->SubscribeOnResult([&](auto const &) {
+            reg_action->ResultEvent().Subscribe([&](auto const &) {
               ++clients_registered_;
               if (clients_registered_ == 2) {
                 state_ = State::kConfigureReceiver;
               }
             }),
-            reg_action->SubscribeOnError([&](auto const &) {
+            reg_action->ErrorEvent().Subscribe([&](auto const &) {
               AE_TELED_ERROR("Registration error");
               state_ = State::kError;
             }));
@@ -204,7 +204,7 @@ private:
                          confirm_msg.data() + confirm_msg.size()},
                         ae::Now());
                     response_subscriptions_.Push(
-                        response_action->SubscribeOnError([&](auto const &) {
+                        response_action->ErrorEvent().Subscribe([&](auto const &) {
                           AE_TELED_ERROR("Send response failed");
                           state_ = State::kError;
                         }));
@@ -245,7 +245,7 @@ private:
   void SendMessages(TimePoint current_time) {
     AE_TELED_INFO("Send messages");
 
-    key_action_subscription_ = key_action_.SubscribeOnResult(
+    key_action_subscription_ = key_action_.ResultEvent().Subscribe(
         [&](auto const &) {
           if (key_action_.GetKey()) {
             AE_TELED_INFO("Hi level press");
@@ -308,8 +308,6 @@ private:
 void AetherKeyLedExample();
 
 static ae::Ptr<ae::AetherApp> aether_app{};
-static ae::Subscription success{};
-static ae::Subscription failed{};
 static std::unique_ptr<ae::key_led_test::KeyLedTestAction>
     key_led_test_action{};
 
@@ -356,9 +354,9 @@ void AetherKeyLedExample(void) {
   key_led_test_action =
       ae::make_unique<ae::key_led_test::KeyLedTestAction>(aether_app);
 
-  success = key_led_test_action->SubscribeOnResult(
+  key_led_test_action->ResultEvent().Subscribe(
       [&](auto const &) { aether_app->Exit(0); });
-  failed = key_led_test_action->SubscribeOnError(
+  key_led_test_action->ErrorEvent().Subscribe(
       [&](auto const &) { aether_app->Exit(1); });
 }
 
