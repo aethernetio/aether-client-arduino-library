@@ -19,12 +19,11 @@
 #include <utility>
 
 #include "aether/stream_api/stream_api.h"
-#include "aether/stream_api/tied_stream.h"
+#include "aether/stream_api/one_gate_stream.h"
 #include "aether/stream_api/protocol_stream.h"
 #include "aether/stream_api/serialize_stream.h"
 
 #include "aether/methods/work_server_api/authorized_api.h"
-#include "aether/methods/client_api/client_safe_api.h"
 
 #include "aether/ae_actions/ae_actions_tele.h"
 
@@ -43,21 +42,24 @@ GetClientCloudAction::GetClientCloudAction(
   auto server_stream_id = StreamIdGenerator::GetNextClientStreamId();
   auto cloud_stream_id = StreamIdGenerator::GetNextClientStreamId();
 
-  pre_client_to_server_stream_ = make_unique<TiedStream>(
-      ProtocolReadGate{protocol_context_, ClientSafeApi{}},
-      ProtocolWriteGate{
-          protocol_context_, AuthorizedApi{},
-          AuthorizedApi::Resolvers{{}, server_stream_id, cloud_stream_id}});
+  auto api_context = ApiContext{client_to_server_stream_->protocol_context(),
+                                client_to_server_stream_->authorized_api()};
+  api_context->resolvers(server_stream_id, cloud_stream_id);
+
+  pre_client_to_server_stream_ =
+      make_unique<OneGateStream>(AddHeaderGate{std::move(api_context)});
 
   Tie(*pre_client_to_server_stream_, *client_to_server_stream_);
 
   server_resolver_stream_ = make_unique<TiedStream>(
       SerializeGate<ServerId, ServerDescriptor>{},
-      StreamApiGate{protocol_context_, server_stream_id});
+      StreamApiGate{client_to_server_stream_->protocol_context(),
+                    server_stream_id});
 
   cloud_request_stream_ = make_unique<TiedStream>(
       SerializeGate<Uid, UidAndCloud>{},
-      StreamApiGate{protocol_context_, cloud_stream_id});
+      StreamApiGate{client_to_server_stream_->protocol_context(),
+                    cloud_stream_id});
 
   Tie(*cloud_request_stream_, *pre_client_to_server_stream_);
   Tie(*server_resolver_stream_, *pre_client_to_server_stream_);
@@ -87,7 +89,7 @@ TimePoint GetClientCloudAction::Update(TimePoint current_time) {
       case State::kFailed:
         Action::Error(*this);
         break;
-      case State::kStoped:
+      case State::kStopped:
         Action::Stop(*this);
         break;
     }
@@ -97,7 +99,7 @@ TimePoint GetClientCloudAction::Update(TimePoint current_time) {
 }
 
 void GetClientCloudAction::Stop() {
-  state_.Set(State::kStoped);
+  state_.Set(State::kStopped);
 
   if (cloud_request_action_) {
     cloud_request_action_->Stop();
@@ -121,9 +123,9 @@ void GetClientCloudAction::RequestCloud(TimePoint current_time) {
       cloud_request_stream_->in().Write(Uid{client_uid_}, current_time);
 
   cloud_request_subscriptions_.Push(
-      cloud_request_action_->SubscribeOnStop(
+      cloud_request_action_->StopEvent().Subscribe(
           [this](auto const&) { state_.Set(State::kFailed); }),
-      cloud_request_action_->SubscribeOnError(
+      cloud_request_action_->ErrorEvent().Subscribe(
           [this](auto const&) { state_.Set(State::kFailed); }));
 }
 
@@ -139,12 +141,12 @@ void GetClientCloudAction::RequestServerResolve(TimePoint current_time) {
     auto swa =
         server_resolver_stream_->in().Write(std::move(server_id), current_time);
     server_resolve_subscriptions_.Push(
-        swa->SubscribeOnStop([this, server_id](auto const&) {
+        swa->StopEvent().Subscribe([this, server_id](auto const&) {
           AE_TELE_ERROR(kGetClientCloudServerResolveStopped,
                         "Resolve server id {} stopped", server_id);
           state_.Set(State::kFailed);
         }),
-        swa->SubscribeOnError([this, server_id](auto const&) {
+        swa->ErrorEvent().Subscribe([this, server_id](auto const&) {
           AE_TELE_ERROR(kGetClientCloudServerResolveFailed,
                         "Resolve server id {} failed", server_id);
           state_.Set(State::kFailed);

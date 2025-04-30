@@ -19,37 +19,31 @@
 
 #include "aether/uid.h"
 #include "aether/stream_api/istream.h"
-#include "aether/stream_api/stream_api.h"
-#include "aether/stream_api/protocol_stream.h"
 #include "aether/stream_api/debug_gate.h"
-#include "aether/api_protocol/protocol_context.h"
+#include "aether/stream_api/inject_gate.h"
+#include "aether/stream_api/event_subscribe_gate.h"
+#include "aether/client_connections/client_to_server_stream.h"
 
 namespace ae {
 
 class MessageStream : public ByteStream {
  public:
-  MessageStream(ProtocolContext& protocol_context, Uid destination);
-  MessageStream(ProtocolContext& protocol_context, Uid destination,
-                StreamId stream_id);
+  MessageStream(ClientToServerStream& client_to_server_stream, Uid destination);
   MessageStream(MessageStream const&) = delete;
   MessageStream(MessageStream&& other) noexcept;
 
   InGate& in() override;
   void LinkOut(OutGate& out) override;
 
+  void OnData(DataBuffer const& data);
   Uid destination() const;
-  StreamId stream_id() const;
-  void set_stream_id(StreamId stream_id);
 
  private:
-  ProtocolContext& protocol_context_;
+  ClientToServerStream* client_to_server_stream_;
   Uid destination_;
-  StreamId stream_id_;
-  ByteGate in_byte_gate_;
-  ByteGate out_byte_gate_;
   DebugGate debug_gate_;
-  StreamApiGate stream_api_gate_;
-  ProtocolWriteGate open_stream_gate_;
+  InjectGate inject_gate_;
+  ProtocolWriteMessageGate<DataBuffer> send_message_gate_;
 };
 }  // namespace ae
 

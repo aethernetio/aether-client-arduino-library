@@ -18,37 +18,16 @@
 #define AETHER_METHODS_WORK_SERVER_API_LOGIN_API_H_
 
 #include "aether/uid.h"
-#include "aether/crc.h"
-#include "aether/api_protocol/api_protocol.h"
-#include "aether/stream_api/stream_api.h"
+#include "aether/transport/data_buffer.h"
+#include "aether/api_protocol/api_method.h"
 
 namespace ae {
 class LoginApi : public ApiClass {
  public:
-  static constexpr auto kClassId = crc32::checksum_from_literal("LoginApi");
+  explicit LoginApi(ProtocolContext& protocol_context);
 
-  // starts a new  stream from ClientApi to AuthorizedApi with CryptoStream
-  struct LoginByUid : public Message<LoginByUid> {
-    static constexpr auto kMessageCode = 3;
-
-    AE_REFLECT_MEMBERS(stream_id, uid)
-
-    StreamId stream_id;
-    Uid uid;
-  };
-
-  // starts a new  stream from ClientApi to AuthorizedApi with CryptoStream
-  struct LoginByAlias : public Message<LoginByAlias> {
-    static constexpr auto kMessageCode = 4;
-
-    AE_REFLECT_MEMBERS(ephemeral_uid, stream_id)
-
-    Uid ephemeral_uid;
-    StreamId stream_id;
-  };
-
-  void Pack(LoginByUid&& message, ApiPacker& packer);
-  void Pack(LoginByAlias&& message, ApiPacker& packer);
+  Method<06, void(Uid uid, DataBuffer data)> login_by_uid;
+  Method<07, void(Uid alias, DataBuffer data)> login_by_alias;
 };
 }  // namespace ae
 

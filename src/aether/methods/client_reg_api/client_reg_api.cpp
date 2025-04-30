@@ -21,9 +21,12 @@
 #  include "aether/api_protocol/api_protocol.h"
 
 namespace ae {
-void ClientApiRegSafe::LoadFactory(MessageId message_id, ApiParser& parser) {
-  [[maybe_unused]] auto res = ExtendsApi::LoadExtend(message_id, parser);
-  assert(res);
+ClientApiRegSafe::ClientApiRegSafe(ProtocolContext& protocol_context)
+    : ReturnResultApiImpl{protocol_context} {}
+
+void ClientApiRegSafe::GlobalApi(ApiParser&, DataBuffer data) {
+  global_api_event.Emit(data);
 }
+
 }  // namespace ae
 #endif
