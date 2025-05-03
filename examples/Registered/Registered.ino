@@ -17,20 +17,20 @@
 #include "aether_lib.h"
 
 // This sets Arduino Stack Size - comment this line to use default 8K stack size
-SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
+SET_LOOP_TASK_STACK_SIZE(16 * 1024); // 16KB
 
 static constexpr int kWaitTime = 1;
 static constexpr int kWaitUntil = 5;
 
 namespace ae::registered {
 constexpr ae::SafeStreamConfig kSafeStreamConfig{
-  std::numeric_limits<std::uint16_t>::max(),                // buffer_capacity
-  (std::numeric_limits<std::uint16_t>::max() / 2) - 1,      // window_size
-  (std::numeric_limits<std::uint16_t>::max() / 2) - 1 - 1,  // max_data_size
-  10,                                                       // max_repeat_count
-  std::chrono::milliseconds{ 600 },                         // wait_confirm_timeout
-  {},                                                       // send_confirm_timeout
-  std::chrono::milliseconds{ 400 },                         // send_repeat_timeout
+    std::numeric_limits<std::uint16_t>::max(),               // buffer_capacity
+    (std::numeric_limits<std::uint16_t>::max() / 2) - 1,     // window_size
+    (std::numeric_limits<std::uint16_t>::max() / 2) - 1 - 1, // max_data_size
+    10,                                                      // max_repeat_count
+    std::chrono::milliseconds{600}, // wait_confirm_timeout
+    {},                             // send_confirm_timeout
+    std::chrono::milliseconds{400}, // send_repeat_timeout
 };
 
 /**
@@ -48,46 +48,45 @@ class RegisteredAction : public Action<RegisteredAction> {
 
 public:
   explicit RegisteredAction(Ptr<AetherApp> const &aether_app)
-    : Action{ *aether_app }, aether_{ aether_app->aether() },
-      state_{ State::kLoad }, messages_{},
-      state_changed_{ state_.changed_event().Subscribe(
-        [this](auto) {
-          Action::Trigger();
-        }) } {
+      : Action{*aether_app}, aether_{aether_app->aether()},
+        state_{State::kLoad}, messages_{},
+        state_changed_{state_.changed_event().Subscribe(
+            [this](auto) { Action::Trigger(); })} {
     AE_TELED_INFO("Registered test");
   }
 
   TimePoint Update(TimePoint current_time) override {
     if (state_.changed()) {
       switch (state_.Acquire()) {
-        case State::kLoad:
-          LoadClients();
-          break;
-        case State::kConfigureSender:
-          ConfigureSender();
-          break;
-        case State::kSendMessages:
-          SendMessages(current_time);
-          break;
-        case State::kWaitDone:
-          break;
-        case State::kResult:
-          Action::Result(*this);
-          return current_time;
-        case State::kError:
-          Action::Error(*this);
-          return current_time;
+      case State::kLoad:
+        LoadClients();
+        break;
+      case State::kConfigureSender:
+        ConfigureSender();
+        break;
+      case State::kSendMessages:
+        SendMessages(current_time);
+        break;
+      case State::kWaitDone:
+        break;
+      case State::kResult:
+        Action::Result(*this);
+        return current_time;
+      case State::kError:
+        Action::Error(*this);
+        return current_time;
       }
     }
     // wait till all sent messages received and confirmed
     if (state_.get() == State::kWaitDone) {
       AE_TELED_DEBUG("Wait done receive_count {}, confirm_count {}",
                      receive_count_, confirm_count_);
-      if ((receive_count_ == messages_.size()) && (confirm_count_ == messages_.size())) {
+      if ((receive_count_ == messages_.size()) &&
+          (confirm_count_ == messages_.size())) {
         state_ = State::kResult;
       }
       // if no any events happens wake up after 1 second
-      return current_time + std::chrono::seconds{ 1 };
+      return current_time + std::chrono::seconds{1};
     }
     return current_time;
   }
@@ -99,9 +98,9 @@ private:
    */
   void LoadClients() {
     AE_TELED_INFO("Testing loaded clients");
-    for (std::size_t i{ 0 }; i < aether_->clients().size(); i++) {
+    for (std::size_t i{0}; i < aether_->clients().size(); i++) {
       auto msg_str =
-        std::string("Test message for client ") + std::to_string(i);
+          std::string("Test message for client ") + std::to_string(i);
       messages_.insert(messages_.begin() + i, msg_str);
     }
     state_ = State::kConfigureSender;
@@ -114,7 +113,7 @@ private:
    * ConfigureReceiver.
    */
   void ConfigureSender() {
-    std::uint8_t clients_cnt{ 0 };
+    std::uint8_t clients_cnt{0};
 
     AE_TELED_INFO("Sender configuration");
     confirm_count_ = 0;
@@ -122,37 +121,35 @@ private:
 
     for (auto const &client : aether_->clients()) {
       auto stream = make_unique<P2pSafeStream>(
-        *aether_->action_processor, kSafeStreamConfig,
-        make_unique<P2pStream>(*aether_->action_processor, client,
-                               client->uid(), StreamId{ clients_cnt }));
+          *aether_->action_processor, kSafeStreamConfig,
+          make_unique<P2pStream>(*aether_->action_processor, client,
+                                 client->uid(), StreamId{clients_cnt}));
       sender_streams_.emplace_back(std::move(stream));
       sender_message_subscriptions_.Push(
-        sender_streams_[clients_cnt]->in().out_data_event().Subscribe(
-          [&](auto const &data) {
-            auto str_response = std::string(
-              reinterpret_cast<const char *>(data.data()), data.size());
-            AE_TELED_DEBUG("Received a response [{}], confirm_count {}",
-                           str_response, confirm_count_);
-            confirm_count_++;
-          }));
-      receiver_message_subscriptions_.Push(
-        sender_streams_[clients_cnt]->in().out_data_event().Subscribe(
-          [&](auto const &data) {
-            auto str_msg = std::string(
-              reinterpret_cast<const char *>(data.data()), data.size());
-            AE_TELED_DEBUG("Received a message [{}]", str_msg);
-            auto confirm_msg = std::string{ "confirmed " } + str_msg;
-            auto response_action =
-              sender_streams_[receive_count_++]->in().Write(
-                { confirm_msg.data(),
-                  confirm_msg.data() + confirm_msg.size() },
-                ae::Now());
-            response_subscriptions_.Push(
-              response_action->ErrorEvent().Subscribe([&](auto const &) {
-                AE_TELED_ERROR("Send response failed");
-                state_ = State::kError;
+          sender_streams_[clients_cnt]->out_data_event().Subscribe(
+              [&](auto const &data) {
+                auto str_response = std::string(
+                    reinterpret_cast<const char *>(data.data()), data.size());
+                AE_TELED_DEBUG("Received a response [{}], confirm_count {}",
+                               str_response, confirm_count_);
+                confirm_count_++;
               }));
-          }));
+      receiver_message_subscriptions_.Push(
+          sender_streams_[clients_cnt]->out_data_event().Subscribe(
+              [&](auto const &data) {
+                auto str_msg = std::string(
+                    reinterpret_cast<const char *>(data.data()), data.size());
+                AE_TELED_DEBUG("Received a message [{}]", str_msg);
+                auto confirm_msg = std::string{"confirmed "} + str_msg;
+                auto response_action = sender_streams_[receive_count_++]->Write(
+                    {confirm_msg.data(),
+                     confirm_msg.data() + confirm_msg.size()});
+                response_subscriptions_.Push(
+                    response_action->ErrorEvent().Subscribe([&](auto const &) {
+                      AE_TELED_ERROR("Send response failed");
+                      state_ = State::kError;
+                    }));
+              }));
       clients_cnt++;
     }
 
@@ -163,19 +160,20 @@ private:
    * \brief Send all messages at once.
    */
   void SendMessages(TimePoint current_time) {
-    std::uint8_t messages_cnt{ 0 };
+    std::uint8_t messages_cnt{0};
 
     AE_TELED_INFO("Send messages");
 
     for (auto const &sender_stream : sender_streams_) {
       auto msg = messages_[messages_cnt++];
       AE_TELED_DEBUG("Sending message {}", msg);
-      auto send_action = sender_stream->in().Write(
-        DataBuffer{ std::begin(msg), std::end(msg) }, current_time);
-      send_subscriptions_.Push(send_action->ErrorEvent().Subscribe([&](auto const &) {
-        AE_TELED_ERROR("Send message failed");
-        state_ = State::kError;
-      }));
+      auto send_action =
+          sender_stream->Write(DataBuffer{std::begin(msg), std::end(msg)});
+      send_subscriptions_.Push(
+          send_action->ErrorEvent().Subscribe([&](auto const &) {
+            AE_TELED_ERROR("Send message failed");
+            state_ = State::kError;
+          }));
     }
 
     state_ = State::kWaitDone;
@@ -186,8 +184,8 @@ private:
   std::vector<std::unique_ptr<ae::P2pSafeStream>> sender_streams_{};
 
   std::size_t clients_registered_;
-  std::size_t receive_count_{ 0 };
-  std::size_t confirm_count_{ 0 };
+  std::size_t receive_count_{0};
+  std::size_t confirm_count_{0};
 
   MultiSubscription registration_subscriptions_;
   MultiSubscription receiver_message_subscriptions_;
@@ -199,7 +197,7 @@ private:
   Subscription state_changed_;
 };
 
-}  // namespace ae::registered
+} // namespace ae::registered
 
 void AetherRegisteredExample();
 
@@ -222,25 +220,21 @@ void AetherRegisteredExample(void) {
    */
   aether_app = ae::AetherApp::Construct(ae::AetherAppConstructor{
 #if !AE_SUPPORT_REGISTRATION
-    []() {
-      auto fs =
-        ae::make_unique<ae::FileSystemHeaderFacility>(std::string(""));
-      return fs;
-    }
-#endif  // AE_SUPPORT_REGISTRATION
+      []() {
+        auto fs =
+            ae::make_unique<ae::FileSystemHeaderFacility>(std::string(""));
+        return fs;
+      }
+#endif // AE_SUPPORT_REGISTRATION
   });
 
   registered_action =
-    ae::make_unique<ae::registered::RegisteredAction>(aether_app);
+      ae::make_unique<ae::registered::RegisteredAction>(aether_app);
 
   registered_action->ResultEvent().Subscribe(
-    [&](auto const &) {
-      aether_app->Exit(0);
-    });
+      [&](auto const &) { aether_app->Exit(0); });
   registered_action->ErrorEvent().Subscribe(
-    [&](auto const &) {
-      aether_app->Exit(1);
-    });
+      [&](auto const &) { aether_app->Exit(1); });
 }
 
 void setup() {
@@ -265,7 +259,7 @@ void loop() {
   auto current_time = ae::Now();
   auto next_time = aether_app->Update(current_time);
   aether_app->WaitUntil(
-    std::min(next_time, current_time + std::chrono::seconds{ kWaitUntil }));
+      std::min(next_time, current_time + std::chrono::seconds{kWaitUntil}));
   Serial.printf("Arduino Stack was set to %d bytes",
                 getArduinoLoopTaskStackSize());
   Serial.println();
