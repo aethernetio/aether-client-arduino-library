@@ -121,7 +121,7 @@ private:
 
       for (auto i = clients_registered_; i < 2; i++) {
         auto reg_action = aether_->RegisterClient(
-            Uid{MakeLiteralArray("3ac931653d37497087a6fa4ee27744e4")});
+            Uid::FromString("3ac93165-3d37-4970-87a6-fa4ee27744e4"));
         registration_subscriptions_.Push(
             reg_action->ResultEvent().Subscribe([&](auto const &) {
               ++clients_registered_;
@@ -160,11 +160,11 @@ private:
     auto receiver_connection = receiver_->client_connection();
     receiver_new_stream_subscription_ =
         receiver_connection->new_stream_event().Subscribe(
-            [&](auto uid, auto stream_id, auto &raw_stream) {
+            [&](auto uid, auto raw_stream) {
               receiver_stream_ = make_unique<P2pSafeStream>(
                   *aether_->action_processor, kSafeStreamConfig,
                   make_unique<P2pStream>(*aether_->action_processor, receiver_,
-                                         uid, stream_id, raw_stream));
+                                         uid, std::move(raw_stream)));
               receiver_message_subscription_ =
                   receiver_stream_->out_data_event().Subscribe(
                       [&](auto const &data) {
@@ -202,7 +202,7 @@ private:
     sender_stream_ = make_unique<P2pSafeStream>(
         *aether_->action_processor, kSafeStreamConfig,
         make_unique<P2pStream>(*aether_->action_processor, sender_,
-                               receiver_->uid(), StreamId{0}));
+                               receiver_->uid()));
     sender_message_subscription_ =
         sender_stream_->out_data_event().Subscribe([&](auto const &data) {
           auto str_response = std::string(

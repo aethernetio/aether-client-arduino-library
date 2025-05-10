@@ -123,7 +123,7 @@ private:
       auto stream = make_unique<P2pSafeStream>(
           *aether_->action_processor, kSafeStreamConfig,
           make_unique<P2pStream>(*aether_->action_processor, client,
-                                 client->uid(), StreamId{clients_cnt}));
+                                 client->uid()));
       sender_streams_.emplace_back(std::move(stream));
       sender_message_subscriptions_.Push(
           sender_streams_[clients_cnt]->out_data_event().Subscribe(
