@@ -82,6 +82,7 @@
   #include "aether/client_connections/client_server_connection_pool.h"
   #include "aether/client_connections/client_cloud_connection.h"
   #include "aether/client_connections/client_server_connection.h"
+  #include "aether/client_connections/split_stream_client_connection.h"
   #include "aether/client_connections/client_connection_manager.h"
   #include "aether/client_connections/server_connection_selector.h"
 
