@@ -19,10 +19,8 @@
 
 #include "aether/actions/action.h"
 #include "aether/actions/action_ptr.h"
-#include "aether/types/state_machine.h"
 #include "aether/modems/imodem_driver.h"
 #include "aether/adapters/modem_adapter.h"
-#include "aether/events/event_subscription.h"
 #include "aether/access_points/access_point.h"
 
 namespace ae {
@@ -30,22 +28,9 @@ class Aether;
 
 class ModemConnectAction final : public Action<ModemConnectAction> {
  public:
-  enum class State : std::uint8_t {
-    kStart,
-    kSuccess,
-    kFailed,
-  };
-
   ModemConnectAction(ActionContext action_context, IModemDriver& driver);
 
   UpdateStatus Update();
-
- private:
-  void Start();
-
-  IModemDriver* driver_;
-  Subscription start_sub_;
-  StateMachine<State> state_;
 };
 
 class ModemAccessPoint final : public AccessPoint {
@@ -67,8 +52,6 @@ class ModemAccessPoint final : public AccessPoint {
  private:
   Obj::ptr aether_;
   ModemAdapter::ptr modem_adapter_;
-  ActionPtr<ModemConnectAction> connect_action_;
-  Subscription connect_sub_;
 };
 }  // namespace ae
 

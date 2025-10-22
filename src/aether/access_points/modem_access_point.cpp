@@ -24,45 +24,11 @@
 namespace ae {
 ModemConnectAction::ModemConnectAction(ActionContext action_context,
                                        [[maybe_unused]] IModemDriver& driver)
-    : Action{action_context}, driver_{&driver}, state_{State::kStart} {
-  AE_TELED_DEBUG("ModemConnectAction created");
-}
+    : Action{action_context} {}
 
 UpdateStatus ModemConnectAction::Update() {
-  if (state_.changed()) {
-    switch (state_.Acquire()) {
-      case State::kStart:
-        Start();
-        break;
-      case State::kSuccess:
-        return UpdateStatus::Result();
-      case State::kFailed:
-        return UpdateStatus::Error();
-    }
-  }
-  return {};
-}
-
-void ModemConnectAction::Start() {
-  AE_TELED_DEBUG("ModemConnectAction start");
-  auto action = driver_->Start();
-  if (!action) {
-    state_ = State::kFailed;
-    Action::Trigger();
-    return;
-  }
-  action->StatusEvent().Subscribe(ActionHandler{
-      OnResult{[this]() {
-        AE_TELED_INFO("Modem access point start success");
-        state_ = State::kSuccess;
-        Action::Trigger();
-      }},
-      OnError{[this]() {
-        AE_TELED_ERROR("Modem access point start failed");
-        state_ = State::kFailed;
-        Action::Trigger();
-      }},
-  });
+  // TODO: Implement asynchronous modem connection
+  return UpdateStatus::Result();
 }
 
 ModemAccessPoint::ModemAccessPoint(ObjPtr<Aether> aether,
@@ -73,16 +39,8 @@ ModemAccessPoint::ModemAccessPoint(ObjPtr<Aether> aether,
       modem_adapter_{std::move(modem_adapter)} {}
 
 ActionPtr<ModemConnectAction> ModemAccessPoint::Connect() {
-  AE_TELED_DEBUG("Make modem access point connection");
-
-  // reuse connect action if it's in progress
-  if (!connect_action_) {
-    connect_action_ = ActionPtr<ModemConnectAction>{
-        *aether_.as<Aether>(), modem_adapter_->modem_driver()};
-    connect_sub_ = connect_action_->FinishedEvent().Subscribe(
-        [this]() { connect_action_.reset(); });
-  }
-  return connect_action_;
+  return ActionPtr<ModemConnectAction>{*aether_.as<Aether>(),
+                                       modem_adapter_->modem_driver()};
 }
 
 IModemDriver& ModemAccessPoint::modem_driver() {
@@ -91,7 +49,6 @@ IModemDriver& ModemAccessPoint::modem_driver() {
 
 std::vector<ObjPtr<Channel>> ModemAccessPoint::GenerateChannels(
     std::vector<UnifiedAddress> const& endpoints) {
-  AE_TELED_DEBUG("Generate modem channels");
   std::vector<ObjPtr<Channel>> channels;
   channels.reserve(endpoints.size());
   Aether::ptr aether = aether_;

@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef AETHER_LORA_MODULES_LORA_MODULES_TELE_H_
-#define AETHER_LORA_MODULES_LORA_MODULES_TELE_H_
 
-// IWYU pragma: begin_exports
-#include "aether/tele/tele.h"
-// IWYU pragma: end_exports
+#ifndef AETHER_AETHER_C_C_ERRORS_H_
+#define AETHER_AETHER_C_C_ERRORS_H_
 
-#endif  // AETHER_LORA_MODULES_LORA_MODULES_TELE_H_
+#include "aether/aether_c/extern_c.h"
+
+AE_EXTERN_C_BEGIN
+
+#define AE_OK 0
+#define AE_NOK -1
+
+AE_EXTERN_C_END
+
+#endif  // AETHER_AETHER_C_C_ERRORS_H_

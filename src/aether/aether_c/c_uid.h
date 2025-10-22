@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef AETHER_SERIAL_PORTS_AT_SUPPORT_AT_WRITE_ACTION_H_
-#define AETHER_SERIAL_PORTS_AT_SUPPORT_AT_WRITE_ACTION_H_
+#ifndef AETHER_AETHER_C_C_UID_H_
+#define AETHER_AETHER_C_C_UID_H_
 
-#include "aether/actions/notify_action.h"
+#include <stdint.h>
+#include <stddef.h>
 
-namespace ae {
-using AtWriteAction = NotifyAction;
-}
+#include "aether/aether_c/extern_c.h"
 
-#endif  // AETHER_SERIAL_PORTS_AT_SUPPORT_AT_WRITE_ACTION_H_
+AE_EXTERN_C_BEGIN
+typedef struct CUid {
+  uint8_t value[16];
+} CUid;
+
+CUid CUidFromString(char const* uid);
+CUid CUidFromBytes(uint8_t const* uid, size_t size);
+AE_EXTERN_C_END
+
+#endif  // AETHER_AETHER_C_C_UID_H_

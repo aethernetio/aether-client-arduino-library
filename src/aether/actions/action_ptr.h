@@ -74,7 +74,7 @@ class ActionPtr {
   TAction& operator*() { return *ptr_; }
   TAction const& operator*() const { return *ptr_; }
   TAction* operator->() const { return ptr_.get(); }
-  explicit operator bool() const { return static_cast<bool>(ptr_); }
+  explicit operator bool() const { return ptr_ != nullptr; }
   void reset() { ptr_.reset(); }
 
  private:

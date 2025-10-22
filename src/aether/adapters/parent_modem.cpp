@@ -20,11 +20,9 @@ namespace ae {
 
 #if defined AE_DISTILLATION
 ParentModemAdapter::ParentModemAdapter(ObjPtr<Aether> aether,
-                                       IPoller::ptr poller,
                                        ModemInit modem_init, Domain* domain)
     : Adapter{domain},
       aether_{std::move(aether)},
-      poller_{std::move(poller)},
       modem_init_{std::move(modem_init)} {}
 #endif  // AE_DISTILLATION
 

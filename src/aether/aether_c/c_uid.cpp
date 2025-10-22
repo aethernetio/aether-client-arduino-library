@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef AETHER_SERIAL_PORTS_SERIAL_PORTS_TELE_H_
-#define AETHER_SERIAL_PORTS_SERIAL_PORTS_TELE_H_
+#include "aether/aether_c/c_uid.h"
 
-#include "aether/tele/tele.h"
+#include <string.h>
+#include <assert.h>
 
-AE_TELE_MODULE(kSerialPorts, 200, 500, 550);
+#include <string_view>
 
-AE_TAG(kAdapterSerialNotOpen, kSerialPorts)
-AE_TAG(kAdapterSerialWriteFailed, kSerialPorts)
-AE_TAG(kAdapterSerialReadFailed, kSerialPorts)
-AE_TAG(kAdapterSerialPartialData, kSerialPorts)
-AE_TAG(kAdapterSerialPortState, kSerialPorts)
-AE_TAG(kAdapterSerialConfigurePort, kSerialPorts)
+#include "aether/types/uid.h"
 
-#endif  // AETHER_SERIAL_PORTS_SERIAL_PORTS_TELE_H_
+CUid CUidFromString(char const* uid) {
+  auto ae_uid = ae::Uid::FromString(std::string_view{uid});
+  return CUidFromBytes(ae_uid.value.data(), ae_uid.value.size());
+}
+
+CUid CUidFromBytes(uint8_t const* uid, size_t size) {
+  assert(size == ae::Uid::kSize);
+  CUid result;
+  memcpy(result.value, uid, size);
+  return result;
+}

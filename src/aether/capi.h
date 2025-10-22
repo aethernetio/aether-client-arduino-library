@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef AETHER_SERIAL_PORTS_SERIAL_PORTS_TELE_H_
-#define AETHER_SERIAL_PORTS_SERIAL_PORTS_TELE_H_
+#ifndef AETHER_CAPI_H_
+#define AETHER_CAPI_H_
 
-#include "aether/tele/tele.h"
+// IWYU pragma: begin_exports
+#include "aether/aether_c/c_conf.h"
+#include "aether/aether_c/c_types.h"
+#include "aether/aether_c/c_errors.h"
+#include "aether/aether_c/aether_capi.h"
+// IWYU pragma: end_exports
 
-AE_TELE_MODULE(kSerialPorts, 200, 500, 550);
-
-AE_TAG(kAdapterSerialNotOpen, kSerialPorts)
-AE_TAG(kAdapterSerialWriteFailed, kSerialPorts)
-AE_TAG(kAdapterSerialReadFailed, kSerialPorts)
-AE_TAG(kAdapterSerialPartialData, kSerialPorts)
-AE_TAG(kAdapterSerialPortState, kSerialPorts)
-AE_TAG(kAdapterSerialConfigurePort, kSerialPorts)
-
-#endif  // AETHER_SERIAL_PORTS_SERIAL_PORTS_TELE_H_
+#endif  // AETHER_CAPI_H_

@@ -22,6 +22,7 @@
   #include "aether\aether_app.h"
   #include "aether\aether_tele.h"
   #include "aether\all.h"
+  #include "aether\capi.h"
   #include "aether\client.h"
   #include "aether\cloud.h"
   #include "aether\common.h"
@@ -68,13 +69,18 @@
   #include "aether\adapters\adapter.h"
   #include "aether\adapters\adapter_tele.h"
   #include "aether\adapters\ethernet.h"
-  #include "aether\adapters\lora_module_adapter.h"
   #include "aether\adapters\modem_adapter.h"
-  #include "aether\adapters\parent_lora_module.h"
   #include "aether\adapters\parent_modem.h"
   #include "aether\adapters\parent_wifi.h"
   #include "aether\adapters\proxy.h"
   #include "aether\adapters\wifi_adapter.h"
+
+  #include "aether\aether_c\aether_capi.h"
+  #include "aether\aether_c\c_conf.h"
+  #include "aether\aether_c\c_errors.h"
+  #include "aether\aether_c\c_types.h"
+  #include "aether\aether_c\c_uid.h"
+  #include "aether\aether_c\extern_c.h"
 
   #include "aether\ae_actions\ae_actions_tele.h"
   #include "aether\ae_actions\check_access_for_send_message.h"
@@ -167,13 +173,6 @@
   #include "aether\format\format_impl.h"
   #include "aether\format\format_time.h"
 
-  #include "aether\lora_modules\dx_smart_lr02_433_lm.h"
-  #include "aether\lora_modules\ebyte_e22_400_lm.h"
-  #include "aether\lora_modules\ilora_module_driver.h"
-  #include "aether\lora_modules\lora_modules_tele.h"
-  #include "aether\lora_modules\lora_module_driver_types.h"
-  #include "aether\lora_modules\lora_module_factory.h"
-
   #include "aether\methods\server_descriptor.h"
   #include "aether\methods\telemetric.h"
   #include "aether\methods\uid_and_cloud.h"
@@ -257,13 +256,6 @@
   #include "aether\serial_ports\unix_serial_port.h"
   #include "aether\serial_ports\win_serial_port.h"
 
-  #include "aether\serial_ports\at_support\at_buffer.h"
-  #include "aether\serial_ports\at_support\at_dispatcher.h"
-  #include "aether\serial_ports\at_support\at_listener.h"
-  #include "aether\serial_ports\at_support\at_request.h"
-  #include "aether\serial_ports\at_support\at_support.h"
-  #include "aether\serial_ports\at_support\at_write_action.h"
-
   #include "aether\server_connections\channel_connection.h"
   #include "aether\server_connections\channel_manager.h"
   #include "aether\server_connections\channel_selection_stream.h"
@@ -334,9 +326,6 @@
 
   #include "aether\transport\actions\packet_send_action.h"
 
-  #include "aether\transport\lora_modules\lora_module_transport.h"
-  #include "aether\transport\lora_modules\send_queue_poller.h"
-
   #include "aether\transport\low_level\sockets\isocket.h"
   #include "aether\transport\low_level\sockets\lwip_socket.h"
   #include "aether\transport\low_level\sockets\lwip_tcp_socket.h"
@@ -355,6 +344,7 @@
   #include "aether\transport\low_level\udp\udp.h"
 
   #include "aether\transport\modems\modem_transport.h"
+  #include "aether\transport\modems\send_queue_poller.h"
 
   #include "aether\types\address.h"
   #include "aether\types\address_parser.h"

@@ -37,12 +37,7 @@ class ScopeExit {
       std::is_nothrow_move_constructible_v<T>)
       : callable_{std::move(cb)} {}
 
-  ~ScopeExit() noexcept(std::is_nothrow_invocable_v<T>) {
-    if (!callable_) {
-      return;
-    }
-    (*callable_)();
-  }
+  ~ScopeExit() noexcept(std::is_nothrow_invocable_v<T>) { (*callable_)(); }
 
   AE_CLASS_NO_COPY_MOVE(ScopeExit)
 

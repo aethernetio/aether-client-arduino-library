@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-#include "aether/serial_ports/at_support/at_listener.h"
+#ifndef AETHER_AETHER_C_EXTERN_C_H_
+#define AETHER_AETHER_C_EXTERN_C_H_
 
-#include "aether/tele/tele.h"
+#ifdef __cplusplus
+#  define AE_EXTERN_C_BEGIN extern "C" {
+#else
+#  define AE_EXTERN_C_BEGIN
+#endif
 
-namespace ae {
+#ifdef __cplusplus
+#  define AE_EXTERN_C_END }
+#else
+#  define AE_EXTERN_C_END
+#endif
 
-AtListener::AtListener(AtDispatcher& dispatcher, std::string expected,
-                       Handler handler)
-    : dispatcher_{&dispatcher}, handler_{std::move(handler)} {
-  dispatcher_->Listen(std::move(expected), this);
-}
-
-AtListener::~AtListener() { dispatcher_->Remove(this); }
-
-void AtListener::Observe(AtBuffer& buffer, AtBuffer::iterator pos) {
-  AE_TELED_DEBUG("Listener have heard");
-  handler_(buffer, pos);
-}
-}  // namespace ae
+#endif  // AETHER_AETHER_C_EXTERN_C_H_

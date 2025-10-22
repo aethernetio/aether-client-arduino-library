@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-#include "aether/adapters/parent_lora_module.h"
+#ifndef AETHER_AETHER_C_C_TYPES_H_
+#define AETHER_AETHER_C_C_TYPES_H_
 
-namespace ae {
+#include "aether/aether_c/extern_c.h"
 
-#if defined AE_DISTILLATION
-ParentLoraModuleAdapter::ParentLoraModuleAdapter(
-    ObjPtr<Aether> aether, IPoller::ptr poller,
-    LoraModuleInit lora_module_init, Domain* domain)
-    : Adapter{domain},
-      aether_{std::move(aether)},
-      poller_{std::move(poller)},
-      lora_module_init_{std::move(lora_module_init)} {}
-#endif  // AE_DISTILLATION
+AE_EXTERN_C_BEGIN
+typedef enum ActionStatus {
+  kSuccess,
+  kFailure,
+  kStopped,
+} ActionStatus;
 
-} /* namespace ae */
+typedef void* WriteActionHandle;
+
+typedef void (*ActionStatusCb)(ActionStatus status, void* user_data);
+
+AE_EXTERN_C_END
+
+#endif  // AETHER_AETHER_C_C_TYPES_H_

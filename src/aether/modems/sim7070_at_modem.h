@@ -17,20 +17,17 @@
 #ifndef AETHER_MODEMS_SIM7070_AT_MODEM_H_
 #define AETHER_MODEMS_SIM7070_AT_MODEM_H_
 
-#include <chrono>
 #include <memory>
 
 #include "aether/modems/imodem_driver.h"
-#include "aether/adapters/modem_adapter.h"
 #include "aether/serial_ports/iserial_port.h"
-#include "aether/serial_ports/at_comm_support.h"
 
 namespace ae {
 
 struct ConnectionHandle {
   AE_REFLECT_MEMBERS(context_index, connect_index)
-  std::int32_t context_index{-1};
-  std::int32_t connect_index{-1};
+  std::int32_t context_index;
+  std::int32_t connect_index;
 };
 
 struct Sim7070Connection {
@@ -73,22 +70,20 @@ class Sim7070AtModem final : public IModemDriver {
   bool Init() override;
   bool Start() override;
   bool Stop() override;
-  ConnectionIndex OpenNetwork(Protocol protocol, std::string const& host,
+  ConnectionIndex OpenNetwork(ae::Protocol protocol, std::string const& host,
                               std::uint16_t port) override;
-  void CloseNetwork(ConnectionIndex connect_index) override;
-  void WritePacket(ConnectionIndex connect_index,
-                   DataBuffer const& data) override;
-  DataBuffer ReadPacket(ConnectionIndex connect_index,
-                        Duration timeout) override;
-  bool SetPowerSaveParam(PowerSaveParam const& psp) override;
+  void CloseNetwork(ae::ConnectionIndex connect_index) override;
+  void WritePacket(ae::ConnectionIndex connect_index,
+                   ae::DataBuffer const& data) override;
+  DataBuffer ReadPacket(ae::ConnectionIndex connect_index,
+                        ae::Duration timeout) override;
+  bool SetPowerSaveParam(ae::PowerSaveParam const& psp) override;
   bool PowerOff() override;
 
  private:
   ModemInit modem_init_;
   std::unique_ptr<ISerialPort> serial_;
-  std::unique_ptr<AtCommSupport> at_comm_support_;
   std::vector<Sim7070Connection> connect_vec_;
-  ModemAdapter* adapter_;
 
   static constexpr std::uint16_t kModemMTU{1520};
 
@@ -115,6 +110,10 @@ class Sim7070AtModem final : public IModemDriver {
   void SendUdp(Sim7070Connection const& connection, DataBuffer const& data);
   DataBuffer ReadTcp(Sim7070Connection const& connection);
   DataBuffer ReadUdp(Sim7070Connection const& connection);
+
+  void SendATCommand(const std::string& command);
+  bool WaitForResponse(const std::string& expected, Duration timeout);
+  std::string PinToString(const std::uint8_t pin[4]);
 };
 
 } /* namespace ae */

@@ -30,8 +30,8 @@
 #  include "aether/stream_api/istream.h"
 #  include "aether/modems/imodem_driver.h"
 #  include "aether/transport/data_packet_collector.h"
+#  include "aether/transport/modems/send_queue_poller.h"
 #  include "aether/transport/socket_packet_send_action.h"
-#  include "aether/transport/socket_packet_queue_manager.h"
 
 namespace ae {
 class ModemTransport final : public ByteIStream {
@@ -49,11 +49,11 @@ class ModemTransport final : public ByteIStream {
    public:
     SendTcpAction(ActionContext action_context, ModemTransport& transport,
                   DataBuffer data);
+
     void Send() override;
 
    private:
-    void SendPacket(DataBuffer const& data);
-    MultiSubscription send_subs_;
+    std::size_t sent_offset_;
   };
 
   class SendUdpAction final : public ModemSend {
@@ -62,9 +62,37 @@ class ModemTransport final : public ByteIStream {
                   DataBuffer data);
 
     void Send() override;
+  };
+
+  class ModemReadAction : public Action<ModemReadAction> {
+   public:
+    ModemReadAction(ActionContext action_context, ModemTransport& transport);
+
+    UpdateStatus Update(TimePoint current_time);
+    void Stop();
+
+    virtual void Read() = 0;
+
+   protected:
+    ModemTransport* transport_;
+    bool stopped_ = false;
+  };
+
+  class ReadTcpAction final : public ModemReadAction {
+   public:
+    ReadTcpAction(ActionContext action_context, ModemTransport& transport);
+
+    void Read() override;
 
    private:
-    Subscription send_sub_;
+    StreamDataPacketCollector data_packet_collector_;
+  };
+
+  class ReadUdpAction final : public ModemReadAction {
+   public:
+    ReadUdpAction(ActionContext action_context, ModemTransport& transport);
+
+    void Read() override;
   };
 
  public:
@@ -80,13 +108,8 @@ class ModemTransport final : public ByteIStream {
 
  private:
   void Connect();
-  void OnConnected(ConnectionIndex connection_index);
   void OnConnectionFailed();
   void Disconnect();
-
-  void DataReceived(ConnectionIndex connection, DataBuffer const& data_in);
-  void DataReceivedTcp(DataBuffer const& data_in);
-  void DataReceivedUdp(DataBuffer const& data_in);
 
   ActionContext action_context_;
   IModemDriver* modem_driver_;
@@ -96,15 +119,14 @@ class ModemTransport final : public ByteIStream {
   StreamInfo stream_info_;
 
   ConnectionIndex connection_ = kInvalidConnectionIndex;
-  OwnActionPtr<SocketPacketQueueManager<ModemSend>> send_action_queue_manager_;
-  StreamDataPacketCollector data_packet_collector_;
+
+  OwnActionPtr<SendQueuePoller<ModemSend>> send_action_queue_manager_;
+  OwnActionPtr<ModemReadAction> read_action_;
 
   OutDataEvent out_data_event_;
   StreamUpdateEvent stream_update_event_;
 
   MultiSubscription send_action_subs_;
-  Subscription connection_sub_;
-  Subscription read_packet_sub_;
 };
 }  // namespace ae
 
