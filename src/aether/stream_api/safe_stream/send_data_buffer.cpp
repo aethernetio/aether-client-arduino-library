@@ -16,117 +16,147 @@
 
 #include "aether/stream_api/safe_stream/send_data_buffer.h"
 
-#include <algorithm>
 #include <iterator>
+#include <algorithm>
 
 #include "aether/tele/tele.h"
 
 namespace ae {
-SendDataBuffer::SendDataBuffer(ActionContext action_context,
-                               SafeStreamRingIndex::type window_size)
-    : window_size_{window_size},
-      send_actions_{action_context},
-      buffer_size_{} {}
+SendDataBuffer::SendDataBuffer(ActionContext action_context)
+    : action_context_{action_context}, buffer_size_{} {}
 
-void SendDataBuffer::set_window_size(SafeStreamRingIndex::type window_size) {
-  window_size_ = window_size;
-}
-
-ActionView<SendingDataAction> SendDataBuffer::AddData(SendingData&& data) {
+ActionPtr<SendingDataAction> SendDataBuffer::AddData(SendingData&& data) {
   AE_TELED_DEBUG("Add data size {} with offset {}", data.data.size(),
                  data.offset);
   buffer_size_ += data.data.size();
-  auto action = send_actions_.Emplace(std::move(data));
-  send_action_views_.emplace_back(action);
+
+  auto& action = send_actions_.emplace_back(action_context_, std::move(data));
   return action;
 }
 
-DataChunk SendDataBuffer::GetSlice(SafeStreamRingIndex offset,
-                                   std::size_t max_size) {
-  using data_diff_type = DataBuffer::difference_type;
+DataChunk SendDataBuffer::GetSlice(SSRingIndex offset, std::size_t max_size) {
+  using DataDiffType = DataBuffer::difference_type;
 
-  DataChunk chunk{{}, offset};
+  // find the first sending data with required offset
+  auto it = std::find_if(std::begin(send_actions_), std::end(send_actions_),
+                         [offset](auto& action) {
+                           auto& sending_data = action->sending_data();
+                           return sending_data.offset_range().InRange(offset) ||
+                                  sending_data.offset_range().IsAfter(offset);
+                         });
+
+  if (it == std::end(send_actions_)) {
+    return {};
+  }
+
+  // select current offset for that chunk.
+  // offset may overlap with sending data offset range
+  auto current_offset = ((*it)->sending_data().offset.IsAfter(offset))
+                            ? (*it)->sending_data().offset
+                            : offset;
+  DataChunk chunk{{}, current_offset};
   chunk.data.reserve(max_size);
 
   std::size_t remaining = max_size;
-  auto current_offset = offset;
 
-  auto it = std::find_if(
-      std::begin(send_action_views_), std::end(send_action_views_),
-      [offset, window_size{window_size_}](auto& action) {
-        auto& sending_data = action->sending_data();
-        return sending_data.get_offset_range(window_size).InRange(offset);
-      });
+  // collect data from the continuous list of sending data
+  for (; (it != std::end(send_actions_)) && (remaining > 0); ++it) {
+    auto& sending_action = *it;
+    // sending action now in Sending state
+    sending_action->Sending();
 
-  // TODO: what if there is no data with such offset in range but some data more
-  // than offset?
+    auto const& sending_data = sending_action->sending_data();
+    // Select data begin, copy size and distance from sending data offset to
+    // current offset and remaining size
+    auto distance =
+        static_cast<DataDiffType>(sending_data.offset.Distance(current_offset));
+    auto data_begin = std::next(sending_data.begin, distance);
+    auto data_size = std::min(
+        sending_data.size() - static_cast<std::size_t>(distance), remaining);
 
-  for (; it != std::end(send_action_views_); ++it) {
-    (*it)->Sending();
-    auto& sending_data = (*it)->sending_data();
-    auto data_begin =
-        std::next(std::begin(sending_data.data),
-                  static_cast<data_diff_type>(
-                      sending_data.offset.Distance(current_offset)));
-
-    auto data_size =
-        std::min(sending_data.data.size() -
-                     static_cast<std::size_t>(
-                         sending_data.offset.Distance(current_offset)),
-                 remaining);
-    auto data_end =
-        std::next(data_begin, static_cast<data_diff_type>(data_size));
-    std::copy(data_begin, data_end, std::back_inserter(chunk.data));
+    // copy data to the chunk
+    std::copy_n(data_begin, data_size, std::back_inserter(chunk.data));
+    current_offset += static_cast<SSRingIndex::type>(data_size);
     remaining -= data_size;
-    current_offset.Clockwise(static_cast<SafeStreamRingIndex::type>(data_size));
-
-    if (remaining == 0) {
-      break;
-    }
   }
 
   return chunk;
 }
 
-void SendDataBuffer::Confirm(SafeStreamRingIndex offset) {
-  send_action_views_.remove_if([this, offset](auto& action) {
-    auto& sending_data = action->sending_data();
-    auto offset_range = sending_data.get_offset_range(window_size_);
-    // before is check if whole range is on the left to offset, but we should
-    // confirm all ranges up to offset
-    if (offset_range.Before(offset + 1)) {
-      buffer_size_ -= sending_data.data.size();
-      action->SentConfirmed();
-      return true;
-    }
-    return false;
-  });
+std::size_t SendDataBuffer::Acknowledge(SSRingIndex offset) {
+  std::size_t removed_size = 0;
+  // iterate and remove acknowledged actions
+  send_actions_.erase(
+      std::remove_if(std::begin(send_actions_), std::end(send_actions_),
+                     [&removed_size, offset](auto& action) {
+                       auto const& sending_data = action->sending_data();
+                       auto offset_range = sending_data.offset_range();
+                       // check if sending data offset range either is before
+                       // offset or offset is in range
+                       if (offset_range.IsBefore(offset) ||
+                           offset_range.InRange(offset - 1)) {
+                         auto size_before = sending_data.size();
+                         auto res = action->Acknowledge(offset);
+                         // update removed size with delta between before and
+                         // after ack
+                         removed_size += (size_before - sending_data.size());
+                         return res;
+                       }
+                       return false;
+                     }),
+      std::end(send_actions_));
+
+  buffer_size_ -= removed_size;
+  return removed_size;
 }
 
-void SendDataBuffer::Reject(SafeStreamRingIndex offset) {
-  send_action_views_.remove_if([this, offset](auto& action) {
-    auto& sending_data = action->sending_data();
-    auto offset_range = sending_data.get_offset_range(window_size_);
-    if (offset_range.Before(offset) || offset_range.InRange(offset)) {
-      buffer_size_ -= sending_data.data.size();
-      action->Failed();
-      return true;
-    }
-    return false;
-  });
+std::size_t SendDataBuffer::Reject(SSRingIndex offset) {
+  std::size_t removed_size = 0;
+  // iterate and remove the sending actions fitting to the offset
+  send_actions_.erase(
+      std::remove_if(std::begin(send_actions_), std::end(send_actions_),
+                     [&removed_size, offset](auto& action) {
+                       auto const& sending_data = action->sending_data();
+                       auto offset_range = sending_data.offset_range();
+                       if (offset_range.IsBefore(offset) ||
+                           offset_range.InRange(offset - 1)) {
+                         removed_size += sending_data.size();
+                         action->Failed();
+                         return true;
+                       }
+                       return false;
+                     }),
+      std::end(send_actions_));
+
+  buffer_size_ -= removed_size;
+  return removed_size;
 }
 
-void SendDataBuffer::Stop(SafeStreamRingIndex offset) {
-  send_action_views_.remove_if([this, offset](auto& action) {
-    auto& sending_data = action->sending_data();
-    auto offset_range = sending_data.get_offset_range(window_size_);
-    if (offset_range.Before(offset) || offset_range.InRange(offset)) {
-      buffer_size_ -= sending_data.data.size();
-      action->Stopped();
-      return true;
-    }
-    return false;
-  });
-}
+std::size_t SendDataBuffer::Stop(SSRingIndex offset) {
+  // Stop means the sending action should not be sent like it was never added.
+  // find the action to stop
+  auto it = std::find_if(std::begin(send_actions_), std::end(send_actions_),
+                         [offset](auto& action) {
+                           auto& sending_data = action->sending_data();
+                           return sending_data.offset == offset;
+                         });
+  if (it == std::end(send_actions_)) {
+    return 0;
+  }
 
+  (*it)->Stopped();
+  auto const& sending_data = (*it)->sending_data();
+  buffer_size_ -= sending_data.size();
+  // move the other sending actions on the current place
+  auto current_offset = sending_data.offset;
+  for (auto fix_it = std::next(it); fix_it != std::end(send_actions_);
+       ++fix_it) {
+    // set new offset to next chunk
+    (*fix_it)->UpdateOffset(current_offset);
+    auto const& sd = (*fix_it)->sending_data();
+    current_offset = sd.offset_range().right + 1;
+  }
+  send_actions_.erase(it);
+  return sending_data.data.size();
+}
 }  // namespace ae

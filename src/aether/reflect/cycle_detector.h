@@ -18,38 +18,37 @@
 #define AETHER_REFLECT_CYCLE_DETECTOR_H_
 
 #include <set>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 
+#include "aether/crc.h"
 #include "aether/reflect/type_index.h"
 
 namespace ae::reflect {
+template <typename T, typename Enable = void>
+struct ObjectIndex {
+  static std::size_t GetIndex(T const* obj) {
+    std::array<std::uint8_t, sizeof(std::uintptr_t) + sizeof(std::uint32_t)>
+        buffer;
+    *reinterpret_cast<std::uintptr_t*>(buffer.data()) =
+        reinterpret_cast<std::uintptr_t>(obj);
+    *reinterpret_cast<std::uint32_t*>(buffer.data() + sizeof(std::uintptr_t)) =
+        GetTypeIndex<T>();
+
+    return crc32::from_buffer(buffer.data(), buffer.size()).value;
+  }
+};
 
 struct CycleDetector {
-  struct ObjEntry {
-    bool operator<(ObjEntry const& rhs) const {
-      auto lhs_ptr = reinterpret_cast<std::ptrdiff_t>(ptr);
-      auto rhs_ptr = reinterpret_cast<std::ptrdiff_t>(rhs.ptr);
-      return (static_cast<std::ptrdiff_t>(type_index) + lhs_ptr) <
-             (static_cast<std::ptrdiff_t>(rhs.type_index) + rhs_ptr);
-    }
-
-    std::uint32_t type_index;
-    void const* ptr;
-  };
-
-  std::set<ObjEntry> visited_objects_;
-
   template <typename T>
-  void Add(T const* ptr) {
-    visited_objects_.insert(ObjEntry{GetTypeIndex<T>(), ptr});
+  bool Add(T const* ptr) {
+    auto entry = ObjectIndex<T>::GetIndex(ptr);
+    auto [it, ok] = visited_objects.insert(entry);
+    return ok;
   }
 
-  template <typename T>
-  bool IsVisited(T const* ptr) const {
-    auto entry = ObjEntry{GetTypeIndex<T>(), ptr};
-    return visited_objects_.find(entry) != visited_objects_.end();
-  }
+  std::set<std::size_t> visited_objects;
 };
 }  // namespace ae::reflect
 

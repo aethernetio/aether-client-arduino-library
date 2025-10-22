@@ -17,8 +17,9 @@
 #ifndef AETHER_METHODS_WORK_SERVER_API_AUTHORIZED_API_H_
 #define AETHER_METHODS_WORK_SERVER_API_AUTHORIZED_API_H_
 
-#include "aether/uid.h"
-#include "aether/transport/data_buffer.h"
+#include "aether/types/uid.h"
+#include "aether/methods/telemetric.h"
+#include "aether/types/data_buffer.h"
 #include "aether/stream_api/stream_api.h"
 #include "aether/api_protocol/api_method.h"
 
@@ -29,11 +30,13 @@ class AuthorizedApi {
   AuthorizedApi(ProtocolContext& protocol_context,
                 ActionContext action_context);
 
-  Method<06, PromiseView<void>(std::uint64_t next_ping_duration)> ping;
+  Method<06, ApiPromisePtr<void>(std::uint64_t next_ping_duration)> ping;
   Method<10, void(Uid uid, DataBuffer data)> send_message;
   Method<12, void(StreamId servers_stream_id, StreamId cloud_stream_id)>
       resolvers;
-  Method<16, PromiseView<void>(Uid uid)> check_access_for_send_message;
+  Method<16, ApiPromisePtr<void>(Uid uid)> check_access_for_send_message;
+
+  Method<70, void(Telemetric telemetric)> send_telemetric;
 };
 }  // namespace ae
 

@@ -19,12 +19,30 @@
 
 #include "aether/tele/tele.h"
 
-AE_TELE_MODULE(kTransport, 4);
-AE_TAG_INDEXED(TcpTransportConnect, kTransport, 20)
-AE_TAG(TcpTransport, kTransport)
-AE_TAG(TcpTransportDisconnect, kTransport)
-AE_TAG(TcpTransportSend, kTransport)
-AE_TAG(TcpTransportOnData, kTransport)
-AE_TAG(TcpTransportReceive, kTransport)
+AE_TELE_MODULE(kTransport, 4, 51, 100);
+AE_TELE_MODULE(kTransportDebug, 104, 400, 445);
+
+AE_TAG(kTcpTransportConnect, kTransport)
+AE_TAG(kTcpTransportDisconnect, kTransport)
+AE_TAG(kTcpTransport, kTransport)
+
+AE_TAG(kTcpTransportSend, kTransportDebug)
+AE_TAG(kTcpTransportReceive, kTransportDebug)
+
+AE_TAG(kUdpTransport, kTransport)
+AE_TAG(kUdpTransportConnect, kTransport)
+AE_TAG(kUdpTransportConnectFailed, kTransport)
+AE_TAG(kUdpTransportDisconnect, kTransport)
+
+AE_TAG(kUdpTransportSend, kTransportDebug)
+AE_TAG(kUdpTransportReceive, kTransportDebug)
+
+AE_TAG(kModemTransportSend, kTransportDebug)
+AE_TAG(kModemTransportReceive, kTransportDebug)
+AE_TAG(kModemTransport, kTransport)
+
+AE_TAG(kLoraModuleTransportSend, kTransportDebug)
+AE_TAG(kLoraModuleTransportReceive, kTransportDebug)
+AE_TAG(kLoraModuleTransport, kTransport)
 
 #endif  // AETHER_TRANSPORT_TRANSPORT_TELE_H_

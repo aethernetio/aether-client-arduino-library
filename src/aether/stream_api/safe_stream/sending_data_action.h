@@ -17,24 +17,14 @@
 #ifndef AETHER_STREAM_API_SAFE_STREAM_SENDING_DATA_ACTION_H_
 #define AETHER_STREAM_API_SAFE_STREAM_SENDING_DATA_ACTION_H_
 
-#include <utility>
-
-#include "aether/state_machine.h"
 #include "aether/events/events.h"
 #include "aether/actions/action.h"
-#include "aether/transport/data_buffer.h"
+#include "aether/types/state_machine.h"
 #include "aether/actions/action_context.h"
 
 #include "aether/stream_api/safe_stream/safe_stream_types.h"
 
 namespace ae {
-struct SendingData {
-  OffsetRange get_offset_range(SafeStreamRingIndex::type window_size) const;
-
-  SafeStreamRingIndex offset;
-  DataBuffer data;
-};
-
 class SendingDataAction : public Action<SendingDataAction> {
   enum class State : std::uint8_t {
     kWaiting,
@@ -46,25 +36,44 @@ class SendingDataAction : public Action<SendingDataAction> {
 
  public:
   using Action::Action;
-  using Action::operator=;
+
   SendingDataAction(ActionContext action_context, SendingData data);
 
-  TimePoint Update(TimePoint current_time) override;
+  UpdateStatus Update();
 
-  SendingData& sending_data();
-  EventSubscriber<void()> stop_event();
+  SendingData const& sending_data() const;
+  // The stop event is emitted by stop command.
+  EventSubscriber<void(SendingData const&)> stop_event();
 
-  void Sending();
+  // command to stop the sending action
   void Stop();
 
-  void SentConfirmed();
+  /**
+   * \brief Acknowledge part of the data till offset as acknowledged.
+   * If the whole sending_data_ is acknowledged, the action is marked as done.
+   * \param offset The offset to acknowledge.
+   * \return true if the whole sending_data_ is acknowledged.
+   */
+  bool Acknowledge(SSRingIndex offset);
+
+  // mark action as sending
+  void Sending();
+  // mark action as stopped
   void Stopped();
+  // mark action as failed
   void Failed();
+
+  /**
+   * \brief Update the offset of sending_data_ to new  value.
+   * \param offset The new offset.
+   * \return Old value.
+   */
+  SSRingIndex UpdateOffset(SSRingIndex offset);
 
  private:
   SendingData sending_data_;
   StateMachine<State> state_;
-  Event<void()> stop_event_;
+  Event<void(SendingData const&)> stop_event_;
 };
 }  // namespace ae
 

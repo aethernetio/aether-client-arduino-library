@@ -17,6 +17,7 @@
 #ifndef AETHER_CONFIG_H_
 #define AETHER_CONFIG_H_
 
+// IWYU pragma: begin_exports
 #include <limits>
 #include <cstdint>
 
@@ -24,26 +25,23 @@
 #if defined USER_CONFIG
 #  include USER_CONFIG
 #endif
+// IWYU pragma: end_exports
 
-#ifndef CM_PLATFORM
+#ifndef AE_SUPPORT_IPV4
+#  define AE_SUPPORT_IPV4 1
+#endif  // AE_SUPPORT_IPV4
 
-#  ifndef AE_SUPPORT_IPV4
-#    define AE_SUPPORT_IPV4 1
-#  endif  // AE_SUPPORT_IPV4
+#ifndef AE_SUPPORT_IPV6
+#  define AE_SUPPORT_IPV6 1
+#endif  // AE_SUPPORT_IPV6
 
-#  ifndef AE_SUPPORT_IPV6
-#    define AE_SUPPORT_IPV6 1
-#  endif  // AE_SUPPORT_IPV6
+#ifndef AE_SUPPORT_UDP
+#  define AE_SUPPORT_UDP 1
+#endif  // AE_SUPPORT_UDP
 
-#  ifndef AE_SUPPORT_UDP
-#    define AE_SUPPORT_UDP 1
-#  endif  // AE_SUPPORT_UDP
-
-#  ifndef AE_SUPPORT_TCP
-#    define AE_SUPPORT_TCP 1
-#  endif  // AE_SUPPORT_TCP
-
-#endif /* CM_PLATFORM */
+#ifndef AE_SUPPORT_TCP
+#  define AE_SUPPORT_TCP 1
+#endif  // AE_SUPPORT_TCP
 
 #ifndef AE_SUPPORT_WEBSOCKET
 #  define AE_SUPPORT_WEBSOCKET 1
@@ -149,13 +147,9 @@
 #  define AE_TARGET_ENDIANNESS AE_LITTLE_ENDIAN
 #endif  // AE_TARGET_ENDIANNESS
 
-#ifndef AE_SUPPORT_SPIFS_V1_FS
-#  define AE_SUPPORT_SPIFS_V1_FS 0
-#endif  // AE_SUPPORT_SPIFS_V1_FS
-
-#ifndef AE_SUPPORT_SPIFS_V2_FS
-#  define AE_SUPPORT_SPIFS_V2_FS 0
-#endif  // AE_SUPPORT_SPIFS_V2_FS
+#ifndef AE_SUPPORT_SPIFS_FS
+#  define AE_SUPPORT_SPIFS_FS 0
+#endif  // AE_SUPPORT_SPIFS_FS
 
 // safe stream sender repeat timeout grow factor
 #ifndef AE_SAFE_STREAM_RTO_GROW_FACTOR
@@ -164,12 +158,36 @@
 
 // window size for connection statistics
 #ifndef AE_STATISTICS_CONNECTION_WINDOW_SIZE
-#  define AE_STATISTICS_CONNECTION_WINDOW_SIZE 10
+#  define AE_STATISTICS_CONNECTION_WINDOW_SIZE 100
+#endif
+// default value used for connection timeout, until statistics are available
+#ifndef AE_DEFAULT_CONNECTION_TIMEOUT_MS
+#  define AE_DEFAULT_CONNECTION_TIMEOUT_MS 5000
 #endif
 
 // window size for server answear to ping statistics
-#ifndef AE_STATISTICS_PING_WINDOW_SIZE
-#  define AE_STATISTICS_PING_WINDOW_SIZE 100
+#ifndef AE_STATISTICS_RESPONSE_WINDOW_SIZE
+#  define AE_STATISTICS_RESPONSE_WINDOW_SIZE 100
+#endif
+
+// default value used for ping timeout, until statistics are available
+#ifndef AE_DEFAULT_RESPONSE_TIMEOUT_MS
+#  define AE_DEFAULT_RESPONSE_TIMEOUT_MS 1000
+#endif
+
+// window size for safe stream response time statistics
+#ifndef AE_STATISTICS_SAFE_STREAM_WINDOW_SIZE
+#  define AE_STATISTICS_SAFE_STREAM_WINDOW_SIZE 100
+#endif
+
+// the default timeout for establishing a wifi connection
+#ifndef AE_WIFI_CONNECTION_TIMEOUT_MS
+#  define AE_WIFI_CONNECTION_TIMEOUT_MS 20000
+#endif
+
+// default value for connection modem
+#ifndef AE_MODEM_CONNECTION_TIMEOUT_MS
+#  define AE_MODEM_CONNECTION_TIMEOUT_MS 15000
 #endif
 
 // Telemetry configuration
@@ -315,6 +333,11 @@
 #ifndef AE_TELE_LOG_CONSOLE
 #  define AE_TELE_LOG_CONSOLE 1
 #endif  // AE_TELE_LOG_CONSOLE
+
+// the maximum size of the telemetry statistics buffer
+#ifndef AE_STATISTICS_MAX_SIZE
+#  define AE_STATISTICS_MAX_SIZE (10 * 1024)  // 10 KB
+#endif
 
 #ifndef NDEBUG
 #  define DEBUG 1

@@ -44,6 +44,8 @@ static TLS struct {
 #include "third_party/libhydrogen/impl/random/ch32.h"
 #elif defined(CHIBIOS)
 #include "third_party/libhydrogen/impl/random/chibios.h"
+#elif defined(__CHERIOT__)
+#include "third_party/libhydrogen/impl/random/cheriot.h"
 #else
 #    error Unsupported platform
 #endif

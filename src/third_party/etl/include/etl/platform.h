@@ -139,6 +139,16 @@ SOFTWARE.
 #endif
 
 //*************************************
+// For when the runtime library is compiled without wchar_t support.
+#if defined(ETL_NO_WIDE_CHARACTERS)
+  #define ETL_USING_WIDE_CHARACTERS     0
+  #define ETL_NOT_USING_WIDE_CHARACTERS 1
+#else
+  #define ETL_USING_WIDE_CHARACTERS     1
+  #define ETL_NOT_USING_WIDE_CHARACTERS 0
+#endif
+
+//*************************************
 // Figure out things about the compiler, if haven't already done so in etl_profile.h
 #include "third_party/etl/include/etl/profiles/determine_compiler_version.h"
 #include "third_party/etl/include/etl/profiles/determine_compiler_language_support.h"
@@ -269,6 +279,38 @@ SOFTWARE.
   #define ETL_HAS_VIRTUAL_MESSAGES 0
 #else
   #define ETL_HAS_VIRTUAL_MESSAGES 1
+#endif
+
+//*************************************
+// Indicate if etl::literals::chrono_literals uses ETL verbose style.
+#if defined(ETL_USE_VERBOSE_CHRONO_LITERALS) && ETL_USING_CPP11
+#define ETL_USING_VERBOSE_CHRONO_LITERALS 1
+#else
+#define ETL_USING_VERBOSE_CHRONO_LITERALS 0
+#endif
+
+//*************************************
+// Indicate if etl::literals::chrono_literals has days (_days)
+#if defined(ETL_DISABLE_CHRONO_LITERALS_DAY) && ETL_USING_CPP11
+  #define ETL_HAS_CHRONO_LITERALS_DAY 0
+#else
+  #define ETL_HAS_CHRONO_LITERALS_DAY 1
+#endif
+
+//*************************************
+// Indicate if etl::literals::chrono_literals has year (_years)
+#if defined(ETL_DISABLE_CHRONO_LITERALS_YEAR) && ETL_USING_CPP11
+  #define ETL_HAS_CHRONO_LITERALS_YEAR 0
+#else
+  #define ETL_HAS_CHRONO_LITERALS_YEAR 1
+#endif
+
+//*************************************
+// Indicate if etl::literals::chrono_literals has year (_hours, _minutes, _seconds, _milliseconds, _microseconds, _nanoseconds)
+#if defined(ETL_DISABLE_CHRONO_LITERALS_DURATION) && ETL_USING_CPP11
+#define ETL_HAS_CHRONO_LITERALS_DURATION 0
+#else
+#define ETL_HAS_CHRONO_LITERALS_DURATION 1
 #endif
 
 //*************************************
@@ -418,6 +460,16 @@ SOFTWARE.
 #endif
 
 //*************************************
+// Determine if the ETL can use libc's wchar.h
+#if defined(ETL_NO_LIBC_WCHAR_H)
+  #define ETL_USING_LIBC_WCHAR_H     0
+  #define ETL_NOT_USING_LIBC_WCHAR_H 1
+#else
+  #define ETL_USING_LIBC_WCHAR_H     1
+  #define ETL_NOT_USING_LIBC_WCHAR_H 0
+#endif
+
+//*************************************
 // Determine if the ETL should support atomics.
 #if defined(ETL_NO_ATOMICS) || \
     defined(ETL_TARGET_DEVICE_ARM_CORTEX_M0) || \
@@ -433,6 +485,15 @@ SOFTWARE.
     #define ETL_HAS_ATOMIC 1
   #else
     #define ETL_HAS_ATOMIC 0
+  #endif
+  #if ((ETL_USING_CPP17 && (ETL_USING_STL || defined(ETL_IN_UNIT_TEST))) || \
+        defined(ETL_COMPILER_ARM5)  || \
+        defined(ETL_COMPILER_ARM6)  || \
+        defined(ETL_COMPILER_GCC)   || \
+        defined(ETL_COMPILER_CLANG))
+    #define ETL_HAS_ATOMIC_ALWAYS_LOCK_FREE 1
+  #else
+    #define ETL_HAS_ATOMIC_ALWAYS_LOCK_FREE 0
   #endif
 #endif
 
@@ -518,12 +579,14 @@ namespace etl
     static ETL_CONSTANT bool using_generic_compiler           = (ETL_USING_GENERIC_COMPILER == 1);
     static ETL_CONSTANT bool using_legacy_bitset              = (ETL_USING_LEGACY_BITSET == 1);
     static ETL_CONSTANT bool using_exceptions                 = (ETL_USING_EXCEPTIONS == 1);
+    static ETL_CONSTANT bool using_wide_characters            = (ETL_USING_WIDE_CHARACTERS == 1);
     
     // Has...
     static ETL_CONSTANT bool has_initializer_list             = (ETL_HAS_INITIALIZER_LIST == 1);
     static ETL_CONSTANT bool has_8bit_types                   = (ETL_USING_8BIT_TYPES == 1);
     static ETL_CONSTANT bool has_64bit_types                  = (ETL_USING_64BIT_TYPES == 1);
     static ETL_CONSTANT bool has_atomic                       = (ETL_HAS_ATOMIC == 1);
+    static ETL_CONSTANT bool has_atomic_always_lock_free      = (ETL_HAS_ATOMIC_ALWAYS_LOCK_FREE == 1);
     static ETL_CONSTANT bool has_nullptr                      = (ETL_HAS_NULLPTR == 1);
     static ETL_CONSTANT bool has_char8_t                      = (ETL_HAS_CHAR8_T == 1);
     static ETL_CONSTANT bool has_native_char8_t               = (ETL_HAS_NATIVE_CHAR8_T == 1);
@@ -539,6 +602,14 @@ namespace etl
     static ETL_CONSTANT bool has_ideque_repair                = (ETL_HAS_IDEQUE_REPAIR == 1);
     static ETL_CONSTANT bool has_virtual_messages             = (ETL_HAS_VIRTUAL_MESSAGES == 1);
     static ETL_CONSTANT bool has_packed                       = (ETL_HAS_PACKED == 1);
+    static ETL_CONSTANT bool has_chrono_literals_day          = (ETL_HAS_CHRONO_LITERALS_DAY == 1);
+    static ETL_CONSTANT bool has_chrono_literals_year         = (ETL_HAS_CHRONO_LITERALS_YEAR == 1);
+    static ETL_CONSTANT bool has_chrono_literals_hours        = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
+    static ETL_CONSTANT bool has_chrono_literals_minutes      = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
+    static ETL_CONSTANT bool has_chrono_literals_seconds      = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
+    static ETL_CONSTANT bool has_chrono_literals_milliseconds = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
+    static ETL_CONSTANT bool has_chrono_literals_microseconds = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
+    static ETL_CONSTANT bool has_chrono_literals_nanoseconds  = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
 
     // Is...
     static ETL_CONSTANT bool is_debug_build                   = (ETL_IS_DEBUG_BUILD == 1);

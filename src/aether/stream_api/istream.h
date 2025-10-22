@@ -21,10 +21,10 @@
 #include <type_traits>
 
 #include "aether/common.h"
-#include "aether/actions/action_view.h"
+#include "aether/actions/action_ptr.h"
 
 #include "aether/events/events.h"
-#include "aether/transport/data_buffer.h"
+#include "aether/types/data_buffer.h"
 #include "aether/stream_api/stream_write_action.h"
 
 namespace ae {
@@ -40,19 +40,27 @@ struct SelectOutDataEvent<U, std::enable_if_t<!std::is_void_v<U>>> {
 };
 }  // namespace istream_internal
 
+enum class LinkState : std::uint8_t {
+  kUnlinked,
+  kLinked,
+  kLinkError,
+};
+
 struct StreamInfo {
-  std::size_t max_element_size;  //< Max size of element available to write,
-                                 // mostly the max packet size
-  bool is_linked;                //< is stream linked somewhere
-  bool is_writable;              //< is stream writeable */
-  bool is_soft_writable;         //< is stream soft writeable (!is_soft_writable
-                                 //&& !is_writable means write returns error)
+  std::size_t
+      rec_element_size;  //< Recommended size of element in bytes to write
+  std::size_t max_element_size;  //< Max size of element to write
+  bool is_reliable;  //< Is stream reliable, means if packets are garantead to
+                     // be sent
+  LinkState link_state;  //< link state of the stream
+  bool is_writable;      //< is stream writeable
 };
 
 inline bool operator==(StreamInfo const& left, StreamInfo const& right) {
-  return (left.max_element_size == right.max_element_size) &&
-         (left.is_linked == right.is_linked) &&
-         (left.is_soft_writable == right.is_soft_writable) &&
+  return (left.rec_element_size == right.rec_element_size) &&
+         (left.max_element_size == right.max_element_size) &&
+         (left.is_reliable == right.is_reliable) &&
+         (left.link_state == right.link_state) &&
          (left.is_writable == right.is_writable);
 }
 
@@ -77,7 +85,7 @@ class IStream {
    * \param in_data Data to write
    * \return Action to control write process or subscribe to result.
    */
-  virtual ActionView<StreamWriteAction> Write(TIn&& in_data) = 0;
+  virtual ActionPtr<StreamWriteAction> Write(TIn&& in_data) = 0;
   /**
    * \brief Stream update event.
    */
@@ -90,6 +98,13 @@ class IStream {
    * \brief New data received event.
    */
   virtual typename OutDataEvent::Subscriber out_data_event() = 0;
+
+  /**
+   * \brief Reconfigure the stream in case on user request.
+   * This notifies lower layers about need of stream reconfiguration because the
+   * higher layers detect problems.
+   */
+  virtual void Restream() = 0;
 };
 
 template <typename TIn, typename TOut, typename TInOut, typename TOutIn>
@@ -121,6 +136,13 @@ class Stream : public IStream<TIn, TOut> {
     return EventSubscriber{out_data_event_};
   }
 
+  void Restream() override {
+    if (out_ == nullptr) {
+      return;
+    }
+    out_->Restream();
+  }
+
   /**
    * \brief Link with out stream.
    */
@@ -131,7 +153,7 @@ class Stream : public IStream<TIn, TOut> {
   virtual void Unlink() = 0;
 
  protected:
-  OutStream* out_;
+  OutStream* out_{};
   StreamUpdateEvent stream_update_event_;
   OutDataEvent out_data_event_;
   Subscription update_sub_;
@@ -151,7 +173,7 @@ class Stream<TIn, TOut, TIn, TOut> : public IStream<TIn, TOut> {
   ~Stream() override = default;
   AE_CLASS_MOVE_ONLY(Stream)
 
-  ActionView<StreamWriteAction> Write(TIn&& data) override {
+  ActionPtr<StreamWriteAction> Write(TIn&& data) override {
     assert(out_);
     return out_->Write(std::move(data));
   }
@@ -169,6 +191,13 @@ class Stream<TIn, TOut, TIn, TOut> : public IStream<TIn, TOut> {
 
   typename OutDataEvent::Subscriber out_data_event() override {
     return EventSubscriber{out_data_event_};
+  }
+
+  void Restream() override {
+    if (out_ == nullptr) {
+      return;
+    }
+    out_->Restream();
   }
 
   /**
@@ -193,7 +222,7 @@ class Stream<TIn, TOut, TIn, TOut> : public IStream<TIn, TOut> {
   }
 
  protected:
-  OutStream* out_;
+  OutStream* out_{};
   StreamUpdateEvent stream_update_event_;
   OutDataEvent out_data_event_;
   Subscription update_sub_;

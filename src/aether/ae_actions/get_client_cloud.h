@@ -17,21 +17,21 @@
 #ifndef AETHER_AE_ACTIONS_GET_CLIENT_CLOUD_H_
 #define AETHER_AE_ACTIONS_GET_CLIENT_CLOUD_H_
 
+#include <map>
 #include <vector>
 
-#include "aether/memory.h"
 #include "aether/actions/action.h"
+#include "aether/actions/repeatable_task.h"
 #include "aether/events/multi_subscription.h"
 
 #include "aether/stream_api/stream_api.h"
-#include "aether/stream_api/header_gate.h"
 #include "aether/stream_api/gates_stream.h"
 #include "aether/stream_api/serialize_gate.h"
 
 #include "aether/methods/uid_and_cloud.h"
 #include "aether/methods/server_descriptor.h"
 
-#include "aether/client_connections/client_to_server_stream.h"
+#include "aether/server_connections/client_to_server_stream.h"
 
 namespace ae {
 class GetClientCloudAction : public Action<GetClientCloudAction> {
@@ -43,43 +43,61 @@ class GetClientCloudAction : public Action<GetClientCloudAction> {
     kStopped,
   };
 
+  class AddResolversGate {
+   public:
+    AddResolversGate(ClientToServerStream& client_to_server_stream,
+                     StreamId server_stream_id, StreamId cloud_stream_id);
+
+    DataBuffer WriteIn(DataBuffer&& buffer);
+
+   private:
+    ClientToServerStream* client_to_server_stream_;
+    StreamId server_stream_id_;
+    StreamId cloud_stream_id_;
+  };
+
  public:
   explicit GetClientCloudAction(ActionContext action_context,
                                 ClientToServerStream& client_to_server_stream,
                                 Uid client_uid);
 
-  TimePoint Update(TimePoint current_time) override;
+  UpdateStatus Update();
 
   void Stop();
 
-  std::vector<ServerDescriptor> const& server_descriptors();
+  std::vector<ServerDescriptor> const& server_descriptors() const;
 
  private:
-  void RequestCloud(TimePoint current_time);
-  void RequestServerResolve(TimePoint current_time);
+  void InitStreams();
+  void RequestCloud();
+  void RequestCloudFailed();
+  void RequestServerResolve();
 
   void OnCloudResponse(UidAndCloud const& uid_and_cloud);
   void OnServerResponse(ServerDescriptor const& server_descriptor);
 
+  ActionContext action_context_;
   ClientToServerStream* client_to_server_stream_;
   Uid client_uid_;
 
-  std::optional<AddHeaderGate> add_resolvers_;
+  std::optional<AddResolversGate> add_resolvers_;
   std::optional<GatesStream<SerializeGate<Uid, UidAndCloud>, StreamApiGate,
-                            AddHeaderGate&>>
+                            AddResolversGate&>>
       cloud_request_stream_;
   std::optional<GatesStream<SerializeGate<ServerId, ServerDescriptor>,
-                            StreamApiGate, AddHeaderGate&>>
+                            StreamApiGate, AddResolversGate&>>
       server_resolver_stream_;
 
   StateMachine<State> state_;
+  ActionPtr<RepeatableTask> request_cloud_task_;
+  std::map<ServerId, ActionPtr<RepeatableTask>> server_resolve_tasks_;
 
   Subscription state_changed_subscription_;
   Subscription cloud_response_subscription_;
   Subscription server_resolve_subscription_;
 
-  ActionView<StreamWriteAction> cloud_request_action_;
-  std::vector<ActionView<StreamWriteAction>> server_resolve_actions_;
+  ActionPtr<StreamWriteAction> cloud_request_action_;
+  std::map<ServerId, ActionPtr<StreamWriteAction>> server_resolve_actions_;
 
   MultiSubscription cloud_request_subscriptions_;
   MultiSubscription server_resolve_subscriptions_;

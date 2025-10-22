@@ -28,16 +28,14 @@ DISABLE_WARNING_POP()
 
 #include "aether/common.h"
 #include "aether/server.h"
-#include "aether/channel.h"
+#include "aether/channels/channel.h"
 #include "aether/ptr/ptr.h"
-#include "aether/state_machine.h"
 #include "aether/actions/action.h"
+#include "aether/types/state_machine.h"
 #include "aether/actions/action_context.h"
 #include "aether/events/event_subscription.h"
 #include "aether/events/multi_subscription.h"
-#include "aether/client_connections/client_to_server_stream.h"
-
-#include "aether/methods/client_api/client_safe_api.h"
+#include "aether/server_connections/client_to_server_stream.h"
 
 namespace ae {
 class Ping : public Action<Ping> {
@@ -46,6 +44,7 @@ class Ping : public Action<Ping> {
     kSendPing,
     kWaitResponse,
     kWaitInterval,
+    kStopped,
     kError,
   };
 
@@ -60,12 +59,13 @@ class Ping : public Action<Ping> {
 
   AE_CLASS_NO_COPY_MOVE(Ping);
 
-  TimePoint Update(TimePoint current_time) override;
+  UpdateStatus Update();
+  void Stop();
 
  private:
-  void SendPing(TimePoint current_time);
-  TimePoint WaitInterval(TimePoint current_time);
-  TimePoint WaitResponse(TimePoint current_time);
+  void SendPing();
+  TimePoint WaitInterval();
+  TimePoint WaitResponse();
   void PingResponse(RequestId request_id);
 
   PtrView<Server> server_;

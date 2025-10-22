@@ -19,7 +19,7 @@
 
 #include "aether/actions/action.h"
 #include "aether/actions/action_context.h"
-#include "aether/state_machine.h"
+#include "aether/types/state_machine.h"
 
 namespace ae {
 class PacketSendAction : public Action<PacketSendAction> {
@@ -34,19 +34,12 @@ class PacketSendAction : public Action<PacketSendAction> {
     kPanic,    // fatal unrecoverable error
   };
 
-  PacketSendAction() = default;
   explicit PacketSendAction(ActionContext action_context)
-      : Action(action_context) {}
-  PacketSendAction(PacketSendAction const& other) = delete;
-  PacketSendAction(PacketSendAction&& other) noexcept
-      : Action(std::move(static_cast<Action&>(other))) {}
+      : Action{action_context}, state_{State::kQueued} {}
 
-  PacketSendAction& operator=(PacketSendAction const& other) = delete;
-  PacketSendAction& operator=(PacketSendAction&& other) noexcept {
-    Action::operator=(std::move(static_cast<Action&>(other)));
-    return *this;
-  };
+  AE_CLASS_MOVE_ONLY(PacketSendAction);
 
+  virtual UpdateStatus Update() = 0;
   virtual void Stop() = 0;
   StateMachine<State> const& state() const { return state_; }
 

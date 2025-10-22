@@ -17,26 +17,59 @@
 #include "aether/stream_api/stream_write_action.h"
 
 namespace ae {
-FailedStreamWriteAction::FailedStreamWriteAction() {
-  state_.Set(State::kFailed);
+
+StreamWriteAction::StreamWriteAction(ActionContext action_context)
+    : Action{action_context}, state_{State::kQueued} {}
+
+StreamWriteAction::StreamWriteAction(StreamWriteAction&& other) noexcept
+    : Action{std::move(other)}, state_{std::move(other.state_)} {}
+
+StreamWriteAction& StreamWriteAction::operator=(
+    StreamWriteAction&& other) noexcept {
+  if (this != &other) {
+    Action::operator=(std::move(other));
+    state_ = std::move(other.state_);
+  }
+  return *this;
 }
 
-FailedStreamWriteAction::FailedStreamWriteAction(ActionContext action_context)
-    : StreamWriteAction(action_context) {
-  state_.Set(State::kFailed);
-}
-
-TimePoint FailedStreamWriteAction::Update(TimePoint current_time) {
+UpdateStatus StreamWriteAction::Update() {
   if (state_.changed()) {
     switch (state_.Acquire()) {
+      case State::kDone:
+        return UpdateStatus::Result();
+      case State::kStopped:
+        return UpdateStatus::Stop();
       case State::kFailed:
-        Action::Error(*this);
-        break;
+        return UpdateStatus::Error();
       default:
         break;
     }
   }
-  return current_time;
+
+  return {};
+}
+
+void StreamWriteAction::Stop() {
+  state_ = State::kStopped;
+  Action::Trigger();
+}
+
+FailedStreamWriteAction::FailedStreamWriteAction(ActionContext action_context)
+    : StreamWriteAction{action_context} {
+  state_.Set(State::kFailed);
+}
+
+UpdateStatus FailedStreamWriteAction::Update() {
+  if (state_.changed()) {
+    switch (state_.Acquire()) {
+      case State::kFailed:
+        return UpdateStatus::Error();
+      default:
+        break;
+    }
+  }
+  return {};
 }
 
 void FailedStreamWriteAction::Stop() {}

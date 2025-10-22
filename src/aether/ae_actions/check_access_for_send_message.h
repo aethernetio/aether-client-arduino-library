@@ -20,10 +20,11 @@
 #include <cstdint>
 
 #include "aether/common.h"
-#include "aether/state_machine.h"
 #include "aether/actions/action.h"
+#include "aether/types/state_machine.h"
+#include "aether/actions/repeatable_task.h"
 
-#include "aether/client_connections/client_to_server_stream.h"
+#include "aether/server_connections/client_to_server_stream.h"
 
 namespace ae {
 class CheckAccessForSendMessage final
@@ -47,27 +48,27 @@ class CheckAccessForSendMessage final
 
   AE_CLASS_NO_COPY_MOVE(CheckAccessForSendMessage)
 
-  TimePoint Update(TimePoint current_time) override;
+  UpdateStatus Update();
 
   State state() const { return state_.get(); }
 
  private:
-  void SendRequest(TimePoint current_time);
-  TimePoint WaitResponse(TimePoint current_time);
+  void SendRequest();
+  TimePoint WaitResponse();
   void ResponseReceived();
   void ErrorReceived();
   void SendError();
 
+  ActionContext action_context_;
   ClientToServerStream* client_to_server_stream_;
   Uid destination_;
 
-  std::uint8_t repeat_count_;
-  TimePoint last_request_time_;
   StateMachine<State> state_;
-  Subscription wait_check_success_;
-  Subscription wait_check_error_;
-  Subscription state_changed_;
-  Subscription send_error_;
+  ActionPtr<RepeatableTask> repeatable_task_;
+  Subscription wait_check_sub_;
+  Subscription state_changed_sub_;
+  Subscription send_error_sub_;
+  Subscription repeat_task_error_sub_;
 };
 }  // namespace ae
 

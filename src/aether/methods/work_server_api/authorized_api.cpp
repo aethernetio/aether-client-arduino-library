@@ -24,5 +24,6 @@ AuthorizedApi::AuthorizedApi(ProtocolContext& protocol_context,
     : ping{protocol_context, action_context},
       send_message{protocol_context},
       resolvers{protocol_context},
-      check_access_for_send_message{protocol_context, action_context} {}
+      check_access_for_send_message{protocol_context, action_context},
+      send_telemetric{protocol_context} {}
 }  // namespace ae

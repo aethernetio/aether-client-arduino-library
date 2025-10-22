@@ -19,80 +19,29 @@
 #include <utility>
 
 #include "aether/aether.h"
+#include "aether/channels/channel.h"
+#include "aether/reflect/reflect.h"
 #include "aether/adapters/adapter_tele.h"
 
-#include "aether/transport/low_level/tcp/unix_tcp.h"
-#include "aether/transport/low_level/tcp/win_tcp.h"
-#include "aether/transport/low_level/tcp/lwip_tcp.h"
+// IWYU pragma: begin_keeps
+#include "aether/transport/low_level/tcp/tcp.h"
+#include "aether/transport/low_level/udp/udp.h"
+// IWYU pragma: end_keeps
 
 namespace ae {
 
-EthernetAdapter::EthernetCreateTransportAction::EthernetCreateTransportAction(
-    ActionContext action_context, std::unique_ptr<ITransport> transport)
-    : CreateTransportAction{action_context},
-      transport_{std::move(transport)},
-      once_{true} {}
-
-TimePoint EthernetAdapter::EthernetCreateTransportAction::Update(
-    TimePoint current_time) {
-  if (transport_ && once_) {
-    once_ = false;
-    Action::Result(*this);
-  }
-  return current_time;
-}
-
-std::unique_ptr<ITransport>
-EthernetAdapter::EthernetCreateTransportAction::transport() {
-  return std::move(transport_);
-}
-
 #ifdef AE_DISTILLATION
-EthernetAdapter::EthernetAdapter(Aether::ptr aether, IPoller::ptr poller,
-                                 Domain* domain)
-    : Adapter(domain), aether_{std::move(aether)}, poller_{std::move(poller)} {
+EthernetAdapter::EthernetAdapter(ObjPtr<Aether> aether, IPoller::ptr poller,
+                                 DnsResolver::ptr dns_resolver, Domain* domain)
+    : Adapter{domain},
+      ethernet_access_point_{domain->CreateObj<EthernetAccessPoint>(
+          std::move(aether), std::move(poller), std::move(dns_resolver))} {
   AE_TELED_INFO("EthernetAdapter created");
 }
 #endif  // AE_DISTILLATION
 
-ActionView<CreateTransportAction> EthernetAdapter::CreateTransport(
-    IpAddressPortProtocol const& address_port_protocol) {
-  AE_TELE_INFO(kAdapterCreate, "Create transport for {}",
-               address_port_protocol);
-
-  if (!create_transport_actions_) {
-    create_transport_actions_.emplace(
-        ActionContext{*aether_.as<Aether>()->action_processor});
-  }
-
-  CleanDeadTransports();
-  auto transport = FindInCache(address_port_protocol);
-  if (!transport) {
-    AE_TELE_DEBUG(kAdapterCreateCacheMiss);
-#if defined UNIX_TCP_TRANSPORT_ENABLED
-    assert(address_port_protocol.protocol == Protocol::kTcp);
-    transport =
-        make_unique<UnixTcpTransport>(*aether_.as<Aether>()->action_processor,
-                                      poller_, address_port_protocol);
-#elif defined LWIP_TCP_TRANSPORT_ENABLED
-    assert(address_port_protocol.protocol == Protocol::kTcp);
-    transport =
-        make_unique<LwipTcpTransport>(*aether_.as<Aether>()->action_processor,
-                                      poller_, address_port_protocol);
-#elif defined WIN_TCP_TRANSPORT_ENABLED
-    assert(address_port_protocol.protocol == Protocol::kTcp);
-    transport =
-        make_unique<WinTcpTransport>(*aether_.as<Aether>()->action_processor,
-                                     poller_, address_port_protocol);
-#else
-    return {};
-#endif
-    AddToCache(address_port_protocol, *transport);
-  } else {
-    AE_TELE_DEBUG(kAdapterCreateCacheHit);
-  }
-
-  return create_transport_actions_->Emplace(std::move(transport));
+std::vector<AccessPoint::ptr> EthernetAdapter::access_points() {
+  return {ethernet_access_point_};
 }
 
 }  // namespace ae

@@ -52,7 +52,7 @@ struct VectorReader {
   VectorReader(std::vector<uint8_t> const& data) : data_(data) {}
   virtual ~VectorReader() = default;
 
-  size_t read(void* data, size_t size, size_t /* min_size */) {
+  size_t read(void* data, size_t size) {
     if (offset_ + size > data_.size()) {
       result_ = ReadResult::kNo;
       return 0;
@@ -65,6 +65,33 @@ struct VectorReader {
 
   ReadResult result() const { return result_; }
   void result(ReadResult result) { result_ = result; }
+};
+
+/**
+ * \brief VectorWriter with limit in size
+ */
+template <typename SizeType = std::uint32_t>
+struct LimitVectorWriter {
+  using size_type = SizeType;
+
+  LimitVectorWriter(std::vector<std::uint8_t>& buffer, std::size_t l)
+      : data_buffer{buffer}, limit{l} {}
+
+  std::size_t write(void const* data, std::size_t size) {
+    if (end || ((data_buffer.size() + size) >= limit)) {
+      // end of writing
+      end = true;
+      return 0;
+    }
+    data_buffer.insert(data_buffer.end(),
+                       reinterpret_cast<std::uint8_t const*>(data),
+                       reinterpret_cast<std::uint8_t const*>(data) + size);
+    return size;
+  }
+
+  std::vector<std::uint8_t>& data_buffer;
+  std::size_t limit;
+  bool end = false;
 };
 
 template <typename SizeType = std::uint32_t>
@@ -85,7 +112,7 @@ struct MemStreamReader {
   void reset_read() { buffer_.pubseekpos(0, std::ios_base::in); }
   void reset_write() { buffer_.pubseekpos(0, std::ios_base::out); }
 
-  size_t read(void* dst, size_t size, size_t /* minimum_size */) {
+  size_t read(void* dst, size_t size) {
     auto s = buffer_.sgetn(static_cast<char*>(dst),
                            static_cast<std::streamsize>(size));
     if (s != size) {
@@ -112,7 +139,6 @@ struct MemStreamWriter {
 
   MemStreamBuf<> buffer;
 };
-
 }  // namespace ae
 
 #endif  // AETHER_MSTREAM_BUFFERS_H_ */

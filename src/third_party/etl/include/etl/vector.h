@@ -47,7 +47,6 @@ SOFTWARE.
 #include "third_party/etl/include/etl/functional.h"
 #include "third_party/etl/include/etl/static_assert.h"
 #include "third_party/etl/include/etl/placement_new.h"
-#include "third_party/etl/include/etl/algorithm.h"
 #include "third_party/etl/include/etl/initializer_list.h"
 
 #include <stddef.h>
@@ -1031,8 +1030,15 @@ namespace etl
     //*********************************************************************
     void initialise()
     {
-      etl::destroy(p_buffer, p_end);
-      ETL_SUBTRACT_DEBUG_COUNT(int32_t(etl::distance(p_buffer, p_end)));
+      if ETL_IF_CONSTEXPR(etl::is_trivially_destructible<T>::value)
+      {
+        ETL_RESET_DEBUG_COUNT;
+      }
+      else
+      {
+        etl::destroy(p_buffer, p_end);
+        ETL_SUBTRACT_DEBUG_COUNT(int32_t(etl::distance(p_buffer, p_end)));
+      }
 
       p_end = p_buffer;
     }

@@ -19,14 +19,15 @@
 
 #include <cassert>
 #include <utility>
-#include <type_traits>
 
+// IWYU pragma: begin_keeps
 #include "aether/common.h"
 #include "aether/type_traits.h"
 
 #include "aether/ptr/rc_ptr.h"
 #include "aether/ptr/ptr_management.h"
 #include "aether/reflect/domain_visitor.h"
+// IWYU pragma: end_keeps
 
 namespace ae {
 template <typename U>
@@ -243,7 +244,7 @@ class Ptr {
     // iterate through all objects with domain node visitor in save like mode
 
     auto obj_map =
-        PtrGraphBuilder::BuildGraph(*ptr_, ptr_storage_->ref_counters);
+        PtrGraphBuilder::BuildGraph(*ptr_, ptr_storage_->ref_counters, this);
 
     // if any object has external references, obj_reference >
     // reachable_reference
@@ -306,7 +307,7 @@ Ptr<T> MakePtrFromThis(T* self_ptr) noexcept {
 template <typename T, typename... TArgs>
 Ptr<T> MakePtr(TArgs&&... args) {
   constexpr auto size = sizeof(PtrStorage<T>);
-  static_assert(size < std::numeric_limits<std::uint32_t>::max());
+  static_assert(size < std::numeric_limits<std::uint16_t>::max());
   static_assert(reflect::HasNodeVisitor<T>::value,
                 "Type must be reflectable to be used in Ptr");
 
@@ -316,7 +317,8 @@ Ptr<T> MakePtr(TArgs&&... args) {
   storage->alloc_size = static_cast<std::uint32_t>(size);
   // first ref already exists! This required to MakePtrFromThis able to work
   // inside T()
-  storage->ref_counters = {1, 1};
+  storage->ref_counters.main_refs = 1;
+  storage->ref_counters.weak_refs = 1;
   auto* ptr = new (storage->ptr()) T(std::forward<TArgs>(args)...);
   if (ptr == nullptr) {
     alloc.deallocate(reinterpret_cast<std::uint8_t*>(storage), size);
