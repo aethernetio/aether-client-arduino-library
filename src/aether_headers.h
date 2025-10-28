@@ -157,13 +157,15 @@
   #include "aether/api_protocol/protocol_context.h"
   #include "aether/api_protocol/api_context.h"
   #include "aether/api_protocol/child_data.h"
+  #include "aether/api_protocol/sub_api.h"
+  #include "aether/api_protocol/api_pack_parser.h"
+  #include "aether/api_protocol/api_class.h"
   #include "aether/api_protocol/api_class_impl.h"
   #include "aether/api_protocol/api_method.h"
 
   #include "aether/server_connections/server_connection.h"
   #include "aether/server_connections/channel_selection_stream.h"
   #include "aether/server_connections/iserver_connection_factory.h"
-  #include "aether/server_connections/client_to_server_stream.h"
   #include "aether/server_connections/client_server_connection.h"
   #include "aether/server_connections/server_channel.h"
   #include "aether/server_connections/channel_manager.h"
@@ -185,6 +187,17 @@
   #include "aether/ptr/rc_ptr.h"
   #include "aether/ptr/ptr_management.h"
   #include "aether/ptr/ptr_view.h"
+
+  #include "aether/work_cloud_api/ae_message.h"
+  #include "aether/work_cloud_api/uid_and_cloud.h"
+  #include "aether/work_cloud_api/server_descriptor.h"
+  #include "aether/work_cloud_api/telemetric.h"
+
+  #include "aether/work_cloud_api/work_server_api/authorized_api.h"
+  #include "aether/work_cloud_api/work_server_api/login_api.h"
+
+  #include "aether/work_cloud_api/client_api/client_api_unsafe.h"
+  #include "aether/work_cloud_api/client_api/client_api_safe.h"
 
   #include "aether/client_messages/p2p_message_stream_manager.h"
   #include "aether/client_messages/p2p_message_stream.h"
@@ -259,24 +272,6 @@
   #include "aether/poller/poller_types.h"
   #include "aether/poller/freertos_poller.h"
 
-  #include "aether/methods/uid_and_cloud.h"
-  #include "aether/methods/server_descriptor.h"
-  #include "aether/methods/telemetric.h"
-
-  #include "aether/methods/work_server_api/authorized_api.h"
-  #include "aether/methods/work_server_api/login_api.h"
-
-  #include "aether/methods/client_api/client_root_api.h"
-  #include "aether/methods/client_api/client_safe_api.h"
-
-  #include "aether/methods/server_reg_api/root_api.h"
-  #include "aether/methods/server_reg_api/server_registration_api.h"
-  #include "aether/methods/server_reg_api/global_reg_server_api.h"
-
-  #include "aether/methods/client_reg_api/client_reg_root_api.h"
-  #include "aether/methods/client_reg_api/client_global_reg_api.h"
-  #include "aether/methods/client_reg_api/client_reg_api.h"
-
   #include "aether/ae_actions/select_client.h"
   #include "aether/ae_actions/telemetry.h"
   #include "aether/ae_actions/check_access_for_send_message.h"
@@ -297,7 +292,6 @@
   #include "aether/dns/dns_c_ares.h"
 
   #include "aether/stream_api/buffer_stream.h"
-  #include "aether/stream_api/stream_splitter.h"
   #include "aether/stream_api/crypto_gate.h"
   #include "aether/stream_api/gate_trait.h"
   #include "aether/stream_api/debug_gate.h"
@@ -353,13 +347,18 @@
   #include "aether/connection_manager/server_connection_selector.h"
   #include "aether/connection_manager/iserver_connection_pool.h"
 
-  #include "aether/registration/registration_key_provider.h"
+  #include "aether/registration/registration_crypto_provider.h"
   #include "aether/registration/proof_of_work.h"
-  #include "aether/registration/reg_server_stream.h"
   #include "aether/registration/root_server_select_stream.h"
-  #include "aether/registration/global_reg_server_stream.h"
   #include "aether/registration/registration.h"
   #include "aether/registration/root_server_stream.h"
+
+  #include "aether/registration/api/global_reg_client_api.h"
+  #include "aether/registration/api/client_reg_api_unsafe.h"
+  #include "aether/registration/api/client_reg_api_safe.h"
+  #include "aether/registration/api/registration_root_api.h"
+  #include "aether/registration/api/server_registration_api.h"
+  #include "aether/registration/api/global_reg_server_api.h"
 
   #include "aether/misc/defer.h"
   #include "aether/misc/from_chars.h"
