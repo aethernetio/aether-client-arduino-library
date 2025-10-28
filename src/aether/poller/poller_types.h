@@ -17,7 +17,6 @@
 #ifndef AETHER_POLLER_POLLER_TYPES_H_
 #define AETHER_POLLER_POLLER_TYPES_H_
 
-#include <tuple>
 #include <cstdint>
 
 #include "aether/format/format.h"
@@ -44,6 +43,14 @@ struct DescriptorType {
 
   operator Handle() const { return descriptor; }
   operator Socket() const { return reinterpret_cast<Socket>(descriptor); }
+
+  bool operator==(DescriptorType const& other) const {
+    return descriptor == other.descriptor;
+  }
+
+  bool operator!=(DescriptorType const& other) const {
+    return descriptor != other.descriptor;
+  }
 
   Handle descriptor;
 #else

@@ -2,7 +2,7 @@
 #include "third_party/libsodium/src/libsodium/crypto_pwhash/argon2/argon2-core.h"
 #include "third_party/libsodium/src/libsodium/include/sodium/utils.h"
 #include <limits.h>
-#include <stdio.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -18,53 +18,28 @@
 
 #include <cassert>
 
-#include "aether/stream_api/safe_stream.h"
-
 namespace ae {
 SafeStreamApi::SafeStreamApi(ProtocolContext& protocol_context,
-                             SafeStream& safe_stream)
+                             SafeStreamApiImpl& safe_stream_api_impl)
     : ReturnResultApiImpl(protocol_context),
-      close{protocol_context},
-      request_report{protocol_context},
-      put_report{protocol_context},
-      confirm{protocol_context},
+      ack{protocol_context},
       request_repeat{protocol_context},
       send{protocol_context},
-      repeat{protocol_context},
-      protocol_context_{&protocol_context},
-      safe_stream_{&safe_stream} {}
+      safe_stream_api_impl_{&safe_stream_api_impl} {}
 
-void SafeStreamApi::CloseImpl(ApiParser& /* parser */) {
-  assert(false);  // NOT IMPLEMENTED
-}
-
-void SafeStreamApi::RequestReportImpl(ApiParser& /* parser */) {
-  assert(false);  // NOT IMPLEMENTED
-}
-
-void SafeStreamApi::PutReportImpl(ApiParser& /* parser */,
-                                  std::uint16_t /* offset */) {
-  assert(false);  // NOT IMPLEMENTED
-}
-
-void SafeStreamApi::ConfirmImpl(ApiParser& /* parser */, std::uint16_t offset) {
-  safe_stream_->Confirm(offset);
+void SafeStreamApi::AckImpl(ApiParser& /* parser */, SSRingIndex::type offset) {
+  safe_stream_api_impl_->Ack(offset);
 }
 
 void SafeStreamApi::RequestRepeatImpl(ApiParser& /* parser */,
-                                      std::uint16_t offset) {
-  safe_stream_->RequestRepeat(offset);
+                                      SSRingIndex::type offset) {
+  safe_stream_api_impl_->RequestRepeat(offset);
 }
 
-void SafeStreamApi::SendImpl(ApiParser& /* parser */, std::uint16_t offset,
-                             DataBuffer data) {
-  safe_stream_->SendData(offset, std::move(data));
-}
-
-void SafeStreamApi::RepeatImpl(ApiParser& /* parser */,
-                               std::uint16_t repeat_count, std::uint16_t offset,
-                               DataBuffer data) {
-  safe_stream_->RepeatData(repeat_count, offset, std::move(data));
+void SafeStreamApi::SendImpl(ApiParser& /* parser */,
+                             SSRingIndex::type begin_offset,
+                             DataMessage data_message) {
+  safe_stream_api_impl_->Send(begin_offset, std::move(data_message));
 }
 
 }  // namespace ae

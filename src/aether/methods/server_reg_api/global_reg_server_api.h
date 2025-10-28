@@ -22,7 +22,7 @@
 #if AE_SUPPORT_REGISTRATION
 #  include <vector>
 
-#  include "aether/uid.h"
+#  include "aether/types/uid.h"
 #  include "aether/common.h"
 #  include "aether/crypto/key.h"
 #  include "aether/reflect/reflect.h"
@@ -43,7 +43,7 @@ class GlobalRegServerApi {
                      ActionContext action_context);
 
   Method<03, void(Key key)> set_master_key;
-  Method<04, PromiseView<RegistrationResponse>()> finish;
+  Method<04, ApiPromisePtr<RegistrationResponse>()> finish;
 };
 
 }  // namespace ae

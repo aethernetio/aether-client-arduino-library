@@ -18,29 +18,29 @@
 #define AETHER_AETHER_H_
 
 #include <map>
-#include <vector>
-#include <optional>
 
 #include "aether/common.h"
 #include "aether/memory.h"
 #include "aether/obj/obj.h"
-#include "aether/obj/dummy_obj.h"
-#include "aether/client.h"
-#include "aether/cloud.h"
-#include "aether/registration_cloud.h"
-#include "aether/crypto.h"
+#include "aether/obj/dummy_obj.h"  // IWYU pragma: keep
+#include "aether/actions/action_ptr.h"
+#include "aether/actions/action_context.h"
+#include "aether/actions/action_processor.h"
+#include "aether/ae_actions/select_client.h"
 #include "aether/events/multi_subscription.h"
 #include "aether/tele/traps/tele_statistics.h"
-#include "aether/actions/action_list.h"
-#include "aether/actions/action_processor.h"
+#include "aether/registration/registration.h"  // IWYU pragma: keep
+
+#include "aether/cloud.h"
+#include "aether/client.h"
+#include "aether/crypto.h"
+#include "aether/server.h"
 #include "aether/poller/poller.h"
 #include "aether/dns/dns_resolve.h"
-
-#include "aether/ae_actions/registration/registration.h"
+#include "aether/adapter_registry.h"
+#include "aether/registration_cloud.h"
 
 namespace ae {
-class Registration;
-
 class Aether : public Obj {
   AE_OBJECT(Aether, Obj, 0)
 
@@ -55,47 +55,45 @@ class Aether : public Obj {
   ~Aether() override;
 
 #if AE_SUPPORT_REGISTRATION
-  AE_OBJECT_REFLECT(AE_MMBRS(client_prefab, cloud_prefab, registration_cloud,
-                             crypto, clients_, servers_, tele_statistics_,
-                             poller, dns_resolver, adapter_factories,
+  AE_OBJECT_REFLECT(AE_MMBRS(client_prefab, registration_cloud, crypto,
+                             clients_, servers_, tele_statistics, poller,
+                             dns_resolver, adapter_registry,
                              registration_actions_,
                              registration_subscriptions_))
 #else
-  AE_OBJECT_REFLECT(AE_MMBRS(client_prefab, cloud_prefab, registration_cloud,
-                             crypto, clients_, servers_, tele_statistics_,
-                             poller, dns_resolver, adapter_factories))
+  AE_OBJECT_REFLECT(AE_MMBRS(client_prefab, registration_cloud, crypto,
+                             clients_, servers_, tele_statistics, poller,
+                             dns_resolver, adapter_registry))
 #endif
 
   template <typename Dnv>
   void Load(CurrentVersion, Dnv& dnv) {
     dnv(base_);
-    dnv(client_prefab, cloud_prefab, registration_cloud, crypto, clients_,
-        servers_, tele_statistics_, poller, dns_resolver, adapter_factories);
+    dnv(client_prefab, registration_cloud, crypto, clients_, servers_,
+        tele_statistics, poller, dns_resolver, adapter_registry);
   }
 
   template <typename Dnv>
   void Save(CurrentVersion, Dnv& dnv) const {
     dnv(base_);
-    dnv(client_prefab, cloud_prefab, registration_cloud, crypto, clients_,
-        servers_, tele_statistics_, poller, dns_resolver, adapter_factories);
+    dnv(client_prefab, registration_cloud, crypto, clients_, servers_,
+        tele_statistics, poller, dns_resolver, adapter_registry);
   }
 
   void Update(TimePoint current_time) override;
 
   // User-facing API.
-#if AE_SUPPORT_REGISTRATION
-  ActionView<Registration> RegisterClient(Uid parent_uid);
-#endif
+  operator ActionContext() const { return ActionContext{*action_processor}; }
+
+  ActionPtr<SelectClientAction> SelectClient(Uid parent_uid,
+                                             std::uint32_t client_id);
 
   void AddServer(Server::ptr&& s);
   Server::ptr GetServer(ServerId server_id);
-  std::vector<Client::ptr>& clients();
-  tele::TeleStatistics::ptr const& tele_statistics() const;
 
   std::unique_ptr<ActionProcessor> action_processor =
       make_unique<ActionProcessor>();
 
-  Cloud::ptr cloud_prefab;
 #if AE_SUPPORT_REGISTRATION
   RegistrationCloud::ptr registration_cloud;
 #else
@@ -110,18 +108,24 @@ class Aether : public Obj {
   DummyObj::ptr dns_resolver;
 #endif
 
-  std::vector<Adapter::ptr> adapter_factories;
+  AdapterRegistry::ptr adapter_registry;
+
+  tele::TeleStatistics::ptr tele_statistics;
 
  private:
+  Client::ptr FindClient(std::uint32_t client_id);
+#if AE_SUPPORT_REGISTRATION
+  ActionPtr<Registration> RegisterClient(Uid parent_uid,
+                                         std::uint32_t client_id);
+#endif
+
   Client::ptr client_prefab;
 
-  std::vector<Client::ptr> clients_;
+  std::map<std::uint32_t, Client::ptr> clients_;
   std::map<ServerId, Server::ptr> servers_;
 
-  tele::TeleStatistics::ptr tele_statistics_;
-
 #if AE_SUPPORT_REGISTRATION
-  std::optional<ActionList<Registration>> registration_actions_;
+  std::map<std::uint32_t, ActionPtr<Registration>> registration_actions_;
   MultiSubscription registration_subscriptions_;
 #endif
 };

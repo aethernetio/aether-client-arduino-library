@@ -21,7 +21,7 @@
 #include <utility>
 #include <type_traits>
 
-#include "aether/type_traits.h"
+#include "aether/types/type_list.h"
 #include "aether/stream_api/istream.h"
 #include "aether/stream_api/gate_trait.h"
 #include "aether/stream_api/tied_gates.h"
@@ -89,9 +89,8 @@ struct GateListTrait {
                                     typename GetTInOut<Gates...>::type>;
   };
   template <typename... Gates>
-  using RGetTInOut =
-      typename TupleToTemplate<GetTInOut,
-                               typename ReversTypeList<Gates...>::type>::type;
+  using RGetTInOut = typename TypeListToTemplate<
+      GetTInOut, typename ReversTypeList<TypeList<Gates...>>::type>::type;
 
   template <typename... Gates>
   struct GetTOutIn {
@@ -104,9 +103,8 @@ struct GateListTrait {
                                     typename GetTOutIn<Gates...>::type>;
   };
   template <typename... Gates>
-  using RGetTOutIn =
-      typename TupleToTemplate<GetTOutIn,
-                               typename ReversTypeList<Gates...>::type>::type;
+  using RGetTOutIn = typename TypeListToTemplate<
+      GetTOutIn, typename ReversTypeList<TypeList<Gates...>>::type>::type;
 
   using TInType = typename GetTIn<TGates...>::type;
   using TOutType = typename GetTOut<TGates...>::type;
@@ -134,9 +132,9 @@ class GatesStream final
     GatesStream* stream_;
   };
 
-  template <typename THandler, typename Gates>
-  static constexpr auto MakeOutDataEventSubscriptions(THandler&& handler,
-                                                      Gates& gates) {
+  template <typename THandler>
+  static constexpr auto MakeOutDataEventSubscriptions(
+      THandler&& handler, std::tuple<TGates...>& gates) {
     return std::apply(
         [&](auto&&... gates) {
           return TiedEventOutData(std::forward<THandler>(handler),
@@ -161,8 +159,7 @@ class GatesStream final
       : gates_{std::forward<TGates>(gates)...},
         out_data_event_subscription_{SubscribeToOutDataEvent()} {}
 
-  ActionView<StreamWriteAction> Write(
-      typename Base::TypeIn&& in_data) override {
+  ActionPtr<StreamWriteAction> Write(typename Base::TypeIn&& in_data) override {
     assert(Base::out_);
     return Base::out_->Write(std::apply(
         [&](auto&... gates) -> typename OutStream::TypeIn {
@@ -193,6 +190,11 @@ class GatesStream final
     auto info = Base::out_->stream_info();
     auto overhead = std::apply(
         [&](auto const&... gates) { return TiedOverhead(gates...); }, gates_);
+    if (info.rec_element_size < overhead) {
+      info.rec_element_size = 0;
+    } else {
+      info.rec_element_size -= overhead;
+    }
     if (info.max_element_size < overhead) {
       info.max_element_size = 0;
     } else {

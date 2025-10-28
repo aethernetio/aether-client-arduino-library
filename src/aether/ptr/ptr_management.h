@@ -28,12 +28,16 @@
 #include "aether/reflect/domain_visitor.h"
 
 namespace ae {
+struct PtrRefcounters {
+  std::uint8_t main_refs = 0;
+  std::uint8_t weak_refs = 0;
+};
 
 // PtrStorageBase* is used in general case, but PtrStorage<T>* in case there T
 // is known
 struct PtrStorageBase {
-  RefCounters ref_counters;
-  std::uint32_t alloc_size;
+  PtrRefcounters ref_counters;
+  std::uint16_t alloc_size;
 };
 
 template <typename T>
@@ -42,8 +46,8 @@ class PtrStorage {
   [[nodiscard]] auto* ptr() noexcept { return storage.ptr(); }
   [[nodiscard]] auto* ptr() const noexcept { return storage.ptr(); }
 
-  RefCounters ref_counters;
-  std::uint32_t alloc_size;
+  PtrRefcounters ref_counters;
+  std::uint16_t alloc_size;
   Storage<T> storage;
 };
 
@@ -82,6 +86,10 @@ using PtrDnv =
 struct RefCounterVisitor {
   template <typename U>
   std::enable_if_t<IsPtr<U>::value, bool> operator()(U const& obj) {
+    if (ignore_obj == static_cast<void const*>(&obj)) {
+      return false;
+    }
+
     auto const* obj_ptr = static_cast<void const*>(obj.get());
     if (!obj_ptr) {
       return false;
@@ -98,8 +106,8 @@ struct RefCounterVisitor {
     assert(ref_counter.reachable_ref_count <= ref_counter.ref_count);
     children.insert(&ref_counter);
 
-    auto next_visitor =
-        RefCounterVisitor{cycle_detector, obj_map, ref_counter.children};
+    auto next_visitor = RefCounterVisitor{cycle_detector, obj_map,
+                                          ref_counter.children, ignore_obj};
     obj.VisitDeeper(next_visitor);
     return false;
   }
@@ -115,20 +123,22 @@ struct RefCounterVisitor {
   reflect::CycleDetector& cycle_detector;
   ObjMap& obj_map;
   RefTree::RefTreeChildren& children;
+  void const* ignore_obj;
 };
 
 class PtrGraphBuilder {
  public:
   template <typename T>
-  static ObjMap BuildGraph(T& obj, RefCounters const& ref_counters) {
+  static ObjMap BuildGraph(T& obj, PtrRefcounters const& ref_counters,
+                           void const* ignore_obj) {
     auto obj_map = ObjMap{};
     auto [inserted, _] = obj_map.emplace(
         &obj, std::make_unique<RefTree>(&obj, ref_counters.main_refs));
     inserted->second->reachable_ref_count++;
 
     auto cycle_detector = reflect::CycleDetector{};
-    auto visitor =
-        RefCounterVisitor{cycle_detector, obj_map, inserted->second->children};
+    auto visitor = RefCounterVisitor{cycle_detector, obj_map,
+                                     inserted->second->children, ignore_obj};
     reflect::DomainVisit(cycle_detector, obj, PtrDnv{visitor});
     return obj_map;
   }

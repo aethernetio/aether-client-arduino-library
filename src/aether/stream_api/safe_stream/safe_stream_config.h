@@ -24,12 +24,12 @@
 
 namespace ae {
 struct SafeStreamConfig {
-  SafeStreamRingIndex::type buffer_capacity;  //< sending buffer capacity
-  SafeStreamRingIndex::type window_size;      //< size of sending window
-  SafeStreamRingIndex::type max_data_size;    //< max size of sending data
-  std::uint16_t max_repeat_count;  //< max repeat count for sending packet
-  Duration wait_confirm_timeout;   //< Timeout for waiting confirmation
-  Duration send_confirm_timeout;   //< max time to wait before send confirmation
+  SSRingIndex::type buffer_capacity;  //< sending buffer capacity
+  SSRingIndex::type window_size;      //< size of sending window
+  SSRingIndex::type max_packet_size;  //< max size of sending data
+  std::uint8_t max_repeat_count;      //< max repeat count for sending packet
+  Duration wait_ack_timeout;          //< Timeout for waiting ack
+  Duration send_ack_timeout;          //< max time to wait before send ack
   Duration send_repeat_timeout;  //< max time to wait before send repeat request
 };
 

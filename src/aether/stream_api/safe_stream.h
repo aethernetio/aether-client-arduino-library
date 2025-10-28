@@ -18,16 +18,15 @@
 #define AETHER_STREAM_API_SAFE_STREAM_H_
 
 #include "aether/common.h"
-#include "aether/actions/action_view.h"
-#include "aether/actions/action_list.h"
+#include "aether/actions/action_ptr.h"
 #include "aether/actions/action_context.h"
 #include "aether/events/multi_subscription.h"
 
 #include "aether/stream_api/safe_stream/safe_stream_api.h"
 #include "aether/stream_api/safe_stream/safe_stream_types.h"
 #include "aether/stream_api/safe_stream/safe_stream_config.h"
-#include "aether/stream_api/safe_stream/safe_stream_sending.h"
-#include "aether/stream_api/safe_stream/safe_stream_receiving.h"
+#include "aether/stream_api/safe_stream/safe_stream_recv_action.h"
+#include "aether/stream_api/safe_stream/safe_stream_send_action.h"
 
 #include "aether/stream_api/istream.h"
 
@@ -36,54 +35,55 @@ class SafeStreamWriteAction final : public StreamWriteAction {
  public:
   explicit SafeStreamWriteAction(
       ActionContext action_context,
-      ActionView<SendingDataAction> sending_data_action);
+      ActionPtr<SendingDataAction> sending_data_action);
 
-  TimePoint Update(TimePoint current_time) override;
   // TODO: add tests for stop
   void Stop() override;
 
  private:
-  ActionView<SendingDataAction> sending_data_action_;
+  ActionPtr<SendingDataAction> sending_data_action_;
   MultiSubscription subscriptions_;
 };
 
-class SafeStream final : public ByteStream {
+class SafeStream final : public ByteStream,
+                         public SafeStreamApiImpl,
+                         public ISendDataPush,
+                         public ISendAckRepeat {
  public:
   SafeStream(ActionContext action_context, SafeStreamConfig config);
 
   AE_CLASS_NO_COPY_MOVE(SafeStream);
 
-  ActionView<StreamWriteAction> Write(DataBuffer &&data) override;
+  ActionPtr<StreamWriteAction> Write(DataBuffer &&data) override;
   StreamInfo stream_info() const override;
 
   void LinkOut(OutStream &out) override;
 
-  void Confirm(std::uint16_t offset);
-  void RequestRepeat(std::uint16_t offset);
-  void SendData(std::uint16_t offset, DataBuffer &&data);
-  void RepeatData(std::uint16_t repeat_count, std::uint16_t offset,
-                  DataBuffer &&data);
+  // Api impl methods
+  void Ack(SSRingIndex::type offset) override;
+  void RequestRepeat(SSRingIndex::type offset) override;
+  void Send(SSRingIndex::type begin_offset, DataMessage data_message) override;
+
+  // Implement ISendDataPush
+  ActionPtr<StreamWriteAction> PushData(SSRingIndex begin,
+                                        DataMessage &&data_message) override;
+
+  // Implement ISendConfirmRepeat
+  void SendAck(SSRingIndex offset) override;
+  void SendRepeatRequest(SSRingIndex offset) override;
 
  private:
-  void OnSendEvent(SafeStreamRingIndex offset, DataBuffer &&data);
-  void OnRepeatEvent(SafeStreamRingIndex offset, std::uint16_t repeat_count,
-                     DataBuffer &&data);
-
-  void OnConfirmEvent(SafeStreamRingIndex offset);
-  void OnRequestRepeatEvent(SafeStreamRingIndex offset);
-
   void WriteOut(DataBuffer const &data);
   void OnStreamUpdate();
   void OnOutData(DataBuffer const &data);
 
   ActionContext action_context_;
+  SafeStreamConfig config_;
   ProtocolContext protocol_context_;
   SafeStreamApi safe_stream_api_;
-  SafeStreamSendingAction safe_stream_sending_;
-  SafeStreamReceivingAction safe_stream_receiving_;
-  ActionList<SafeStreamWriteAction> packet_send_actions_;
+  ActionPtr<SafeStreamSendAction> send_action_;
+  ActionPtr<SafeStreamRecvAction> recv_acion_;
 
-  MultiSubscription subscriptions_;
   StreamInfo stream_info_;
 };
 }  // namespace ae

@@ -17,106 +17,124 @@
 #ifndef AETHER_AETHER_APP_H_
 #define AETHER_AETHER_APP_H_
 
-#include <map>
-#include <optional>
+#include <array>
 #include <cassert>
+#include <optional>
 
 #include "aether/config.h"
 #include "aether/common.h"
 #include "aether/ptr/ptr.h"
+#include "aether/ptr/rc_ptr.h"
 #include "aether/obj/domain.h"
 #include "aether/global_ids.h"
 #include "aether/type_traits.h"
-#include "aether/reflect/reflect.h"
 
+#include "aether/events/events.h"   // IWYU pragma: keep
+#include "aether/actions/action.h"  // IWYU pragma: keep
+#include "aether/actions/action_ptr.h"
 #include "aether/actions/action_trigger.h"
-#include "aether/actions/action_registry.h"
 #include "aether/actions/action_processor.h"
 
+#include "aether/cloud.h"
 #include "aether/aether.h"
-#include "aether/crypto/key.h"
-#include "aether/crypto/sign.h"
-#include "aether/adapters/adapter.h"
-#include "aether/registration_cloud.h"
+#include "aether/crypto.h"
+#include "aether/poller/poller.h"
+#include "aether/dns/dns_resolve.h"
+#include "aether/adapter_registry.h"
+#include "aether/obj/component_context.h"
 
-#include "aether/port/file_systems/facility_factory.h"
-
-#include "aether/tele/tele.h"
+#include "aether/domain_storage/domain_storage_factory.h"
 
 namespace ae {
-class AetherAppConstructor {
+class AetherAppContext : public ComponentContext<AetherAppContext> {
   friend class AetherApp;
-  class InitTele {
+  class TelemetryInit {
    public:
-    InitTele();
+    TelemetryInit();
+    void operator()(AetherAppContext const& context) const;
   };
 
  public:
-  explicit AetherAppConstructor()
-      : AetherAppConstructor(DomainFacilityFactory::Create) {}
+  explicit AetherAppContext()
+      : AetherAppContext(DomainStorageFactory::Create, TelemetryInit{}) {}
 
-  template <typename Func,
-            AE_REQUIRERS((IsFunctor<Func, std::unique_ptr<IDomainFacility>()>))>
-  explicit AetherAppConstructor(Func const& facility_factory)
-      : init_tele_{},
-        domain_facility_{facility_factory()},
-        domain_{make_unique<Domain>(Now(), *domain_facility_)} {
+  template <typename Func, typename TeleInit = TelemetryInit,
+            AE_REQUIRERS((IsFunctor<Func, std::unique_ptr<IDomainStorage>()>)),
+            AE_REQUIRERS((IsFunctor<TeleInit, void(AetherAppContext const&)>))>
+  explicit AetherAppContext(Func const& facility_factory,
+                            TeleInit const& tele_init = TelemetryInit{})
+      : init_tele_{tele_init},
+        domain_storage_{facility_factory()},
+        domain_{make_unique<Domain>(Now(), *domain_storage_)} {
+    InitComponentContext();
 #if defined AE_DISTILLATION
     // clean old state
-    domain_facility_->CleanUp();
+    domain_storage_->CleanUp();
 
-    aether_ = domain_->CreateObj<Aether>(kAether);
+    aether_ = domain_->CreateObj<Aether>(GlobalId::kAether);
     assert(aether_);
 #else
-    aether_.SetId(kAether);
+    aether_.SetId(GlobalId::kAether);
     domain_->LoadRoot(aether_);
     assert(aether_);
 #endif  //  defined AE_DISTILLATION
   }
 
+  Domain& domain() const { return *domain_; }
+  Aether::ptr aether() const { return aether_; }
+
 #if defined AE_DISTILLATION
-  template <
-      typename Func,
-      AE_REQUIRERS((IsFunctor<Func, Adapter::ptr(Domain* domain,
-                                                 Aether::ptr const& aether)>))>
-  AetherAppConstructor&& Adapter(Func const& adapter_factory) {
-    adapter_ = adapter_factory(domain_.get(), aether_);
+  AdapterRegistry::ptr adapter_registry() const {
+    return Resolve<AdapterRegistry>();
+  }
+#  if AE_SUPPORT_REGISTRATION
+  Cloud::ptr registration_cloud() const { return Resolve<Cloud>(); }
+#  endif  // AE_SUPPORT_REGISTRATION
+  Crypto::ptr crypto() const { return Resolve<Crypto>(); }
+  IPoller::ptr poller() const { return Resolve<IPoller>(); }
+  DnsResolver::ptr dns_resolver() const { return Resolve<DnsResolver>(); }
+
+  template <typename TFunc>
+  AetherAppContext&& AdaptersFactory(TFunc&& func) && {
+    Factory<AdapterRegistry>(std::forward<TFunc>(func));
     return std::move(*this);
   }
 
 #  if AE_SUPPORT_REGISTRATION
-  template <typename Func,
-            AE_REQUIRERS((IsFunctor<Func, RegistrationCloud::ptr(
-                                              Domain* domain,
-                                              Aether::ptr const& aether)>))>
-  AetherAppConstructor&& RegCloud(Func const& registration_cloud_factory) {
-    registration_cloud_ = registration_cloud_factory(domain_.get(), aether_);
+  template <typename TFunc>
+  AetherAppContext&& RegistrationCloudFactory(TFunc&& func) && {
+    Factory<Cloud>(std::forward<TFunc>(func));
+    return std::move(*this);
+  }
+#  endif  // AE_SUPPORT_REGISTRATION
+
+  template <typename TFunc>
+  AetherAppContext&& CryptoFactory(TFunc&& func) && {
+    Factory<Crypto>(std::forward<TFunc>(func));
+    return std::move(*this);
+  }
+
+  template <typename TFunc>
+  AetherAppContext&& PollerFactory(TFunc&& func) && {
+    Factory<IPoller>(std::forward<TFunc>(func));
+    return std::move(*this);
+  }
+#  if AE_SUPPORT_CLOUD_DNS
+  template <typename TFunc>
+  AetherAppContext&& DnsResolverFactory(TFunc&& func) && {
+    Factory<DnsResolver>(std::forward<TFunc>(func));
     return std::move(*this);
   }
 #  endif
-
-  template <typename Func,
-            AE_REQUIRERS((IsFunctor<Func, std::pair<SignatureMethod, Key>()>))>
-  AetherAppConstructor&& SignedKey(Func const& get_signed_key) {
-    auto signed_key = get_signed_key();
-    signed_keys_.insert(signed_key);
-    return std::move(*this);
-  }
-
-#endif
+#endif  //  defined AE_DISTILLATION
 
  private:
-  InitTele init_tele_;
-  std::unique_ptr<IDomainFacility> domain_facility_;
+  void InitComponentContext();
+
+  std::function<void(AetherAppContext const&)> init_tele_;
+  std::unique_ptr<IDomainStorage> domain_storage_;
   std::unique_ptr<Domain> domain_;
   Aether::ptr aether_;
-#if defined AE_DISTILLATION
-#  if AE_SUPPORT_REGISTRATION
-  RegistrationCloud::ptr registration_cloud_;
-#  endif
-  Adapter::ptr adapter_;
-  std::map<SignatureMethod, Key> signed_keys_;
-#endif
 };
 
 /**
@@ -124,7 +142,7 @@ class AetherAppConstructor {
  */
 class AetherApp {
  public:
-  static Ptr<AetherApp> Construct(AetherAppConstructor&& constructor);
+  static RcPtr<AetherApp> Construct(AetherAppContext&& context);
 
   AetherApp() = default;
   ~AetherApp();
@@ -143,12 +161,44 @@ class AetherApp {
     return *exit_code_;
   }
 
+  /**
+   * \brief Run one iteration of application update loop.
+   */
   TimePoint Update(TimePoint current_time) {
     return domain_->Update(current_time);
   }
+
+  /**
+   * \brief Wait untile timeout or application event triggered.
+   */
   void WaitUntil(TimePoint wakeup_time) {
     if (!IsExited()) {
       aether_->action_processor->get_trigger().WaitUntil(wakeup_time);
+    }
+  }
+
+  /**
+   * \brief Wait until all actions are excited.
+   */
+  template <typename... TAction>
+  void WaitActions(ActionPtr<TAction>&... actions) {
+    WaitEvents(actions->StatusEvent()...);
+  }
+
+  /**
+   * \brief Wait until event is emitted.
+   */
+  template <typename... TEvents>
+  void WaitEvents(TEvents&&... event) {
+    std::size_t done_count = 0;
+    std::array subs{Subscription{std::forward<TEvents>(event).Subscribe(
+        [&done_count](auto&&...) { done_count++; })}...};
+    while (!IsExited()) {
+      auto new_time = Update(Now());
+      if (done_count == sizeof...(TEvents)) {
+        return;
+      }
+      WaitUntil(new_time);
     }
   }
 
@@ -156,17 +206,10 @@ class AetherApp {
   Aether::ptr const& aether() const { return aether_; }
 
   // Action context protocol
-  ActionRegistry& get_registry() {
-    return aether_->action_processor->get_registry();
-  }
-  ActionTrigger& get_trigger() {
-    return aether_->action_processor->get_trigger();
-  }
-
-  AE_REFLECT_MEMBERS(domain_facility_, domain_, aether_, exit_code_)
+  operator ActionContext() const { return ActionContext{*aether_}; }
 
  private:
-  std::unique_ptr<IDomainFacility> domain_facility_;
+  std::unique_ptr<IDomainStorage> domain_facility_;
   std::unique_ptr<Domain> domain_;
   Aether::ptr aether_;
 

@@ -17,28 +17,18 @@
 #ifndef AETHER_ADAPTERS_ADAPTER_H_
 #define AETHER_ADAPTERS_ADAPTER_H_
 
-#include <map>
 #include <vector>
 
 #include "aether/obj/obj.h"
-#include "aether/ptr/ptr.h"
-#include "aether/actions/action.h"
-#include "aether/ptr/ptr_view.h"
-#include "aether/adapters/proxy.h"
+#include "aether/events/events.h"
 
-#include "aether/transport/itransport.h"
+#include "aether/access_points/access_point.h"
 
 namespace ae {
-class CreateTransportAction : public Action<CreateTransportAction> {
- public:
-  using Action::Action;
-  using Action::operator=;
-
-  virtual std::unique_ptr<ITransport> transport() = 0;
-};
-
-// TODO: make it pure virtual
-
+/**
+ * \brief The interface to control network adapter.
+ * It must configure interface and provide list of access points.
+ */
 class Adapter : public Obj {
   AE_OBJECT(Adapter, Obj, 0)
 
@@ -46,32 +36,20 @@ class Adapter : public Obj {
   Adapter() = default;
 
  public:
+  using NewAccessPoint = Event<void(AccessPoint::ptr const&)>;
+
 #ifdef AE_DISTILLATION
   explicit Adapter(Domain* domain);
 #endif  // AE_DISTILLATION
 
-  AE_OBJECT_REFLECT(AE_MMBRS(proxies_, proxy_prefab_))
+  AE_OBJECT_REFLECT()
 
-  virtual ActionView<CreateTransportAction> CreateTransport(
-      IpAddressPortProtocol const& /* address_port_protocol */) {
-    return {};
-  }
+  virtual std::vector<AccessPoint::ptr> access_points() = 0;
 
-  virtual IpAddress ip_address() const { return {}; }
+  virtual NewAccessPoint::Subscriber new_access_point();
 
  protected:
-  void CleanDeadTransports();
-  // FIXME: unique_ptr in cache ?
-  std::unique_ptr<ITransport> FindInCache(
-      IpAddressPortProtocol address_port_protocol);
-  void AddToCache(IpAddressPortProtocol address_port_protocol,
-                  ITransport& transport);
-
-  Proxy::ptr proxy_prefab_;
-  std::vector<Proxy::ptr> proxies_;
-
-  std::map<IpAddressPortProtocol, std::unique_ptr<ITransport>>
-      transports_cache_;
+  NewAccessPoint new_access_point_event_;
 };
 
 }  // namespace ae

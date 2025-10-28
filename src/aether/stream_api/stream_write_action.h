@@ -17,11 +17,14 @@
 #ifndef AETHER_STREAM_API_STREAM_WRITE_ACTION_H_
 #define AETHER_STREAM_API_STREAM_WRITE_ACTION_H_
 
-#include "aether/state_machine.h"
 #include "aether/actions/action.h"
+#include "aether/types/state_machine.h"
 #include "aether/actions/action_context.h"
 
 namespace ae {
+/**
+ * \brief Base type for stream write action.
+ */
 class StreamWriteAction : public Action<StreamWriteAction> {
  public:
   enum class State : std::uint8_t {
@@ -31,15 +34,21 @@ class StreamWriteAction : public Action<StreamWriteAction> {
     kTimeout,  // write timeout
     kStopped,  // stopped by user
     kFailed,   // failed to send
-    kPanic,    // fatal unrecoverable error
   };
 
-  using Action::Action;
+  explicit StreamWriteAction(ActionContext action_context);
+  StreamWriteAction(StreamWriteAction const& other) = delete;
+  StreamWriteAction(StreamWriteAction&& other) noexcept;
+
+  StreamWriteAction& operator=(StreamWriteAction const& other) = delete;
+  StreamWriteAction& operator=(StreamWriteAction&& other) noexcept;
+
+  virtual UpdateStatus Update();
 
   /**
    * \brief Stop the writing action
    */
-  virtual void Stop() = 0;
+  virtual void Stop();
 
   StateMachine<State> const& state() const { return state_; }
 
@@ -47,13 +56,15 @@ class StreamWriteAction : public Action<StreamWriteAction> {
   StateMachine<State> state_{State::kQueued};
 };
 
+/**
+ * \brief Immediate failed stream write action.
+ */
 class FailedStreamWriteAction final : public StreamWriteAction {
  public:
   using StreamWriteAction::StreamWriteAction;
-  FailedStreamWriteAction();
   explicit FailedStreamWriteAction(ActionContext action_context);
 
-  TimePoint Update(TimePoint current_time) override;
+  UpdateStatus Update() override;
   void Stop() override;
 };
 }  // namespace ae

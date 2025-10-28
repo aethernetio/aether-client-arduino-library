@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include "third_party/etl/include/etl/platform.h"
 #include "third_party/etl/include/etl/ihash.h"
+#include "third_party/etl/include/etl/iterator.h"
 #include "third_party/etl/include/etl/binary.h"
 #include "third_party/etl/include/etl/error_handler.h"
 

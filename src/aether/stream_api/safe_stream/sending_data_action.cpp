@@ -19,57 +19,66 @@
 #include "aether/tele/tele.h"
 
 namespace ae {
-OffsetRange SendingData::get_offset_range(
-    SafeStreamRingIndex::type window_size) const {
-  return OffsetRange{
-      offset, offset + static_cast<SafeStreamRingIndex::type>(data.size() - 1),
-      window_size};
-}
-
 SendingDataAction::SendingDataAction(ActionContext action_context,
                                      SendingData sending_data)
     : Action{action_context},
       sending_data_{std::move(sending_data)},
       state_{State::kWaiting} {}
 
-TimePoint SendingDataAction::Update(TimePoint current_time) {
-  if (!state_.changed()) {
-    return current_time;
+UpdateStatus SendingDataAction::Update() {
+  if (state_.changed()) {
+    switch (state_.Acquire()) {
+      case State::kWaiting:
+      case State::kSending:
+        break;
+      case State::kDone:
+        return UpdateStatus::Result();
+      case State::kStopped:
+        return UpdateStatus::Stop();
+      case State::kFailed:
+        return UpdateStatus::Error();
+    }
   }
-  switch (state_.Acquire()) {
-    case State::kWaiting:
-    case State::kSending:
-      break;
-    case State::kDone:
-      Action::Result(*this);
-      break;
-    case State::kStopped:
-      Action::Stop(*this);
-      break;
-    case State::kFailed:
-      Action::Error(*this);
-      break;
-  }
-
-  return current_time;
+  return {};
 }
 
-SendingData& SendingDataAction::sending_data() { return sending_data_; }
+SendingData const& SendingDataAction::sending_data() const {
+  return sending_data_;
+}
 
-EventSubscriber<void()> SendingDataAction::stop_event() { return stop_event_; }
-
-void SendingDataAction::Sending() { state_ = State::kSending; }
+EventSubscriber<void(SendingData const&)> SendingDataAction::stop_event() {
+  return EventSubscriber{stop_event_};
+}
 
 void SendingDataAction::Stop() {
   if (state_ == State::kSending) {
     AE_TELED_ERROR("Unable to stop sending data action while sending");
     return;
   }
-  stop_event_.Emit();
+  stop_event_.Emit(sending_data_);
 }
 
-void SendingDataAction::SentConfirmed() {
-  state_ = State::kDone;
+bool SendingDataAction::Acknowledge(SSRingIndex offset) {
+  assert(sending_data_.offset.IsBefore(offset));
+
+  auto distance = sending_data_.offset.Distance(offset);
+  auto size = sending_data_.end - sending_data_.begin;
+
+  sending_data_.begin =
+      size > distance ? sending_data_.begin + distance : sending_data_.end;
+
+  if (sending_data_.begin == sending_data_.end) {
+    state_ = State::kDone;
+    Action::Trigger();
+    return true;
+  }
+  sending_data_.offset = offset;
+
+  return false;
+}
+
+void SendingDataAction::Sending() {
+  state_ = State::kSending;
   Action::Trigger();
 }
 
@@ -81,5 +90,10 @@ void SendingDataAction::Stopped() {
 void SendingDataAction::Failed() {
   state_ = State::kFailed;
   Action::Trigger();
+}
+
+SSRingIndex SendingDataAction::UpdateOffset(SSRingIndex offset) {
+  std::swap(sending_data_.offset, offset);
+  return offset;
 }
 }  // namespace ae

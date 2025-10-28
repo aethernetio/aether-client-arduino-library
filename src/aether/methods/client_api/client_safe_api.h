@@ -17,8 +17,8 @@
 #ifndef AETHER_METHODS_CLIENT_API_CLIENT_SAFE_API_H_
 #define AETHER_METHODS_CLIENT_API_CLIENT_SAFE_API_H_
 
-#include "aether/uid.h"
-#include "aether/transport/data_buffer.h"
+#include "aether/types/uid.h"
+#include "aether/types/data_buffer.h"
 
 #include "aether/events/events.h"
 #include "aether/stream_api/stream_api.h"
@@ -35,10 +35,13 @@ class ClientSafeApi
   explicit ClientSafeApi(ProtocolContext& protocol_context);
 
   void SendMessage(ApiParser& parser, Uid uid, DataBuffer data);
+  void RequestTelemetric(ApiParser& parser);
 
-  using ApiMethods = ImplList<RegMethod<10, &ClientSafeApi::SendMessage>>;
+  using ApiMethods = ImplList<RegMethod<10, &ClientSafeApi::SendMessage>,
+                              RegMethod<70, &ClientSafeApi::RequestTelemetric>>;
 
   Event<void(Uid const& uid, DataBuffer const& data)> send_message_event;
+  Event<void()> request_telemetric;
 };
 }  // namespace ae
 

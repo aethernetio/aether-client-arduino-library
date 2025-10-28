@@ -24,14 +24,14 @@
 #  include <string>
 #  include <vector>
 
-#  include "aether/uid.h"
+#  include "aether/types/uid.h"
 #  include "aether/common.h"
 #  include "aether/crypto/key.h"
 #  include "aether/crypto/crypto_definitions.h"
 
 #  include "aether/reflect/reflect.h"
 #  include "aether/crypto/signed_key.h"
-#  include "aether/transport/data_buffer.h"
+#  include "aether/types/data_buffer.h"
 #  include "aether/api_protocol/api_method.h"
 #  include "aether/methods/server_descriptor.h"
 
@@ -56,11 +56,11 @@ class ServerRegistrationApi {
                   Key return_key, DataBuffer data)>
       registration;
 
-  Method<40, PromiseView<PowParams>(Uid parent_id, PowMethod pow_method,
+  Method<40, ApiPromisePtr<PowParams>(Uid parent_id, PowMethod pow_method,
                                     Key return_key)>
       request_proof_of_work_data;
 
-  Method<70, PromiseView<std::vector<ServerDescriptor>>(
+  Method<70, ApiPromisePtr<std::vector<ServerDescriptor>>(
                  std::vector<ServerId> servers)>
       resolve_servers;
 };

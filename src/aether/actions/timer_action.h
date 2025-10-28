@@ -18,11 +18,10 @@
 #define AETHER_ACTIONS_TIMER_ACTION_H_
 
 #include <cstdint>
-#include <utility>
 
 #include "aether/common.h"
-#include "aether/state_machine.h"
 #include "aether/actions/action.h"
+#include "aether/types/state_machine.h"
 #include "aether/events/event_subscription.h"
 
 namespace ae {
@@ -35,25 +34,18 @@ class TimerAction : public Action<TimerAction> {
   };
 
  public:
-  TimerAction() = default;
-
-  template <typename TActionContext>
-  TimerAction(TActionContext&& action_context, Duration duration)
-      : Action{std::forward<TActionContext>(action_context)},
-        timer_duration_{duration},
-        state_{State::kStart},
-        state_changed_sub_{state_.changed_event().Subscribe(
-            [this](auto) { Action::Trigger(); })} {}
-
+  TimerAction(ActionContext action_context, Duration duration);
   TimerAction(TimerAction const& other) = delete;
   TimerAction(TimerAction&& other) noexcept;
 
   TimerAction& operator=(TimerAction const& other) = delete;
   TimerAction& operator=(TimerAction&& other) noexcept;
 
-  TimePoint Update(TimePoint current_time) override;
+  UpdateStatus Update(TimePoint current_time);
 
   void Stop();
+
+  Duration duration() const;
 
  private:
   Duration timer_duration_;

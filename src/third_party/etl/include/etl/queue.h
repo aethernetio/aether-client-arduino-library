@@ -32,9 +32,7 @@ SOFTWARE.
 #define ETL_QUEUE_INCLUDED
 
 #include "third_party/etl/include/etl/platform.h"
-#include "third_party/etl/include/etl/iterator.h"
 #include "third_party/etl/include/etl/alignment.h"
-#include "third_party/etl/include/etl/array.h"
 #include "third_party/etl/include/etl/exception.h"
 #include "third_party/etl/include/etl/error_handler.h"
 #include "third_party/etl/include/etl/debug_count.h"

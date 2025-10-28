@@ -17,10 +17,12 @@
 #ifndef AETHER_API_PROTOCOL_API_MESSAGE_H_
 #define AETHER_API_PROTOCOL_API_MESSAGE_H_
 
-#include <cstdint>
+#include <tuple>
 #include <vector>
+#include <cstdint>
 
-#include "aether/packed_int.h"
+#include "third_party/aethernet-numeric/numeric/tiered_int.h"
+
 #include "aether/mstream.h"
 #include "aether/mstream_buffers.h"
 
@@ -28,7 +30,7 @@ namespace ae {
 
 using MessageId = std::uint8_t;
 
-using PackedSize = Packed<std::uint64_t, std::uint8_t, 250>;
+using PackedSize = TieredInt<std::uint64_t, std::uint8_t, 250>;
 
 class ApiParser;
 class ApiPacker;

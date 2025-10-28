@@ -19,7 +19,6 @@
 #include <utility>
 #include <optional>
 
-#include "aether/api_protocol/packet_builder.h"
 #include "aether/methods/work_server_api/authorized_api.h"
 
 #include "aether/ae_actions/ae_actions_tele.h"
@@ -40,7 +39,8 @@ Ping::Ping(ActionContext action_context, Server::ptr const& server,
           [this](auto) { Action::Trigger(); })},
       stream_changed_sub_{
           client_to_server_stream_->stream_update_event().Subscribe([this]() {
-            if (client_to_server_stream_->stream_info().is_linked) {
+            if (client_to_server_stream_->stream_info().link_state ==
+                LinkState::kLinked) {
               state_ = State::kSendPing;
             }
           })} {
@@ -49,34 +49,37 @@ Ping::Ping(ActionContext action_context, Server::ptr const& server,
 
 Ping::~Ping() = default;
 
-TimePoint Ping::Update(TimePoint current_time) {
+UpdateStatus Ping::Update() {
   if (state_.changed()) {
     switch (state_.Acquire()) {
       case State::kWaitLink:
         break;
       case State::kSendPing:
-        SendPing(current_time);
+        SendPing();
         break;
       case State::kWaitResponse:
       case State::kWaitInterval:
         break;
+      case State::kStopped:
+        return UpdateStatus::Stop();
       case State::kError:
-        Action::Error(*this);
-        return current_time;
+        return UpdateStatus::Error();
     }
   }
 
   if (state_.get() == State::kWaitResponse) {
-    return WaitResponse(current_time);
+    return UpdateStatus::Delay(WaitResponse());
   }
   if (state_.get() == State::kWaitInterval) {
-    return WaitInterval(current_time);
+    return UpdateStatus::Delay(WaitInterval());
   }
 
-  return current_time;
+  return {};
 }
 
-void Ping::SendPing(TimePoint current_time) {
+void Ping::Stop() { state_ = State::kStopped; }
+
+void Ping::SendPing() {
   AE_TELE_DEBUG(kPingSend, "Send ping");
 
   auto api_adapter = client_to_server_stream_->authorized_api_adapter();
@@ -84,22 +87,22 @@ void Ping::SendPing(TimePoint current_time) {
       std::chrono::duration_cast<std::chrono::milliseconds>(ping_interval_)
           .count()));
 
-  ping_times_.push(std::make_pair(pong_promise->request_id(), current_time));
+  ping_times_.push(std::make_pair(pong_promise->request_id(), Now()));
   // Wait for response
-  wait_responses_.Push(pong_promise->ResultEvent().Subscribe(
-      [&](auto const& promise) { PingResponse(promise.request_id()); }));
+  wait_responses_.Push(pong_promise->StatusEvent().Subscribe(OnResult{
+      [&](auto const& promise) { PingResponse(promise.request_id()); }}));
 
   auto write_action = api_adapter.Flush();
-  write_subscription_ =
-      write_action->ErrorEvent().Subscribe([this](auto const&) {
-        AE_TELE_ERROR(kPingWriteError, "Ping write error");
-        state_ = State::kError;
-      });
+  write_subscription_ = write_action->StatusEvent().Subscribe(OnError{[this]() {
+    AE_TELE_ERROR(kPingWriteError, "Ping write error");
+    state_ = State::kError;
+  }});
 
   state_ = State::kWaitResponse;
 }
 
-TimePoint Ping::WaitInterval(TimePoint current_time) {
+TimePoint Ping::WaitInterval() {
+  auto current_time = Now();
   auto const& ping_time = ping_times_.back().second;
   if ((ping_time + ping_interval_) > current_time) {
     return ping_time + ping_interval_;
@@ -108,10 +111,12 @@ TimePoint Ping::WaitInterval(TimePoint current_time) {
   return current_time;
 }
 
-TimePoint Ping::WaitResponse(TimePoint current_time) {
+TimePoint Ping::WaitResponse() {
   auto channel_ptr = channel_.Lock();
   assert(channel_ptr);
-  auto timeout = channel_ptr->expected_ping_time();
+  auto current_time = Now();
+  auto expected_ping_time = channel_ptr->ResponseTimeout();
+  auto timeout = expected_ping_time;
 
   auto const& ping_time = ping_times_.back().second;
   if ((ping_time + timeout) > current_time) {
@@ -153,7 +158,7 @@ void Ping::PingResponse(RequestId request_id) {
   AE_TELED_DEBUG("Ping received by {:%S} s", ping_duration);
   auto channel_ptr = channel_.Lock();
   assert(channel_ptr);
-  channel_ptr->AddPingTime(ping_duration);
+  channel_ptr->channel_statistics().AddResponseTime(ping_duration);
 
   state_ = State::kWaitInterval;
 }
