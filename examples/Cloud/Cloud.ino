@@ -83,11 +83,18 @@ ae::RcPtr<AetherApp> construct_aether_app() {
       }));
 }
 
+struct AetherCtx {
+  RcPtr<AetherApp> aether_app{};
+  std::unique_ptr<P2pSafeStream> sender_stream;
+  std::unique_ptr<P2pSafeStream> receiver_stream;
+  int received_count = 0;
+  int confirmed_count = 0;
+};
+
+static AetherCtx aether_ctx{};
 } // namespace ae::cloud_test
 
-void AetherCloudExample();
-
-static ae::RcPtr<ae::AetherApp> aether_app{};
+using ae::cloud_test::aether_ctx;
 
 ///
 ///\brief Test function.
@@ -103,7 +110,7 @@ void AetherCloudExample(void) {
    * Also it has action context protocol implementation \see Action.
    * To configure its creation \see AetherAppContext.
    */
-  aether_app = ae::cloud_test::construct_aether_app();
+  aether_ctx.aether_app = ae::cloud_test::construct_aether_app();
 
   /**
    * Start clients selection or registration.
@@ -113,53 +120,51 @@ void AetherCloudExample(void) {
   ae::Client::ptr client_a;
   ae::Client::ptr client_b;
 
-  auto select_client_a = aether_app->aether()->SelectClient(
+  auto select_client_a = aether_ctx.aether_app->aether()->SelectClient(
       ae::Uid::FromString("3ac93165-3d37-4970-87a6-fa4ee27744e4"), 0);
   select_client_a->StatusEvent().Subscribe(ae::ActionHandler{
       ae::OnResult{[&](auto const &action) { client_a = action.client(); }},
-      ae::OnError{[&]() { aether_app->Exit(1); }}});
+      ae::OnError{[]() { aether_ctx.aether_app->Exit(1); }}});
 
-  auto select_client_b = aether_app->aether()->SelectClient(
+  auto select_client_b = aether_ctx.aether_app->aether()->SelectClient(
       ae::Uid::FromString("3ac93165-3d37-4970-87a6-fa4ee27744e4"), 1);
   select_client_b->StatusEvent().Subscribe(ae::ActionHandler{
       ae::OnResult{[&](auto const &action) { client_b = action.client(); }},
-      ae::OnError{[&]() { aether_app->Exit(1); }}});
+      ae::OnError{[]() { aether_ctx.aether_app->Exit(1); }}});
 
-  aether_app->WaitActions(select_client_a, select_client_b);
+  aether_ctx.aether_app->WaitActions(select_client_a, select_client_b);
 
   // clients must be selected
   assert(client_a && client_b);
 
   // Make clients messages exchange.
-  int received_count = 0;
-  int confirmed_count = 0;
-
   /**
    * Make required preparation for receiving messages.
    * Subscribe to opening new stream event.
    * Subscribe to receiving message event.
    * Send confirmation to received message.
    */
-  std::unique_ptr<ae::ByteIStream> receiver_stream;
   client_a->message_stream_manager().new_stream_event().Subscribe(
       [&](auto p2p_stream) {
-        receiver_stream = ae::make_unique<ae::P2pSafeStream>(
-            *aether_app, ae::cloud_test::kSafeStreamConfig,
+        aether_ctx.receiver_stream = ae::make_unique<ae::P2pSafeStream>(
+            *aether_ctx.aether_app, ae::cloud_test::kSafeStreamConfig,
             std::move(p2p_stream));
 
-        receiver_stream->out_data_event().Subscribe([&](auto const &data) {
-          auto str_msg = std::string(
-              reinterpret_cast<const char *>(data.data()), data.size());
-          AE_TELED_DEBUG("Received a message [{}]", str_msg);
-          received_count++;
-          auto confirm_msg = std::string{"confirmed "} + str_msg;
-          auto response_action = receiver_stream->Write(
-              {confirm_msg.data(), confirm_msg.data() + confirm_msg.size()});
-          response_action->StatusEvent().Subscribe(ae::OnError{[&]() {
-            AE_TELED_ERROR("Send response failed");
-            aether_app->Exit(1);
-          }});
-        });
+        aether_ctx.receiver_stream->out_data_event().Subscribe(
+            [&](auto const &data) {
+              auto str_msg = std::string(
+                  reinterpret_cast<const char *>(data.data()), data.size());
+              AE_TELED_DEBUG("Received a message [{}]", str_msg);
+              aether_ctx.received_count++;
+              auto confirm_msg = std::string{"confirmed "} + str_msg;
+              auto response_action = aether_ctx.receiver_stream->Write(
+                  {confirm_msg.data(),
+                   confirm_msg.data() + confirm_msg.size()});
+              response_action->StatusEvent().Subscribe(ae::OnError{[&]() {
+                AE_TELED_ERROR("Send response failed");
+                aether_ctx.aether_app->Exit(1);
+              }});
+            });
       });
 
   /**
@@ -167,16 +172,20 @@ void AetherCloudExample(void) {
    * Create a sender to receiver stream.
    * Subscribe to receiving message event for confirmations.
    */
-  auto sender_stream = ae::make_unique<ae::P2pSafeStream>(
-      *aether_app, ae::cloud_test::kSafeStreamConfig,
-      ae::MakeRcPtr<ae::P2pStream>(*aether_app, client_b, client_a->uid()));
+  aether_ctx.sender_stream = ae::make_unique<ae::P2pSafeStream>(
+      *aether_ctx.aether_app, ae::cloud_test::kSafeStreamConfig,
+      ae::MakeRcPtr<ae::P2pStream>(*aether_ctx.aether_app, client_b,
+                                   client_a->uid()));
 
-  sender_stream->out_data_event().Subscribe([&](auto const &data) {
+  aether_ctx.sender_stream->out_data_event().Subscribe([&](auto const &data) {
     auto str_response =
         std::string(reinterpret_cast<const char *>(data.data()), data.size());
     AE_TELED_DEBUG("Received a response [{}], confirm_count {}", str_response,
-                   confirmed_count);
-    confirmed_count++;
+                   aether_ctx.confirmed_count);
+    aether_ctx.confirmed_count++;
+    if (aether_ctx.confirmed_count == aether_ctx.received_count) {
+      aether_ctx.aether_app->Exit(0);
+    }
   });
 
   AE_TELED_INFO("Send messages");
@@ -192,17 +201,18 @@ void AetherCloudExample(void) {
       "I've forgotten how it felt before the world fell at our feet"};
 
   for (auto const &msg : messages) {
-    auto send_action =
-        sender_stream->Write(ae::DataBuffer{std::begin(msg), std::end(msg)});
+    auto send_action = aether_ctx.sender_stream->Write(
+        ae::DataBuffer{std::begin(msg), std::end(msg)});
     send_action->StatusEvent().Subscribe(ae::OnError{[&](auto const &) {
       AE_TELED_ERROR("Send message failed");
-      aether_app->Exit(1);
+      aether_ctx.aether_app->Exit(1);
     }});
   }
 }
 
 void setup() {
   Serial.begin(115200);
+  Serial.printf("Hello");
 
   Serial.printf("Arduino Stack was set to %d bytes",
                 getArduinoLoopTaskStackSize());
@@ -219,17 +229,17 @@ void setup() {
  */
 void loop() {
   // put your main code here, to run repeatedly:
-  if (aether_app->IsExited()) {
-    Serial.printf("Exit error code: %d", aether_app->ExitCode());
+  if (aether_ctx.aether_app->IsExited()) {
+    Serial.printf("Exit error code: %d", aether_ctx.aether_app->ExitCode());
     Serial.println();
-    while (1) {
-    };
+    while (true) {
+    }
   }
 
   // Wait for next event or timeout
   auto current_time = ae::Now();
-  auto next_time = aether_app->Update(current_time);
-  aether_app->WaitUntil(std::min(
+  auto next_time = aether_ctx.aether_app->Update(current_time);
+  aether_ctx.aether_app->WaitUntil(std::min(
       next_time,
       current_time + std::chrono::seconds{ae::cloud_test::kWaitUntil}));
   Serial.printf("Arduino Stack was set to %d bytes",
