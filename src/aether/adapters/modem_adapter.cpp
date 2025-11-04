@@ -15,22 +15,24 @@
  */
 
 #include "aether/adapters/modem_adapter.h"
+#if AE_SUPPORT_MODEMS
 
-#include "aether/aether.h"
-#include "aether/modems/modem_factory.h"
-#include "aether/access_points/modem_access_point.h"
+#  include "aether/aether.h"
+#  include "aether/modems/modem_factory.h"
+#  include "aether/access_points/modem_access_point.h"
 
-#include "aether/adapters/adapter_tele.h"
+#  include "aether/adapters/adapter_tele.h"
 
 namespace ae {
 
-#if defined AE_DISTILLATION
-ModemAdapter::ModemAdapter(ObjPtr<Aether> aether, ModemInit modem_init,
-                           Domain* domain)
-    : ParentModemAdapter{std::move(aether), std::move(modem_init), domain} {
+#  if defined AE_DISTILLATION
+ModemAdapter::ModemAdapter(ObjPtr<Aether> aether, IPoller::ptr poller,
+                           ModemInit modem_init, Domain* domain)
+    : ParentModemAdapter{std::move(aether), std::move(poller),
+                         std::move(modem_init), domain} {
   AE_TELED_DEBUG("Modem instance created!");
 }
-#endif  // AE_DISTILLATION
+#  endif  // AE_DISTILLATION
 
 ModemAdapter::~ModemAdapter() {
   if (connected_) {
@@ -43,16 +45,20 @@ std::vector<AccessPoint::ptr> ModemAdapter::access_points() {
   if (!access_point_) {
     Aether::ptr aether = aether_;
     ModemAdapter::ptr self = MakePtrFromThis(this);
-    access_point_ = domain_->CreateObj<ModemAccessPoint>(aether, self);
+    assert(self);
+    access_point_ =
+        domain_->CreateObj<ModemAccessPoint>(aether, std::move(self));
   }
   return {access_point_};
 }
 
 IModemDriver& ModemAdapter::modem_driver() {
   if (!modem_driver_) {
-    modem_driver_ = ModemDriverFactory::CreateModem(modem_init_);
+    modem_driver_ = ModemDriverFactory::CreateModem(*aether_.as<Aether>(),
+                                                    poller_, modem_init_);
   }
   return *modem_driver_;
 }
 
 }  // namespace ae
+#endif

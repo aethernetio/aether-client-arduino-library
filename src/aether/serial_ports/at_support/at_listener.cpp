@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef AETHER_MODEMS_EXPONENT_TIME_H_
-#define AETHER_MODEMS_EXPONENT_TIME_H_
-
-#include "aether/common.h"
+#include "aether/serial_ports/at_support/at_listener.h"
 
 namespace ae {
-class ExponentTime {
- public:
-  ExponentTime(Duration min, Duration max);
 
-  Duration Next();
+AtListener::AtListener(AtDispatcher& dispatcher, std::string expected,
+                       Handler handler)
+    : dispatcher_{&dispatcher}, handler_{std::move(handler)} {
+  dispatcher_->Listen(std::move(expected), this);
+}
 
- private:
-  Duration min_;
-  Duration max_;
-  std::size_t counter_;
-};
+AtListener::~AtListener() { dispatcher_->Remove(this); }
+
+void AtListener::Observe(AtBuffer& buffer, AtBuffer::iterator pos) {
+  handler_(buffer, pos);
+}
 }  // namespace ae
-
-#endif  // AETHER_MODEMS_EXPONENT_TIME_H_
