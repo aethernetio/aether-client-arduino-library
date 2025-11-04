@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-#include "aether/modems/exponent_time.h"
+#ifndef AETHER_SERIAL_PORTS_AT_SUPPORT_AT_WRITE_ACTION_H_
+#define AETHER_SERIAL_PORTS_AT_SUPPORT_AT_WRITE_ACTION_H_
 
-#include <cmath>
-#include <algorithm>
+#include "aether/actions/notify_action.h"
 
 namespace ae {
-ExponentTime::ExponentTime(Duration min, Duration max)
-    : min_{min}, max_{max}, counter_{0} {}
-
-Duration ExponentTime::Next() {
-  auto diff = max_.count() - min_.count();
-  auto current_value =
-      min_.count() + static_cast<Duration::rep>(diff * std::log(++counter_));
-  return Duration{std::clamp(current_value, min_.count(), max_.count())};
+using AtWriteAction = NotifyAction;
 }
 
-}  // namespace ae
+#endif  // AETHER_SERIAL_PORTS_AT_SUPPORT_AT_WRITE_ACTION_H_

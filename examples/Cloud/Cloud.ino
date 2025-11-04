@@ -29,12 +29,13 @@ static constexpr int kWaitUntil = 5;
 static constexpr std::string_view kWifiSsid = "Test1234";
 static constexpr std::string_view kWifiPass = "Test1234";
 
+#if CLOUD_TEST_MODEM && AE_SUPPORT_MODEMS
 static constexpr std::string_view kSerialPortModem =
     "UART0"; // Modem serial port
 SerialInit serial_init_modem = {std::string(kSerialPortModem),
                                 kBaudRate::kBaudRate115200};
 
-ae::ModemInit const modem_init{
+ModemInit const modem_init{
     serial_init_modem,            // Serial port
     {},                           // Power save parameters
     {},                           // Base station
@@ -53,6 +54,7 @@ ae::ModemInit const modem_init{
     "",                           // SSL cert
     false                         // Use SSL
 };
+#endif
 
 constexpr ae::SafeStreamConfig kSafeStreamConfig{
     std::numeric_limits<std::uint16_t>::max(),               // buffer_capacity
@@ -75,7 +77,7 @@ ae::RcPtr<AetherApp> construct_aether_app() {
             context.dns_resolver(), std::string(kWifiSsid),
             std::string(kWifiPass)));
 #endif
-#if CLOUD_TEST_MODEM == 1
+#if CLOUD_TEST_MODEM == 1 && AE_SUPPORT_MODEMS
         adapter_registry->Add(context.domain().CreateObj<ae::ModemAdapter>(
             ae::GlobalId::kModemAdapter, context.aether(), modem_init));
 #endif

@@ -68,8 +68,10 @@
   #include "aether/types/uid.h"
   #include "aether/types/span.h"
 
+  #include "aether/adapters/parent_lora_module.h"
   #include "aether/adapters/adapter_tele.h"
   #include "aether/adapters/ethernet.h"
+  #include "aether/adapters/lora_module_adapter.h"
   #include "aether/adapters/modem_adapter.h"
   #include "aether/adapters/parent_modem.h"
   #include "aether/adapters/wifi_adapter.h"
@@ -79,6 +81,7 @@
 
   #include "aether/channels/ethernet_transport_factory.h"
   #include "aether/channels/modem_channel.h"
+  #include "aether/channels/lora_module_channel.h"
   #include "aether/channels/ethernet_channel.h"
   #include "aether/channels/channel_statistics.h"
   #include "aether/channels/wifi_channel.h"
@@ -86,11 +89,10 @@
   #include "aether/channels/channel.h"
 
   #include "aether/client_connections/client_connections_tele.h"
-  #include "aether/client_connections/cloud_message_stream.h"
+  #include "aether/client_connections/cloud_connection.h"
 
   #include "aether/modems/imodem_driver.h"
   #include "aether/modems/modem_factory.h"
-  #include "aether/modems/exponent_time.h"
   #include "aether/modems/modems_tele.h"
   #include "aether/modems/modem_driver_types.h"
   #include "aether/modems/thingy91x_at_modem.h"
@@ -104,7 +106,6 @@
   #include "aether/transport/socket_packet_queue_manager.h"
 
   #include "aether/transport/modems/modem_transport.h"
-  #include "aether/transport/modems/send_queue_poller.h"
 
   #include "aether/transport/low_level/tcp/tcp.h"
 
@@ -124,6 +125,8 @@
   #include "aether/transport/low_level/udp/udp.h"
 
   #include "aether/transport/actions/packet_send_action.h"
+
+  #include "aether/transport/lora_modules/lora_module_transport.h"
 
   #include "aether/domain_storage/ram_domain_storage.h"
   #include "aether/domain_storage/static_domain_storage.h"
@@ -264,6 +267,13 @@
   #include "aether/serial_ports/unix_serial_port.h"
   #include "aether/serial_ports/serial_ports_tele.h"
 
+  #include "aether/serial_ports/at_support/at_buffer.h"
+  #include "aether/serial_ports/at_support/at_support.h"
+  #include "aether/serial_ports/at_support/at_dispatcher.h"
+  #include "aether/serial_ports/at_support/at_listener.h"
+  #include "aether/serial_ports/at_support/at_write_action.h"
+  #include "aether/serial_ports/at_support/at_request.h"
+
   #include "aether/poller/poller.h"
   #include "aether/poller/poller_tele.h"
   #include "aether/poller/win_poller.h"
@@ -290,6 +300,13 @@
   #include "aether/dns/dns_tele.h"
   #include "aether/dns/esp32_dns_resolve.h"
   #include "aether/dns/dns_c_ares.h"
+
+  #include "aether/lora_modules/dx_smart_lr02_433_lm.h"
+  #include "aether/lora_modules/lora_module_factory.h"
+  #include "aether/lora_modules/lora_modules_tele.h"
+  #include "aether/lora_modules/ebyte_e22_400_lm.h"
+  #include "aether/lora_modules/lora_module_driver_types.h"
+  #include "aether/lora_modules/ilora_module_driver.h"
 
   #include "aether/stream_api/buffer_stream.h"
   #include "aether/stream_api/crypto_gate.h"
@@ -321,6 +338,7 @@
   #include "aether/access_points/access_point.h"
   #include "aether/access_points/ethernet_access_point.h"
   #include "aether/access_points/wifi_access_point.h"
+  #include "aether/access_points/lora_module_access_point.h"
   #include "aether/access_points/modem_access_point.h"
 
   #include "aether/crypto/key_gen.h"
@@ -344,7 +362,6 @@
   #include "aether/connection_manager/iserver_priority_policy.h"
   #include "aether/connection_manager/server_connection_manager.h"
   #include "aether/connection_manager/client_connection_manager.h"
-  #include "aether/connection_manager/server_connection_selector.h"
   #include "aether/connection_manager/iserver_connection_pool.h"
 
   #include "aether/registration/registration_crypto_provider.h"
