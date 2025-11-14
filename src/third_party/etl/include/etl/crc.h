@@ -40,11 +40,9 @@ SOFTWARE.
 #include "third_party/etl/include/etl/crc8_ebu.h"
 #include "third_party/etl/include/etl/crc8_icode.h"
 #include "third_party/etl/include/etl/crc8_itu.h"
-#include "third_party/etl/include/etl/crc8_j1850.h"
 #include "third_party/etl/include/etl/crc8_j1850_zero.h"
+#include "third_party/etl/include/etl/crc8_j1850.h"
 #include "third_party/etl/include/etl/crc8_maxim.h"
-#include "third_party/etl/include/etl/crc8_nrsc5.h"
-#include "third_party/etl/include/etl/crc8_opensafety.h"
 #include "third_party/etl/include/etl/crc8_rohc.h"
 #include "third_party/etl/include/etl/crc8_wcdma.h"
 
@@ -65,8 +63,6 @@ SOFTWARE.
 #include "third_party/etl/include/etl/crc16_maxim.h"
 #include "third_party/etl/include/etl/crc16_mcrf4xx.h"
 #include "third_party/etl/include/etl/crc16_modbus.h"
-#include "third_party/etl/include/etl/crc16_opensafety_a.h"
-#include "third_party/etl/include/etl/crc16_opensafety_b.h"
 #include "third_party/etl/include/etl/crc16_profibus.h"
 #include "third_party/etl/include/etl/crc16_riello.h"
 #include "third_party/etl/include/etl/crc16_t10dif.h"
@@ -88,6 +84,5 @@ SOFTWARE.
 #include "third_party/etl/include/etl/crc32_xfer.h"
 
 #include "third_party/etl/include/etl/crc64_ecma.h"
-#include "third_party/etl/include/etl/crc64_iso.h"
 
 #endif

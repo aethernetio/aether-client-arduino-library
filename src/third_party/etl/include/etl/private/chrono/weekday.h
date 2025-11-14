@@ -32,8 +32,6 @@ SOFTWARE.
   #error DO NOT DIRECTLY INCLUDE THIS FILE. USE CHRONO.H
 #endif
 
-#include <string.h>
-
 namespace etl
 {
   namespace chrono
