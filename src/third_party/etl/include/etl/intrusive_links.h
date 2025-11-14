@@ -882,6 +882,7 @@ namespace etl
       if (first.etl_previous != ETL_NULLPTR)
       {
         first.etl_previous->etl_next = last.etl_next;
+        last.clear();
       }
 
       first.etl_previous = ETL_NULLPTR;
