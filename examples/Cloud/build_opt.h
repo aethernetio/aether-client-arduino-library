@@ -1,5 +1,13 @@
 "-DAE_PROJECT_VERSION=\"1.0.0\""
+// User Tracking Measurement ID, must be a uint32 value
+"-DUTM_ID=0"
+// Path to user provided configuration header file
+"-DUSER_CONFIG \"../../user_config_hydrogen.h\""
+// Path to user provided saved state header file
+// "-DFS_INIT \"../../file_system_init.h\""
+// Build aether in distillation mode
 "-DAE_DISTILLATION=1"
+// Optinization flags
 "-ffast-math"
 "-fno-math-errno"
 "-funsafe-math-optimizations"
