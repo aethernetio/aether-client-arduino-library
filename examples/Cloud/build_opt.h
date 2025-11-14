@@ -1,13 +1,14 @@
 "-DAE_PROJECT_VERSION=\"1.0.0\""
-// User Tracking Measurement ID, must be a uint32 value
+"-DComment_UTM_ID=\"User Tracking Measurement ID, must be a uint32 value\""
 "-DUTM_ID=0"
-// Path to user provided configuration header file
-"-DUSER_CONFIG \"../../user_config_hydrogen.h\""
-// Path to user provided saved state header file
-// "-DFS_INIT \"../../file_system_init.h\""
-// Build aether in distillation mode
+"-DComment_USER_CONFIG=\"Path to user provided configuration header file\""
+"-DUSER_CONFIG \"../config/user_config_hydrogen.h\""
+"-DComment_FS_INIT=\"Path to user provided saved state header file\""
+"-DComment_AE_DISTILLATION=\"Build aether in distillation mode\""
 "-DAE_DISTILLATION=1"
-// Optimization flags
+"-DComment_flags=\"Optimization flags\""
+"-DNDEBUG"
+"-Oz"
 "-ffast-math"
 "-fno-math-errno"
 "-funsafe-math-optimizations"
@@ -18,8 +19,6 @@
 "-fno-trapping-math"
 "-fno-fp-int-builtin-inexact"
 "-fsingle-precision-constant"
-"-Oz"
-"-DNDEBUG"
 "-Wno-unused-function"
 "-Wno-type-limits"
 "-Wno-deprecated-declarations"
