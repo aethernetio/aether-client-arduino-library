@@ -7,7 +7,7 @@
 // "-DFS_INIT \"../../file_system_init.h\""
 // Build aether in distillation mode
 "-DAE_DISTILLATION=1"
-// Optinization flags
+// Optimization flags
 "-ffast-math"
 "-fno-math-errno"
 "-funsafe-math-optimizations"
