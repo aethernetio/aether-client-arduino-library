@@ -1,6 +1,4 @@
 "-DAE_PROJECT_VERSION=\"1.0.0\""
-"-DComment_UTM_ID=\"User Tracking Measurement ID, must be a uint32 value\""
-"-DUTM_ID=0"
 "-DComment_USER_CONFIG=\"Path to user provided configuration header file\""
 "-DUSER_CONFIG \"../config/user_config_hydrogen.h\""
 "-DComment_FS_INIT=\"Path to user provided saved state header file\""
