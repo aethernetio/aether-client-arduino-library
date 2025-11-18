@@ -139,11 +139,9 @@ namespace etl
     /// Assign from etl::unexpected.
     //*******************************************
     ETL_CONSTEXPR14
-    etl::unexpected<TError>& operator =(const etl::unexpected<TError>& rhs)
+      etl::unexpected<TError>& operator =(const etl::unexpected<TError>& rhs)
     {
-#if ETL_USING_CPP11
       ETL_STATIC_ASSERT(etl::is_copy_constructible<TError>::value, "Error not copy assignable");
-#endif
 
       error_value = rhs.error_value;
       return *this;
@@ -445,9 +443,7 @@ namespace etl
     //*******************************************
     expected& operator =(const unexpected_type& ue)
     {
-#if ETL_USING_CPP11
       ETL_STATIC_ASSERT(etl::is_copy_constructible<TError>::value, "Error not copy assignable");
-#endif
 
       storage.template emplace<Error_Type>(ue.error());
 
@@ -847,9 +843,7 @@ namespace etl
     //*******************************************
     expected& operator =(const unexpected_type& ue)
     {
-#if ETL_USING_CPP11
       ETL_STATIC_ASSERT(etl::is_copy_constructible<TError>::value, "Error not copy assignable");
-#endif
 
       storage.template emplace<Error_Type>(ue.error());
       return *this;

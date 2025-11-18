@@ -63,12 +63,12 @@ namespace etl
     {
       etl::timer::id::type id = etl::timer::id::NO_TIMER;
 
-      bool is_space = (number_of_registered_timers < Max_Timers);
+      bool is_space = (number_of_registered_timers < MAX_TIMERS);
 
       if (is_space)
       {
         // Search for the free space.
-        for (uint_least8_t i = 0U; i < Max_Timers; ++i)
+        for (uint_least8_t i = 0U; i < MAX_TIMERS; ++i)
         {
           timer_data& timer = timer_array[i];
 
@@ -142,7 +142,7 @@ namespace etl
       active_list.clear();
       unlock();
 
-      for (uint8_t i = 0U; i < Max_Timers; ++i)
+      for (uint8_t i = 0U; i < MAX_TIMERS; ++i)
       {
         ::new (&timer_array[i]) timer_data();
       }
@@ -156,7 +156,55 @@ namespace etl
     // Returns true if the tick was processed,
     // false if not.
     //*******************************************
-    virtual bool tick(uint32_t count) = 0;
+    bool tick(uint32_t count)
+    {
+      if (enabled)
+      {
+        if (try_lock())
+        {
+          // We have something to do?
+          bool has_active = !active_list.empty();       
+
+          if (has_active)
+          {
+            while (has_active && (count >= active_list.front().delta))
+            {
+              timer_data& timer = active_list.front();
+
+              count -= timer.delta;
+
+              active_list.remove(timer.id, true);
+
+              if (timer.callback.is_valid())
+              {
+                timer.callback();
+              }
+
+              if (timer.repeating)
+              {
+                // Reinsert the timer.
+                timer.delta = timer.period;
+                active_list.insert(timer.id);
+              }
+
+              has_active = !active_list.empty();
+            }
+
+            if (has_active)
+            {
+              // Subtract any remainder from the next due timeout.
+              active_list.front().delta -= count;
+            }
+          }
+
+          unlock();
+
+          return true;
+        }
+      }
+
+      return false;
+    }
 
     //*******************************************
     /// Starts a timer.
@@ -388,12 +436,12 @@ namespace etl
     //*******************************************
     /// Constructor.
     //*******************************************
-    icallback_timer_locked(timer_data* const timer_array_, const uint_least8_t  Max_Timers_)
+    icallback_timer_locked(timer_data* const timer_array_, const uint_least8_t  MAX_TIMERS_)
       : timer_array(timer_array_),
         active_list(timer_array_),
         enabled(false),
         number_of_registered_timers(0U),
-        Max_Timers(Max_Timers_)
+        MAX_TIMERS(MAX_TIMERS_)
     {
     }
 
@@ -588,7 +636,7 @@ namespace etl
     //*******************************************
     bool is_valid_timer_id(etl::timer::id::type id_) const
     {
-      return (id_ < Max_Timers);
+      return (id_ < MAX_TIMERS);
     }
 
     // The array of timer data structures.
@@ -605,24 +653,19 @@ namespace etl
     unlock_type   unlock;   ///< The callback that unlocks.
 
   public:
-    template <uint_least8_t>
-    friend class callback_timer_locked;
 
-    template <uint_least8_t, uint32_t>
-    friend class callback_timer_deferred_locked;
-
-    const uint_least8_t Max_Timers;
+    const uint_least8_t MAX_TIMERS;
   };
 
   //***************************************************************************
   /// The callback timer
   //***************************************************************************
-  template <uint_least8_t Max_Timers_>
+  template <uint_least8_t MAX_TIMERS_>
   class callback_timer_locked : public etl::icallback_timer_locked
   {
   public:
 
-    ETL_STATIC_ASSERT(Max_Timers_ <= 254U, "No more than 254 timers are allowed");
+    ETL_STATIC_ASSERT(MAX_TIMERS_ <= 254U, "No more than 254 timers are allowed");
 
     typedef icallback_timer_locked::callback_type callback_type;
     typedef icallback_timer_locked::try_lock_type try_lock_type;
@@ -633,7 +676,7 @@ namespace etl
     /// Constructor.
     //*******************************************
     callback_timer_locked()
-      : icallback_timer_locked(timer_array, Max_Timers_)
+      : icallback_timer_locked(timer_array, MAX_TIMERS_)
     {
     }
 
@@ -641,66 +684,14 @@ namespace etl
     /// Constructor.
     //*******************************************
     callback_timer_locked(try_lock_type try_lock_, lock_type lock_, unlock_type unlock_)
-      : icallback_timer_locked(timer_array, Max_Timers_)
+      : icallback_timer_locked(timer_array, MAX_TIMERS_)
     {
       this->set_locks(try_lock_, lock_, unlock_);
     }
 
-    // Implement virtual functions
-
-    bool tick(uint32_t count) final
-    {
-      if (enabled)
-      {
-        if (try_lock())
-        {
-          // We have something to do?
-          bool has_active = !active_list.empty();
-
-          if (has_active)
-          {
-            while (has_active && (count >= active_list.front().delta))
-            {
-              timer_data& timer = active_list.front();
-
-              count -= timer.delta;
-
-              active_list.remove(timer.id, true);
-
-              if (timer.callback.is_valid())
-              {
-                timer.callback();
-              }
-
-              if (timer.repeating)
-              {
-                // Reinsert the timer.
-                timer.delta = timer.period;
-                active_list.insert(timer.id);
-              }
-
-              has_active = !active_list.empty();
-            }
-
-            if (has_active)
-            {
-              // Subtract any remainder from the next due timeout.
-              active_list.front().delta -= count;
-            }
-          }
-
-          unlock();
-
-          return true;
-        }
-      }
-
-      return false;
-    }
-
   private:
 
-    timer_data timer_array[Max_Timers_];
+    timer_data timer_array[MAX_TIMERS_];
   };
 }
 
