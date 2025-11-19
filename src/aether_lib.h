@@ -20,7 +20,5 @@
 #include "aether_headers.h"
 
 void ArduinoAetherCloudExample(void);
-void ArduinoAetherKeyLedExample(void);
-void ArduinoAetherRegisteredExample(void);
 
 #endif // AETHER_LIB_H_

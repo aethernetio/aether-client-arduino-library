@@ -11,16 +11,6 @@ void ArduinoAetherCloudExample()
   AetherCloudExample();
 }
 
-void ArduinoAetherKeyLedExample()
-{
-  AetherKeyLedExample();
-}
-
-void ArduinoAetherRegisteredExample()
-{
-  AetherRegisteredExample();
-}
-
 int ArduinoLibbcryptUnitTestsRunner()
 {
     return libbcrypt_unit_tests_runner();
