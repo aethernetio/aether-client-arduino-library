@@ -48,7 +48,6 @@
 #include "aether/obj/registry.h"
 
 #include "aether/tele/tele_init.h"
-#include "aether/stream_api/istream.h"
 
 #include "aether/domain_storage/ram_domain_storage.h"
 #include "aether/domain_storage/spifs_domain_storage.h"
@@ -61,11 +60,20 @@
 #include "aether/types/span.h"
 #include "aether/types/address.h"
 #include "aether/types/static_map.h"
+#include "aether/types/server_id.h"
+#include "aether/types/client_id.h"
 #include "aether/types/data_buffer.h"
 #include "aether/types/ring_buffer.h"
 #include "aether/types/state_machine.h"
 #include "aether/types/literal_array.h"
+#include "aether/types/nullable_type.h"
 #include "aether/types/address_parser.h"
+
+#include "aether/stream_api/istream.h"
+#include "aether/stream_api/safe_stream.h"
+#include "aether/stream_api/buffer_stream.h"
+#include "aether/stream_api/protocol_gates.h"
+#include "aether/stream_api/stream_write_action.h"
 
 #include "aether/serial_ports/iserial_port.h"
 #include "aether/serial_ports/serial_port_types.h"
@@ -77,6 +85,13 @@
 #include "aether/adapters/wifi_adapter.h"
 #include "aether/adapters/modem_adapter.h"
 #include "aether/adapters/lora_module_adapter.h"
+
+#include "aether/ae_actions/ping.h"
+#include "aether/ae_actions/telemetry.h"
+#include "aether/ae_actions/get_servers.h"
+#include "aether/ae_actions/select_client.h"
+#include "aether/ae_actions/get_client_cloud.h"
+#include "aether/ae_actions/check_access_for_send_message.h"
 
 #include "aether/modems/imodem_driver.h"
 #include "aether/modems/modem_factory.h"

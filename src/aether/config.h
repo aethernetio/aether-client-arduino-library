@@ -119,12 +119,19 @@
 #  define AE_SUPPORT_LORA 0
 #endif
 
-#ifndef AE_ENABLE_EBYTE_E22_400
-#  define AE_ENABLE_EBYTE_E22_400 0
+#ifndef AE_ENABLE_EBYTE_E22_LM
+#  define AE_ENABLE_EBYTE_E22_LM 0
 #endif
 
-#ifndef AE_ENABLE_DX_SMART_LR02_433_LM
-#  define AE_ENABLE_DX_SMART_LR02_433_LM 0
+#ifndef AE_ENABLE_DX_SMART_LR02_LM
+#  define AE_ENABLE_DX_SMART_LR02_LM 0
+#endif
+
+/**
+ * \brief Is work with gateway supported.
+ */
+#ifndef AE_SUPPORT_GATEWAY
+#  define AE_SUPPORT_GATEWAY 0
 #endif
 
 // Registration functionality can be stripped-out for pre-registered clients.

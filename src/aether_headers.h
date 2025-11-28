@@ -62,9 +62,12 @@
   #include "aether/types/static_map.h"
   #include "aether/types/variant_type.h"
   #include "aether/types/address_parser.h"
+  #include "aether/types/server_id.h"
+  #include "aether/types/nullable_type.h"
   #include "aether/types/type_list.h"
   #include "aether/types/aligned_storage.h"
   #include "aether/types/uid.h"
+  #include "aether/types/client_id.h"
   #include "aether/types/span.h"
 
   #include "aether/adapters/parent_lora_module.h"
@@ -203,6 +206,8 @@
   #include "aether/work_cloud_api/client_api/client_api_unsafe.h"
   #include "aether/work_cloud_api/client_api/client_api_safe.h"
 
+  #include "aether/gateway_api/gateway_api.h"
+
   #include "aether/client_messages/p2p_message_stream_manager.h"
   #include "aether/client_messages/p2p_message_stream.h"
   #include "aether/client_messages/client_messages_tele.h"
@@ -288,6 +293,7 @@
   #include "aether/ae_actions/check_access_for_send_message.h"
   #include "aether/ae_actions/ping.h"
   #include "aether/ae_actions/get_client_cloud.h"
+  #include "aether/ae_actions/get_servers.h"
   #include "aether/ae_actions/ae_actions_tele.h"
 
   #include "aether/aether_c/c_types.h"
@@ -302,12 +308,12 @@
   #include "aether/dns/esp32_dns_resolve.h"
   #include "aether/dns/dns_c_ares.h"
 
-  #include "aether/lora_modules/dx_smart_lr02_433_lm.h"
+  #include "aether/lora_modules/dx_smart_lr02_lm.h"
   #include "aether/lora_modules/lora_module_factory.h"
   #include "aether/lora_modules/lora_modules_tele.h"
-  #include "aether/lora_modules/ebyte_e22_400_lm.h"
   #include "aether/lora_modules/lora_module_driver_types.h"
   #include "aether/lora_modules/ilora_module_driver.h"
+  #include "aether/lora_modules/ebyte_e22_lm.h"
 
   #include "aether/stream_api/buffer_stream.h"
   #include "aether/stream_api/crypto_gate.h"
