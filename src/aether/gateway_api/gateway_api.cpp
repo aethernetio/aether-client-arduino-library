@@ -21,23 +21,16 @@
 namespace ae {
 GatewayApi::GatewayApi(ProtocolContext& protocol_context)
     : ApiClass{protocol_context},
-      packet_to_server_id{protocol_context},
-      packet_to_server{protocol_context} {}
+      to_server_id{protocol_context},
+      to_server{protocol_context} {}
 
 GatewayClientApi::GatewayClientApi(ProtocolContext& protocol_context)
-    : ApiClass{protocol_context} {}
+    : ApiClassImpl{protocol_context} {}
 
-void GatewayClientApi::FromServerId(ClientId client_id, ServerId server_id,
-                                    DataBuffer data) {
-  from_server_id_event_.Emit(client_id, server_id, data);
-}
-
-void GatewayClientApi::FromServer(ClientId client_id,
-                                  std::uin64_t descriptor_hash,
-                                  DataBuffer data) {
-  from_server_event_.Emit(client_id, descriptor_hash, data);
+void GatewayClientApi::FromServer(ClientId client_id, DataBuffer data) {
+  from_server_event_.Emit(client_id, data);
 }
 
 }  // namespace ae
 
-#endif  // AE_SUPPORT_LORA
+#endif  // AE_SUPPORT_GATEWAY

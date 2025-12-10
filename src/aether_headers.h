@@ -111,7 +111,8 @@
 
   #include "aether/transport/actions/packet_send_action.h"
 
-  #include "aether/transport/lora_modules/lora_module_transport.h"
+  #include "aether/transport/gateway/gateway_device.h"
+  #include "aether/transport/gateway/gateway_transport.h"
 
   #include "aether/transport/system_sockets/tcp/tcp.h"
 
@@ -206,6 +207,7 @@
   #include "aether/work_cloud_api/client_api/client_api_unsafe.h"
   #include "aether/work_cloud_api/client_api/client_api_safe.h"
 
+  #include "aether/gateway_api/server_endpoints.h"
   #include "aether/gateway_api/gateway_api.h"
 
   #include "aether/client_messages/p2p_message_stream_manager.h"

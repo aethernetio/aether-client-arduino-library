@@ -17,6 +17,7 @@
 #ifndef AETHER_CHANNELS_ETHERNET_CHANNEL_H_
 #define AETHER_CHANNELS_ETHERNET_CHANNEL_H_
 
+#include "aether/types/address.h"
 #include "aether/channels/channel.h"
 
 namespace ae {
@@ -30,12 +31,13 @@ class EthernetChannel : public Channel {
   EthernetChannel() = default;
 
   EthernetChannel(ObjPtr<Aether> aether, ObjPtr<DnsResolver> dns_resolver,
-                  ObjPtr<IPoller> poller, UnifiedAddress address,
-                  Domain* domain);
+                  ObjPtr<IPoller> poller, Endpoint address, Domain* domain);
 
-  AE_OBJECT_REFLECT(AE_MMBRS(aether_, poller_, dns_resolver_))
+  AE_OBJECT_REFLECT(AE_MMBRS(aether_, poller_, dns_resolver_, address))
 
   ActionPtr<TransportBuilderAction> TransportBuilder() override;
+
+  Endpoint address;
 
  private:
   Obj::ptr aether_;
