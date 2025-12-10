@@ -19,11 +19,11 @@
 
 #include <vector>
 
-#include "aether/channels/channel.h"
-#include "aether/adapter_registry.h"
-
+#include "aether/types/address.h"
 #include "aether/events/events.h"
 #include "aether/types/server_id.h"
+#include "aether/channels/channel.h"
+#include "aether/adapter_registry.h"
 #include "aether/events/multi_subscription.h"
 
 namespace ae {
@@ -35,7 +35,7 @@ class Server : public Obj {
  public:
   using ChannelsChanged = Event<void()>;
 
-  explicit Server(ServerId server_id, std::vector<UnifiedAddress> endpoints,
+  explicit Server(ServerId server_id, std::vector<Endpoint> endpoints,
                   Domain* domain);
 
   AE_OBJECT_REFLECT(AE_MMBRS(server_id, endpoints, adapter_registry_, channels))
@@ -46,7 +46,7 @@ class Server : public Obj {
   ChannelsChanged::Subscriber channels_changed();
 
   ServerId server_id;
-  std::vector<UnifiedAddress> endpoints;
+  std::vector<Endpoint> endpoints;
 
   std::vector<Channel::ptr> channels;
 
