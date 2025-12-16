@@ -51,9 +51,8 @@ SOFTWARE.
 ///\ingroup patterns
 //*****************************************************************************
 
-#include "third_party/etl/include/etl/algorithm.h"
-
 #include "third_party/etl/include/etl/platform.h"
+#include "third_party/etl/include/etl/algorithm.h"
 #include "third_party/etl/include/etl/vector.h"
 #include "third_party/etl/include/etl/exception.h"
 #include "third_party/etl/include/etl/error_handler.h"

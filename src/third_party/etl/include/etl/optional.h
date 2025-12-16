@@ -39,6 +39,7 @@ SOFTWARE.
 #include "third_party/etl/include/etl/error_handler.h"
 #include "third_party/etl/include/etl/utility.h"
 #include "third_party/etl/include/etl/placement_new.h"
+#include "third_party/etl/include/etl/initializer_list.h"
 
 namespace etl
 {
@@ -195,6 +196,7 @@ namespace etl
         storage.construct(etl::forward<TArgs>(args)...);
       }
 
+#if ETL_HAS_INITIALIZER_LIST
       //*******************************************
       /// Construct from initializer_list and arguments.
       //*******************************************
@@ -205,6 +207,7 @@ namespace etl
       {
         storage.construct(ilist, etl::forward<TArgs>(args)...);
       }
+#endif
 #endif
 
       //***************************************************************************
@@ -468,7 +471,7 @@ namespace etl
       etl::enable_if_t<etl::is_convertible<U, T>::value, T>
         value_or(U&& default_value) const&
       {
-        return has_value() ? value() : etl::forward<T>(default_value);
+        return has_value() ? value() : static_cast<T>(etl::forward<U>(default_value));
       }
 
       //***************************************************************************
@@ -479,7 +482,7 @@ namespace etl
       etl::enable_if_t<etl::is_convertible<U, T>::value, T>
         value_or(U&& default_value)&&
       {
-        return has_value() ? etl::move(value()) : etl::forward<T>(default_value);
+        return has_value() ? etl::move(value()) : static_cast<T>(etl::forward<U>(default_value));
       }
 #endif
 
@@ -816,6 +819,7 @@ namespace etl
         storage.construct(etl::forward<TArgs>(args)...);
       }
 
+#if ETL_HAS_INITIALIZER_LIST
       //*******************************************
       /// Construct from initializer_list and arguments.
       //*******************************************
@@ -826,6 +830,7 @@ namespace etl
       {
         storage.construct(ilist, etl::forward<TArgs>(args)...);
       }
+#endif
 #endif
 
       //***************************************************************************
@@ -1080,7 +1085,7 @@ namespace etl
       etl::enable_if_t<etl::is_convertible<U, T>::value, T>
         value_or(U&& default_value) const&
       {
-        return has_value() ? value() : etl::forward<T>(default_value);
+        return has_value() ? value() : static_cast<T>(etl::forward<U>(default_value));
       }
 
       //***************************************************************************
@@ -1091,7 +1096,7 @@ namespace etl
       etl::enable_if_t<etl::is_convertible<U, T>::value, T>
         value_or(U&& default_value)&&
       {
-        return has_value() ? etl::move(value()) : etl::forward<T>(default_value);
+        return has_value() ? etl::move(value()) : static_cast<T>(etl::forward<U>(default_value));
       }
 #endif
 
@@ -2313,7 +2318,7 @@ ETL_CONSTEXPR20_STL void swap(etl::optional<T>& lhs, etl::optional<T>& rhs)
 #undef ETL_OPTIONAL_ENABLE_CPP14
 #undef ETL_OPTIONAL_ENABLE_CPP20_STL
 
+#undef ETL_OPTIONAL_ENABLE_CONSTEXPR_BOOL_RETURN_CPP14
 #undef ETL_OPTIONAL_ENABLE_CONSTEXPR_BOOL_RETURN_CPP20_STL
-#undef ETL_OPTIONAL_ENABLE_COMSTEXPR_BOOL_RETURN_CPP20_STL
 
 #endif

@@ -242,13 +242,23 @@ SOFTWARE.
 #endif
 
 //*************************************
-// Indicate if C++ exceptions are enabled.
+// Indicate if C++ exceptions within the ETL are enabled.
 #if defined(ETL_THROW_EXCEPTIONS)
-  #define ETL_USING_EXCEPTIONS 1
+  #define ETL_USING_EXCEPTIONS     1
   #define ETL_NOT_USING_EXCEPTIONS 0
 #else
-  #define ETL_USING_EXCEPTIONS 0
+  #define ETL_USING_EXCEPTIONS     0
   #define ETL_NOT_USING_EXCEPTIONS 1
+#endif
+
+//*************************************
+// Indicate if C++ exceptions are enabled for debug asserts.
+#if ETL_IS_DEBUG_BUILD && defined(ETL_DEBUG_THROW_EXCEPTIONS)
+  #define ETL_DEBUG_USING_EXCEPTIONS     1
+  #define ETL_DEBUG_NOT_USING_EXCEPTIONS 0
+#else
+  #define ETL_DEBUG_USING_EXCEPTIONS     0
+  #define ETL_DEBUG_NOT_USING_EXCEPTIONS 1
 #endif
 
 //*************************************
@@ -316,6 +326,16 @@ SOFTWARE.
 #endif
 
 //*************************************
+// Indicate if noexcept is part of the function type.
+#if !defined(ETL_HAS_NOEXCEPT_FUNCTION_TYPE)
+  #if defined(__cpp_noexcept_function_type) && (__cpp_noexcept_function_type >= 201510)
+    #define ETL_HAS_NOEXCEPT_FUNCTION_TYPE 1
+  #else
+    #define ETL_HAS_NOEXCEPT_FUNCTION_TYPE 0
+  #endif
+#endif
+
+//*************************************
 // The macros below are dependent on the profile.
 // C++11
 #if ETL_USING_CPP11
@@ -331,8 +351,15 @@ SOFTWARE.
   #define ETL_ENUM_CLASS(name)            enum class name
   #define ETL_ENUM_CLASS_TYPE(name, type) enum class name : type
   #define ETL_LVALUE_REF_QUALIFIER        &
-  #define ETL_NOEXCEPT                    noexcept
-  #define ETL_NOEXCEPT_EXPR(...)          noexcept(__VA_ARGS__)
+  #if ETL_USING_EXCEPTIONS
+    #define ETL_NOEXCEPT                  noexcept
+    #define ETL_NOEXCEPT_EXPR(...)        noexcept(__VA_ARGS__)
+    #define ETL_NOEXCEPT_FROM(x)          noexcept(noexcept(x))
+  #else
+    #define ETL_NOEXCEPT
+    #define ETL_NOEXCEPT_EXPR(...)
+    #define ETL_NOEXCEPT_FROM(x) 
+  #endif
 #else
   #define ETL_CONSTEXPR
   #define ETL_CONSTEXPR11
@@ -344,6 +371,7 @@ SOFTWARE.
   #define ETL_NORETURN
   #define ETL_NOEXCEPT
   #define ETL_NOEXCEPT_EXPR(...)
+  #define ETL_NOEXCEPT_FROM(x) 
   #define ETL_MOVE(x) x
   #define ETL_ENUM_CLASS(name)            enum name
   #define ETL_ENUM_CLASS_TYPE(name, type) enum name
@@ -634,6 +662,7 @@ namespace etl
     static ETL_CONSTANT bool has_chrono_literals_microseconds = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
     static ETL_CONSTANT bool has_chrono_literals_nanoseconds  = (ETL_HAS_CHRONO_LITERALS_DURATION == 1);
     static ETL_CONSTANT bool has_std_byteswap                 = (ETL_HAS_STD_BYTESWAP == 1);
+    static ETL_CONSTANT bool has_noexcept_function_type       = (ETL_HAS_NOEXCEPT_FUNCTION_TYPE == 1);
 
     // Is...
     static ETL_CONSTANT bool is_debug_build                   = (ETL_IS_DEBUG_BUILD == 1);
