@@ -207,7 +207,7 @@
 #endif
 // default value used for connection timeout, until statistics are available
 #ifndef AE_DEFAULT_CONNECTION_TIMEOUT_MS
-#  define AE_DEFAULT_CONNECTION_TIMEOUT_MS 5000
+#  define AE_DEFAULT_CONNECTION_TIMEOUT_MS 50000
 #endif
 
 // window size for server answear to ping statistics
@@ -217,7 +217,7 @@
 
 // default value used for ping timeout, until statistics are available
 #ifndef AE_DEFAULT_RESPONSE_TIMEOUT_MS
-#  define AE_DEFAULT_RESPONSE_TIMEOUT_MS 1000
+#  define AE_DEFAULT_RESPONSE_TIMEOUT_MS 10000
 #endif
 
 // window size for safe stream response time statistics
@@ -237,7 +237,7 @@
 
 // Maximal number of server connections
 #ifndef AE_CLOUD_MAX_SERVER_CONNECTIONS
-#  define AE_CLOUD_MAX_SERVER_CONNECTIONS 3
+#  define AE_CLOUD_MAX_SERVER_CONNECTIONS 12
 #endif
 
 // Telemetry configuration

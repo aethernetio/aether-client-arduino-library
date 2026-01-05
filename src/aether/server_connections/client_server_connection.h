@@ -23,7 +23,6 @@
 #include "aether/ae_actions/ping.h"
 #include "aether/actions/action_ptr.h"
 #include "aether/crypto/icrypto_provider.h"
-#include "aether/stream_api/buffer_stream.h"
 #include "aether/server_connections/server_channel.h"
 #include "aether/server_connections/channel_manager.h"
 #include "aether/server_connections/channel_selection_stream.h"
@@ -43,9 +42,10 @@ class Channel;
  */
 class ClientServerConnection {
  public:
-  explicit ClientServerConnection(ActionContext action_context,
-                                  ObjPtr<Client> const& client,
-                                  ObjPtr<Server> const& server);
+  ClientServerConnection(ActionContext action_context,
+                         ObjPtr<Client> const& client,
+                         ObjPtr<Server> const& server);
+  ~ClientServerConnection();
 
   AE_CLASS_NO_COPY_MOVE(ClientServerConnection)
 
@@ -72,10 +72,7 @@ class ClientServerConnection {
   LoginApi login_api_;
 
   ChannelManager channel_manager_;
-
   ChannelSelectStream channel_select_stream_;
-  BufferStream<DataBuffer> buffer_stream_;
-
   OwnActionPtr<Ping> ping_;
 
   ServerChannel const* server_channel_;
