@@ -17,7 +17,9 @@
 #ifndef AETHER_TRANSPORT_SYSTEM_SOCKETS_SOCKETS_LWIP_CB_TCP_SOCKET_H_
 #define AETHER_TRANSPORT_SYSTEM_SOCKETS_SOCKETS_LWIP_CB_TCP_SOCKET_H_
 
-#if (defined(ESP_PLATFORM))
+#include "aether/config.h"
+
+#if defined ESP_PLATFORM && AE_LWIP_SOCKET_TYPES == LWIP_CB_SOCKETS
 
 #  define LWIP_CB_TCP_SOCKET_ENABLED 1
 
@@ -51,7 +53,6 @@ class LwipCBTcpSocket : public ISocket {
   // LWIP RAW callbacks
   static err_t TcpClientRecv(void* arg, struct tcp_pcb* tpcb, struct pbuf* p,
                              err_t err);
-  static err_t TcpClientSent(void* arg, struct tcp_pcb* tpcb, u16_t len);
   static err_t TcpClientConnected(void* arg, struct tcp_pcb* tpcb, err_t err);
   static void TcpClientError(void* arg, err_t err);
 
@@ -59,7 +60,6 @@ class LwipCBTcpSocket : public ISocket {
   void OnErrorEvent();
   void OnConnectionEvent();
 
-  ReadyToWriteCb ready_to_write_cb_;
   RecvDataCb recv_data_cb_;
   ErrorCb error_cb_;
   ConnectedCb connected_cb_;

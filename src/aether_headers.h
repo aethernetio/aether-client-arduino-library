@@ -294,6 +294,7 @@
   #include "aether/poller/kqueue_poller.h"
   #include "aether/poller/poller_types.h"
   #include "aether/poller/freertos_poller.h"
+  #include "aether/poller/unix_poller.h"
 
   #include "aether/ae_actions/select_client.h"
   #include "aether/ae_actions/telemetry.h"

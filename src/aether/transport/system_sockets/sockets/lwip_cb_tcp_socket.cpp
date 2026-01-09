@@ -16,12 +16,10 @@
 
 #include "aether/transport/system_sockets/sockets/lwip_cb_tcp_socket.h"
 
-#include "lwip/tcpip.h"
-
-#include "aether/transport/system_sockets/sockets/get_sock_addr.h"
-#include "aether/transport/system_sockets/sockets/lwip_get_addr.h"
-
 #if LWIP_CB_TCP_SOCKET_ENABLED
+#  include "lwip/tcpip.h"
+
+#  include "aether/transport/system_sockets/sockets/lwip_get_addr.h"
 
 #  include "aether/tele/tele.h"
 
@@ -30,8 +28,8 @@ LwipCBTcpSocket::LwipCBTcpSocket() = default;
 
 LwipCBTcpSocket::~LwipCBTcpSocket() { Disconnect(); }
 
-ISocket& LwipCBTcpSocket::ReadyToWrite(ReadyToWriteCb ready_to_write_cb) {
-  ready_to_write_cb_ = std::move(ready_to_write_cb);
+ISocket& LwipCBTcpSocket::ReadyToWrite(
+    [[maybe_unused]] ReadyToWriteCb ready_to_write_cb) {
   return *this;
 }
 
@@ -182,15 +180,6 @@ err_t LwipCBTcpSocket::TcpClientRecv(void* arg, struct tcp_pcb* tpcb,
   return ERR_OK;
 }
 
-// Callback client send
-err_t LwipCBTcpSocket::TcpClientSent(void* arg, struct tcp_pcb*, u16_t len) {
-  auto* self = static_cast<LwipCBTcpSocket*>(arg);
-  AE_TELED_DEBUG("Sent {} bytes", len);
-
-  // self->ready_to_write_cb_();
-  return ERR_OK;
-}
-
 // Callback for errors
 void LwipCBTcpSocket::TcpClientError(void* arg, err_t err) {
   auto* self = static_cast<LwipCBTcpSocket*>(arg);
@@ -213,7 +202,6 @@ err_t LwipCBTcpSocket::TcpClientConnected(void* arg, struct tcp_pcb* tpcb,
 
   // Setting callbacks
   tcp_recv(tpcb, LwipCBTcpSocket::TcpClientRecv);
-  tcp_sent(tpcb, LwipCBTcpSocket::TcpClientSent);
   tcp_err(tpcb, LwipCBTcpSocket::TcpClientError);
 
   AE_TELED_DEBUG("Connected to the server");

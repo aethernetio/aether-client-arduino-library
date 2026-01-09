@@ -16,12 +16,10 @@
 
 #include "aether/transport/system_sockets/sockets/lwip_cb_udp_socket.h"
 
-#include "lwip/tcpip.h"
-
-#include "aether/transport/system_sockets/sockets/get_sock_addr.h"
-#include "aether/transport/system_sockets/sockets/lwip_get_addr.h"
-
 #if LWIP_CB_UDP_SOCKET_ENABLED
+#  include "lwip/tcpip.h"
+
+#  include "aether/transport/system_sockets/sockets/lwip_get_addr.h"
 
 #  include "aether/tele/tele.h"
 
