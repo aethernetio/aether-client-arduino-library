@@ -1,6 +1,6 @@
 "-DAE_PROJECT_VERSION=\"1.0.0\""
 "-DComment_USER_CONFIG=\"Path to user provided configuration header file\""
-"-DUSER_CONFIG \"../config/user_config_hydrogen.h\""
+"-DUSER_CONFIG=\"../config/user_config_hydrogen.h\""
 "-DComment_FS_INIT=\"Path to user provided saved state header file\""
 "-DComment_AE_DISTILLATION=\"Build aether in distillation mode\""
 "-DAE_DISTILLATION=1"
