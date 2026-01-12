@@ -53,7 +53,9 @@
   #include "aether/events/event_list.h"
 
   #include "aether/types/small_function.h"
+  #include "aether/types/server_config.h"
   #include "aether/types/state_machine.h"
+  #include "aether/types/client_config.h"
   #include "aether/types/ring_buffer.h"
   #include "aether/types/data_buffer.h"
   #include "aether/types/address.h"
@@ -117,6 +119,8 @@
   #include "aether/transport/system_sockets/tcp/tcp.h"
 
   #include "aether/transport/system_sockets/sockets/win_tcp_socket.h"
+  #include "aether/transport/system_sockets/sockets/lwip_cb_tcp_socket.h"
+  #include "aether/transport/system_sockets/sockets/lwip_cb_udp_socket.h"
   #include "aether/transport/system_sockets/sockets/unix_udp_socket.h"
   #include "aether/transport/system_sockets/sockets/win_socket.h"
   #include "aether/transport/system_sockets/sockets/tcp_sockets_factory.h"
@@ -126,8 +130,9 @@
   #include "aether/transport/system_sockets/sockets/unix_socket.h"
   #include "aether/transport/system_sockets/sockets/win_udp_socket.h"
   #include "aether/transport/system_sockets/sockets/lwip_tcp_socket.h"
-  #include "aether/transport/system_sockets/sockets/win_sock_addr.h"
   #include "aether/transport/system_sockets/sockets/unix_tcp_socket.h"
+  #include "aether/transport/system_sockets/sockets/lwip_get_addr.h"
+  #include "aether/transport/system_sockets/sockets/get_sock_addr.h"
   #include "aether/transport/system_sockets/sockets/lwip_socket.h"
 
   #include "aether/transport/system_sockets/udp/udp.h"
@@ -289,6 +294,7 @@
   #include "aether/poller/kqueue_poller.h"
   #include "aether/poller/poller_types.h"
   #include "aether/poller/freertos_poller.h"
+  #include "aether/poller/unix_poller.h"
 
   #include "aether/ae_actions/select_client.h"
   #include "aether/ae_actions/telemetry.h"
@@ -318,18 +324,13 @@
   #include "aether/lora_modules/ebyte_e22_lm.h"
 
   #include "aether/stream_api/buffer_stream.h"
-  #include "aether/stream_api/crypto_gate.h"
   #include "aether/stream_api/gate_trait.h"
-  #include "aether/stream_api/debug_gate.h"
-  #include "aether/stream_api/serialize_gate.h"
   #include "aether/stream_api/sized_packet_gate.h"
-  #include "aether/stream_api/protocol_gates.h"
   #include "aether/stream_api/gates_stream.h"
-  #include "aether/stream_api/byte_gate.h"
   #include "aether/stream_api/istream.h"
-  #include "aether/stream_api/event_subscribe_gate.h"
   #include "aether/stream_api/tied_gates.h"
   #include "aether/stream_api/stream_api.h"
+  #include "aether/stream_api/api_call_adapter.h"
   #include "aether/stream_api/stream_write_action.h"
   #include "aether/stream_api/safe_stream.h"
 
@@ -343,8 +344,8 @@
   #include "aether/stream_api/safe_stream/safe_stream_types.h"
   #include "aether/stream_api/safe_stream/safe_stream_send_action.h"
 
-  #include "aether/access_points/filter_protocols.h"
   #include "aether/access_points/access_point.h"
+  #include "aether/access_points/filter_endpoints.h"
   #include "aether/access_points/ethernet_access_point.h"
   #include "aether/access_points/wifi_access_point.h"
   #include "aether/access_points/lora_module_access_point.h"
