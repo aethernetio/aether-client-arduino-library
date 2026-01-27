@@ -27,7 +27,7 @@
 #  include "aether/modems/imodem_driver.h"
 #  include "aether/adapters/modem_adapter.h"
 #  include "aether/serial_ports/iserial_port.h"
-#  include "aether/serial_ports/at_comm_support.h"
+#  include "aether/serial_ports/at_support/at_support.h"
 
 namespace ae {
 
@@ -155,8 +155,8 @@ class Bg95AtModem final : public IModemDriver {
   Bg95AtModem() = default;
 
  public:
-  explicit Bg95AtModem(ModemAdapter& adapter, IPoller::ptr poller,
-                       ModemInit modem_init, Domain* domain);
+  explicit Bg95AtModem(ObjProp prop, ModemAdapter& adapter, IPoller::ptr poller,
+                       ModemInit modem_init);
   AE_OBJECT_REFLECT(AE_MMBRS(connect_vec_))
 
   bool Init() override;

@@ -26,7 +26,6 @@
 
 #include "aether/cloud.h"
 #include "aether/types/uid.h"
-#include "aether/types/server_id.h"
 
 namespace ae {
 class Aether;
@@ -51,8 +50,8 @@ class ClientCloudManager : public Obj {
   ClientCloudManager() = default;
 
  public:
-  explicit ClientCloudManager(ObjPtr<Aether> aether, ObjPtr<Client> client,
-                              Domain* domain);
+  explicit ClientCloudManager(ObjProp prop, ObjPtr<Aether> aether,
+                              ObjPtr<Client> client);
 
   AE_CLASS_NO_COPY_MOVE(ClientCloudManager)
 

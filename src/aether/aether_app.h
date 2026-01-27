@@ -72,11 +72,13 @@ class AetherAppContext : public ComponentContext<AetherAppContext> {
     // clean old state
     domain_storage_->CleanUp();
 
-    aether_ = domain_->CreateObj<Aether>(GlobalId::kAether);
+    aether_ =
+        Aether::ptr::Create(CreateWith{*domain_}.with_id(GlobalId::kAether));
     assert(aether_);
 #else
-    aether_.SetId(GlobalId::kAether);
-    domain_->LoadRoot(aether_);
+    aether_ =
+        Aether::ptr::Declare(CreateWith{*domain_}.with_id(GlobalId::kAether));
+    aether_.Load();
     assert(aether_);
 #endif  //  defined AE_DISTILLATION
   }

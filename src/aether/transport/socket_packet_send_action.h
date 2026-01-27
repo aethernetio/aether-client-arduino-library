@@ -17,12 +17,12 @@
 #ifndef AETHER_TRANSPORT_SOCKET_PACKET_SEND_ACTION_H_
 #define AETHER_TRANSPORT_SOCKET_PACKET_SEND_ACTION_H_
 
-#include "aether/stream_api/stream_write_action.h"
+#include "aether/write_action/write_action.h"
 
 namespace ae {
-class SocketPacketSendAction : public StreamWriteAction {
+class SocketPacketSendAction : public WriteAction {
  public:
-  using StreamWriteAction::StreamWriteAction;
+  using WriteAction::WriteAction;
 
   UpdateStatus Update() override;
 

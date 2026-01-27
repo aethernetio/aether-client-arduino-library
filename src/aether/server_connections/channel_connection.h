@@ -18,37 +18,34 @@
 #define AETHER_SERVER_CONNECTIONS_CHANNEL_CONNECTION_H_
 
 #include "aether/common.h"
-#include "aether/ptr/ptr_view.h"
+#include "aether/ptr/ptr.h"
+#include "aether/events/events.h"
+#include "aether/stream_api/istream.h"
+#include "aether/actions/timer_action.h"
 #include "aether/actions/action_context.h"
-
-#include "aether/server_connections/server_channel.h"
+#include "aether/events/event_subscription.h"
 
 namespace ae {
 class Channel;
 class ChannelConnection {
  public:
-  ChannelConnection(ActionContext action_context,
-                    ObjPtr<Channel> const& channel);
+  using ConnectionStateEvent = Event<void(bool connected)>;
 
-  AE_CLASS_MOVE_ONLY(ChannelConnection)
+  ChannelConnection(ActionContext action_context, Ptr<Channel> const& channel);
 
-  ObjPtr<Channel> channel() const;
+  AE_CLASS_NO_COPY_MOVE(ChannelConnection)
 
-  /**
-   * \brief Return ServerChannel.
-   */
-  std::unique_ptr<ServerChannel> GetServerChannel();
-
-  void Reset();
-
-  /**
-   * \brief Connection penalty points increased during runtime
-   */
-  std::size_t connection_penalty;
+  ByteIStream* stream() const;
+  ConnectionStateEvent::Subscriber connection_state_event();
 
  private:
+  void BuildTransport(Ptr<Channel> const& channel);
+
   ActionContext action_context_;
-  PtrView<Channel> channel_;
+  std::unique_ptr<ByteIStream> transport_stream_;
+  Subscription transport_build_sub_;
+  OwnActionPtr<TimerAction> build_timer_;
+  ConnectionStateEvent connection_state_event_;
 };
 }  // namespace ae
 

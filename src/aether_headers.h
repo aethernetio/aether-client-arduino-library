@@ -83,6 +83,11 @@
   #include "aether/adapters/adapter.h"
   #include "aether/adapters/parent_wifi.h"
 
+  #include "aether/write_action/buffer_write.h"
+  #include "aether/write_action/failed_write_action.h"
+  #include "aether/write_action/write_action.h"
+  #include "aether/write_action/done_write_action.h"
+
   #include "aether/channels/ethernet_transport_factory.h"
   #include "aether/channels/modem_channel.h"
   #include "aether/channels/lora_module_channel.h"
@@ -91,9 +96,6 @@
   #include "aether/channels/wifi_channel.h"
   #include "aether/channels/channels_types.h"
   #include "aether/channels/channel.h"
-
-  #include "aether/client_connections/client_connections_tele.h"
-  #include "aether/client_connections/cloud_connection.h"
 
   #include "aether/modems/imodem_driver.h"
   #include "aether/modems/modem_factory.h"
@@ -147,6 +149,7 @@
   #include "aether/domain_storage/file_system_std_storage.h"
   #include "aether/domain_storage/spifs_domain_storage.h"
 
+  #include "aether/obj/obj_ptr_base.h"
   #include "aether/obj/registrar.h"
   #include "aether/obj/obj_id.h"
   #include "aether/obj/registry.h"
@@ -176,12 +179,18 @@
   #include "aether/api_protocol/api_method.h"
 
   #include "aether/server_connections/server_connection.h"
-  #include "aether/server_connections/channel_selection_stream.h"
   #include "aether/server_connections/iserver_connection_factory.h"
   #include "aether/server_connections/client_server_connection.h"
-  #include "aether/server_connections/server_channel.h"
-  #include "aether/server_connections/channel_manager.h"
   #include "aether/server_connections/channel_connection.h"
+
+  #include "aether/cloud_connections/cloud_callbacks.h"
+  #include "aether/cloud_connections/cloud_request.h"
+  #include "aether/cloud_connections/cloud_connections_tele.h"
+  #include "aether/cloud_connections/request_policy.h"
+  #include "aether/cloud_connections/cloud_subscription.h"
+  #include "aether/cloud_connections/cloud_server_connections.h"
+  #include "aether/cloud_connections/cloud_visit.h"
+  #include "aether/cloud_connections/cloud_server_connection.h"
 
   #include "aether/reflect/domain_visitor_impl.h"
   #include "aether/reflect/node_visitor.h"
@@ -221,6 +230,7 @@
   #include "aether/client_messages/p2p_safe_message_stream.h"
 
   #include "aether/wifi/esp_wifi_driver.h"
+  #include "aether/wifi/wifi_driver_types.h"
   #include "aether/wifi/wifi_driver_factory.h"
   #include "aether/wifi/wifi_driver.h"
 
@@ -323,7 +333,6 @@
   #include "aether/lora_modules/ilora_module_driver.h"
   #include "aether/lora_modules/ebyte_e22_lm.h"
 
-  #include "aether/stream_api/buffer_stream.h"
   #include "aether/stream_api/gate_trait.h"
   #include "aether/stream_api/sized_packet_gate.h"
   #include "aether/stream_api/gates_stream.h"
@@ -331,7 +340,6 @@
   #include "aether/stream_api/tied_gates.h"
   #include "aether/stream_api/stream_api.h"
   #include "aether/stream_api/api_call_adapter.h"
-  #include "aether/stream_api/stream_write_action.h"
   #include "aether/stream_api/safe_stream.h"
 
   #include "aether/stream_api/safe_stream/sending_chunk_list.h"
@@ -369,16 +377,13 @@
   #include "aether/crypto/sodium/sodium_sync_crypto_provider.h"
 
   #include "aether/connection_manager/client_cloud_manager.h"
-  #include "aether/connection_manager/iserver_priority_policy.h"
   #include "aether/connection_manager/server_connection_manager.h"
   #include "aether/connection_manager/client_connection_manager.h"
-  #include "aether/connection_manager/iserver_connection_pool.h"
 
   #include "aether/registration/registration_crypto_provider.h"
   #include "aether/registration/proof_of_work.h"
   #include "aether/registration/root_server_select_stream.h"
   #include "aether/registration/registration.h"
-  #include "aether/registration/root_server_stream.h"
 
   #include "aether/registration/api/global_reg_client_api.h"
   #include "aether/registration/api/client_reg_api_unsafe.h"
