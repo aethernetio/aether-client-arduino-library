@@ -29,6 +29,14 @@ static constexpr int kWaitUntil = 5;
 static constexpr std::string_view kWifiSsid = "Test1234";
 static constexpr std::string_view kWifiPass = "Test1234";
 
+static const auto kWifiInit = ae::WiFiInit{
+    {ae::WiFiAp{
+        ae::WifiCreds{std::string{kWifiSsid}, std::string{kWifiPass}},
+        {},
+    }},
+    ae::WiFiPowerSaveParam{},
+};
+
 #if CLOUD_TEST_MODEM && AE_SUPPORT_MODEMS
 static constexpr std::string_view kSerialPortModem =
     "UART0"; // Modem serial port
@@ -70,16 +78,19 @@ ae::RcPtr<AetherApp> construct_aether_app() {
   return AetherApp::Construct(
       AetherAppContext{}.AdaptersFactory([](AetherAppContext const &context) {
         auto adapter_registry =
-            context.domain().CreateObj<ae::AdapterRegistry>();
+            ae::AdapterRegistry::ptr::Create(context.domain());
 #if CLOUD_TEST_ESP_WIFI == 1
-        adapter_registry->Add(context.domain().CreateObj<ae::WifiAdapter>(
-            ae::GlobalId::kWiFiAdapter, context.aether(), context.poller(),
-            context.dns_resolver(), std::string(kWifiSsid),
-            std::string(kWifiPass)));
+        adapter_registry->Add(ae::WifiAdapter::ptr::Create(
+            ae::CreateWith{context.domain()}.with_id(
+                ae::GlobalId::kWiFiAdapter),
+            context.aether(), context.poller(), context.dns_resolver(),
+            kWifiInit));
 #endif
 #if CLOUD_TEST_MODEM == 1 && AE_SUPPORT_MODEMS
-        adapter_registry->Add(context.domain().CreateObj<ae::ModemAdapter>(
-            ae::GlobalId::kModemAdapter, context.aether(), modem_init));
+        adapter_registry->Add(ae::ModemAdapter::ptr::Create(
+            ae::CreateWith{context.domain()}.with_id(
+                ae::GlobalId::kModemAdapter),
+            context.aether(), modem_init));
 #endif
         return adapter_registry;
       }));
@@ -176,8 +187,7 @@ void AetherCloudExample(void) {
    */
   aether_ctx.sender_stream = ae::make_unique<ae::P2pSafeStream>(
       *aether_ctx.aether_app, ae::cloud_test::kSafeStreamConfig,
-      ae::MakeRcPtr<ae::P2pStream>(*aether_ctx.aether_app, client_b,
-                                   client_a->uid()));
+      client_b->message_stream_manager().CreateStream(client_a->uid()));
 
   aether_ctx.sender_stream->out_data_event().Subscribe([&](auto const &data) {
     auto str_response =
