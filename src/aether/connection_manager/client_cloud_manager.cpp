@@ -27,9 +27,7 @@
 #include "aether/ae_actions/get_servers.h"
 #include "aether/ae_actions/get_client_cloud.h"
 #include "aether/work_cloud_api/server_descriptor.h"
-#include "aether/client_connections/cloud_connection.h"
-
-#include "aether/client_connections/client_connections_tele.h"
+#include "aether/cloud_connections/cloud_server_connections.h"
 
 namespace ae {
 namespace client_cloud_manager_internal {
@@ -57,7 +55,8 @@ class GetCloudFromAether : public GetCloudAction {
 
   explicit GetCloudFromAether(ActionContext action_context, Aether& aether,
                               ClientCloudManager& client_cloud_manager,
-                              CloudConnection& cloud_connection, Uid client_uid)
+                              CloudServerConnections& cloud_connection,
+                              Uid client_uid)
       : GetCloudAction{action_context},
         action_context_{action_context},
         aether_{&aether},
@@ -108,7 +107,7 @@ class GetCloudFromAether : public GetCloudAction {
     std::vector<ServerId> missing_servers;
     for (auto const& sid : cloud_sids_) {
       auto server = aether_->GetServer(sid);
-      if (server) {
+      if (server.is_valid()) {
         servers_.emplace_back(std::move(server));
       } else {
         missing_servers.push_back(sid);
@@ -131,10 +130,10 @@ class GetCloudFromAether : public GetCloudAction {
                           [&](auto const& left, auto const& right) {
                             auto left_order = std::find(std::begin(cloud_sids_),
                                                         std::end(cloud_sids_),
-                                                        left->server_id);
+                                                        left.Load()->server_id);
                             auto right_order = std::find(
                                 std::begin(cloud_sids_), std::end(cloud_sids_),
-                                right->server_id);
+                                right.Load()->server_id);
                             return left_order < right_order;
                           });
 
@@ -160,8 +159,8 @@ class GetCloudFromAether : public GetCloudAction {
           endpoints.emplace_back(Endpoint{{ip.ip, pp.port}, pp.protocol});
         }
       }
-      Server::ptr s = aether_->domain_->CreateObj<Server>(
-          sd.server_id, endpoints, aether_->adapter_registry);
+      auto s = Server::ptr::Create(aether_->domain, sd.server_id, endpoints,
+                                   aether_->adapter_registry);
       aether_->StoreServer(s);
       servers.emplace_back(std::move(s));
     }
@@ -176,7 +175,7 @@ class GetCloudFromAether : public GetCloudAction {
   ActionContext action_context_;
   Aether* aether_;
   ClientCloudManager* client_cloud_manager_;
-  CloudConnection* cloud_connection_;
+  CloudServerConnections* cloud_connection_;
   Uid client_uid_;
   StateMachine<State> state_;
   OwnActionPtr<GetClientCloudAction> get_client_cloud_action_;
@@ -190,44 +189,32 @@ class GetCloudFromAether : public GetCloudAction {
 
 }  // namespace client_cloud_manager_internal
 
-ClientCloudManager::ClientCloudManager(ObjPtr<Aether> aether,
-                                       ObjPtr<Client> client, Domain* domain)
-    : Obj(domain), aether_{std::move(aether)}, client_{std::move(client)} {}
+ClientCloudManager::ClientCloudManager(ObjProp prop, ObjPtr<Aether> aether,
+                                       ObjPtr<Client> client)
+    : Obj{prop}, aether_{std::move(aether)}, client_{std::move(client)} {}
 
 ActionPtr<GetCloudAction> ClientCloudManager::GetCloud(Uid client_uid) {
-  if (!aether_) {
-    domain_->LoadRoot(aether_);
-  }
-  assert(aether_);
-  auto* aether = aether_.as<Aether>();
+  auto aether = Aether::ptr{aether_}.Load();
+  assert(aether);
 
   auto cached = cloud_cache_.find(client_uid);
   if (cached != cloud_cache_.end()) {
-    if (!cached->second) {
-      domain_->LoadRoot(cached->second);
-    }
-    assert(cached->second);
+    assert(cached->second.is_valid());
     return ActionPtr<client_cloud_manager_internal::GetCloudFromCache>{
         *aether, cached->second};
   }
   // get from aethernet
-  if (!client_) {
-    domain_->LoadRoot(client_);
-  }
-  assert(client_);
 
-  auto* client = client_.as<Client>();
+  auto client = Client::ptr{client_}.Load();
+  assert(client);
+
   return ActionPtr<client_cloud_manager_internal::GetCloudFromAether>{
       *aether, *aether, *this, client->cloud_connection(), client_uid};
 }
 
 Cloud::ptr ClientCloudManager::RegisterCloud(Uid uid,
                                              std::vector<Server::ptr> servers) {
-  if (!aether_) {
-    domain_->LoadRoot(aether_);
-  }
-  auto new_cloud = domain_->CreateObj<WorkCloud>(uid);
-  assert(new_cloud);
+  auto new_cloud = WorkCloud::ptr::Create(domain, uid);
   new_cloud->SetServers(std::move(servers));
 
   cloud_cache_[uid] = new_cloud;

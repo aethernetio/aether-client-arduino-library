@@ -27,7 +27,6 @@
 
 #    include <mutex>
 
-#    include "aether/ptr/ptr_view.h"
 #    include "aether/actions/action.h"
 #    include "aether/actions/action_ptr.h"
 #    include "aether/actions/notify_action.h"
@@ -65,7 +64,7 @@ class UdpTransport : public ByteIStream {
    public:
     SendAction(ActionContext action_context, UdpTransport& transport,
                DataBuffer&& data_buffer);
-    SendAction(SendAction&& other) noexcept;
+    AE_CLASS_NO_COPY_MOVE(SendAction)
 
     void Send() override;
 
@@ -77,11 +76,11 @@ class UdpTransport : public ByteIStream {
   using ErrorEventAction = NotifyAction;
 
  public:
-  UdpTransport(ActionContext action_context, IPoller::ptr const& poller,
+  UdpTransport(ActionContext action_context, Ptr<IPoller> const& poller,
                AddressPort endpoint);
   ~UdpTransport() override;
 
-  ActionPtr<StreamWriteAction> Write(DataBuffer&& in_data) override;
+  ActionPtr<WriteAction> Write(DataBuffer&& in_data) override;
   StreamUpdateEvent::Subscriber stream_update_event() override;
   StreamInfo stream_info() const override;
   OutDataEvent::Subscriber out_data_event() override;

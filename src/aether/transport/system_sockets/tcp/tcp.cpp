@@ -103,7 +103,7 @@ void TcpTransport::ReadAction::DataReceived() {
 }
 
 TcpTransport::TcpTransport(ActionContext action_context,
-                           IPoller::ptr const& poller, AddressPort endpoint)
+                           Ptr<IPoller> const& poller, AddressPort endpoint)
     : action_context_{action_context},
       endpoint_{std::move(endpoint)},
       stream_info_{},
@@ -153,7 +153,7 @@ TcpTransport::~TcpTransport() {
   Disconnect();
 }
 
-ActionPtr<StreamWriteAction> TcpTransport::Write(DataBuffer&& in_data) {
+ActionPtr<WriteAction> TcpTransport::Write(DataBuffer&& in_data) {
   AE_TELE_DEBUG(kTcpTransportSend, "Socket {} send data size {}", endpoint_,
                 in_data.size());
 

@@ -32,6 +32,7 @@
 
 #include "aether/client.h"
 #include "aether/aether_app.h"
+#include "aether/wifi/wifi_driver_types.h"
 
 // IWYU pragma: begin_keeps
 #include "aether/domain_storage/domain_storage_factory.h"
@@ -106,11 +107,11 @@ ae::ActionPtr<ae::SelectClientAction> SelectClientImpl(
   return select_action;
 }
 
-ae::ActionPtr<ae::StreamWriteAction> WriteMessageImpl(AetherClient* client,
-                                                      ae::Uid destination,
-                                                      ae::DataBuffer&& data,
-                                                      ActionStatusCb status_cb,
-                                                      void* user_data) {
+ae::ActionPtr<ae::WriteAction> WriteMessageImpl(AetherClient* client,
+                                                ae::Uid destination,
+                                                ae::DataBuffer&& data,
+                                                ActionStatusCb status_cb,
+                                                void* user_data) {
   assert(client->client);
   auto it = client->streams.find(destination);
   if (it == std::end(client->streams)) {
@@ -236,29 +237,69 @@ int AetherInit(AetherConfig const* config) {
       })
 #if AE_DISTILLATION
           .AdaptersFactory([&](ae::AetherAppContext const& context) {
-            auto adapters = context.domain().CreateObj<ae::AdapterRegistry>();
+            auto adapters = ae::AdapterRegistry::ptr::Create(context.domain());
             if (config->adapters == nullptr) {
-              adapters->Add(context.domain().CreateObj<ae::EthernetAdapter>(
-                  context.aether(), context.poller(), context.dns_resolver()));
+              adapters->Add(ae::EthernetAdapter::ptr::Create(
+                  context.domain(), context.aether(), context.poller(),
+                  context.dns_resolver()));
             } else {
               assert(config->adapters->count != 0);
               for (size_t i = 0; i < config->adapters->count; ++i) {
                 auto* conf = config->adapters->adapters[i];
                 switch (conf->type) {
                   case AeEthernetAdapter: {
-                    adapters->Add(
-                        context.domain().CreateObj<ae::EthernetAdapter>(
-                            context.aether(), context.poller(),
-                            context.dns_resolver()));
+                    adapters->Add(ae::EthernetAdapter::ptr::Create(
+                        context.domain(), context.aether(), context.poller(),
+                        context.dns_resolver()));
                     break;
                   }
                   case AeWifiAdapter: {
                     auto* wifi_conf =
                         reinterpret_cast<AeWifiAdapterConf*>(conf);
-                    adapters->Add(context.domain().CreateObj<ae::WifiAdapter>(
-                        context.aether(), context.poller(),
-                        context.dns_resolver(), wifi_conf->ssid,
-                        wifi_conf->password));
+
+                    static ae::IpV4Addr my_static_ip_v4{192, 168, 1, 100};
+                    static ae::IpV4Addr my_gateway_ip_v4{192, 168, 1, 1};
+                    static ae::IpV4Addr my_netmask_ip_v4{255, 255, 255, 0};
+                    static ae::IpV4Addr my_dns1_ip_v4{8, 8, 8, 8};
+                    static ae::IpV4Addr my_dns2_ip_v4{8, 8, 4, 4};
+                    static ae::IpV6Addr my_static_ip_v6{
+                        0x20, 0x01, 0x0d, 0xb8, 0x85, 0xa3, 0x00, 0x00,
+                        0x00, 0x00, 0x8a, 0x2e, 0x03, 0x70, 0x73, 0x34};
+
+                    static ae::WiFiIP wifi_ip{
+                        {my_static_ip_v4},   // ESP32 static IP
+                        {my_gateway_ip_v4},  // IP Address of your network
+                                             // gateway (router)
+                        {my_netmask_ip_v4},  // Subnet mask
+                        {my_dns1_ip_v4},     // Primary DNS (optional)
+                        {my_dns2_ip_v4},     // Secondary DNS (optional)
+                        {my_static_ip_v6}    // ESP32 static IP v6
+                    };
+
+                    static ae::WifiCreds my_wifi{wifi_conf->ssid,
+                                                 wifi_conf->password};
+
+                    ae::WiFiAp wifi_ap{my_wifi, wifi_ip};
+
+                    std::vector<ae::WiFiAp> wifi_ap_vec{wifi_ap};
+
+                    static ae::WiFiPowerSaveParam wifi_psp{
+                        true,
+                        AE_WIFI_PS_MAX_MODEM,  // Power save type
+                        AE_WIFI_PROTOCOL_11B | AE_WIFI_PROTOCOL_11G |
+                            AE_WIFI_PROTOCOL_11N,  // Protocol bitmap
+                        3,                         // Listen interval
+                        500                        // Beacon interval
+                    };
+
+                    ae::WiFiInit wifi_init{
+                        wifi_ap_vec,  // Wi-Fi access points
+                        wifi_psp,     // Power save parameters
+                    };
+
+                    adapters->Add(ae::WifiAdapter::ptr::Create(
+                        context.domain(), context.aether(), context.poller(),
+                        context.dns_resolver(), wifi_init));
                     break;
                   }
                   default:
