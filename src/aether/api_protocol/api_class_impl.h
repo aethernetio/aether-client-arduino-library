@@ -88,7 +88,7 @@ struct MethodInvoke<message_id, TApi, method_ptr,
                                      !IsSubContextImpl<First>::value>> {
  public:
   static constexpr auto kMessageCode = message_id;
-  using Message = GenericMessage<First, Args...>;
+  using Message = GenericMessage<std::decay_t<First>, std::decay_t<Args>...>;
 
   static void Invoke(TApi* obj, Message&& message, ApiParser&) {
     std::apply(
@@ -109,7 +109,7 @@ template <MessageId message_id, typename TApi, typename R, typename... Args,
 struct MethodInvoke<message_id, TApi, method_ptr> {
  public:
   static constexpr auto kMessageCode = message_id;
-  using Message = GenericMessage<PromiseResult<R>, Args...>;
+  using Message = GenericMessage<PromiseResult<R>, std::decay_t<Args>...>;
 
   static void Invoke(TApi* obj, Message&& message, ApiParser&) {
     std::apply(
@@ -130,7 +130,7 @@ template <MessageId message_id, typename TApi, typename TSubApi,
 struct MethodInvoke<message_id, TApi, method_ptr> {
  public:
   static constexpr auto kMessageCode = message_id;
-  using Message = GenericMessage<Args...>;
+  using Message = GenericMessage<std::decay_t<Args>...>;
 
   static void Invoke(TApi* obj, Message&& message, ApiParser& parser) {
     std::apply(
@@ -192,9 +192,9 @@ struct LoadSelector;
 template <typename ImplList, typename Api, std::size_t... Is>
 static bool ApiLoadFactory(Api* api, MessageId message_id, ApiParser& parser,
                            std::index_sequence<Is...>) {
-  return (
-      LoadSelector<Api, TypeAtT<Is, ImplList>>::Load(api, message_id, parser) ||
-      ...);
+  return (LoadSelector<Api, TypeAt_t<Is, ImplList>>::Load(api, message_id,
+                                                          parser) ||
+          ...);
 }
 
 template <typename Api, MessageId Id, auto method>
@@ -223,7 +223,7 @@ template <typename Api>
 static bool LoadFactoryImpl(Api* api, MessageId message_id, ApiParser& parser) {
   static_assert(HasApiMethods<Api>::value, "Api should provide ApiMethods");
   using List = decltype(Api::ApiMethods());
-  constexpr auto list_size = TypeListSize<typename List::Impls>;
+  constexpr auto list_size = TypeListSize_v<typename List::Impls>;
 
   return ApiLoadFactory<typename List::Impls>(
       api, message_id, parser, std::make_index_sequence<list_size>());

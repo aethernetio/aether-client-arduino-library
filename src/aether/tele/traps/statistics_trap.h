@@ -27,8 +27,8 @@
 
 #include "third_party/aethernet-numeric/numeric/tiered_int.h"
 
+#include "aether/clock.h"
 #include "aether/config.h"
-#include "aether/common.h"
 #include "aether/mstream.h"
 #include "aether/ptr/rc_ptr.h"
 #include "aether/tele/itrap.h"
@@ -102,7 +102,7 @@ imstream<Ib>& operator>>(imstream<Ib>& stream, LogStorage& log) {
  */
 struct MetricsStore {
   using PackedIndex = TieredInt<std::uint64_t, std::uint8_t, 250>;
-  using PackedValue = TieredInt<std::uint32_t, std::uint8_t, 250>;
+  using PackedValue = TieredInt<std::uint64_t, std::uint8_t, 250>;
   struct Metric {
     PackedValue invocations_count;
     PackedValue max_duration;
@@ -171,8 +171,8 @@ class StatisticsStore {
   void Rotate();
 
   std::uint32_t statistics_size_limit_{kMaxSize};
-  EnvStore env_store_;
-  MetricsStore metrics_store_;
+  EnvStore env_store_{};
+  MetricsStore metrics_store_{};
   RcPtr<LogStorage> prev_logs_;
   RcPtr<LogStorage> logs_;
 };

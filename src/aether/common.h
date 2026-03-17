@@ -17,7 +17,6 @@
 #ifndef AETHER_COMMON_H_
 #define AETHER_COMMON_H_
 
-#include <chrono>
 #include <cstdint>
 
 #include "aether/config.h"
@@ -45,11 +44,6 @@ namespace ae {
 #define AE_ESC(...) AE_ESC_(__VA_ARGS__)
 #define AE_ESC_(...) AE_VAN_##__VA_ARGS__
 #define AE_VAN_AE_ISH
-
-using Duration = std::chrono::duration<uint32_t, std::micro>;
-using ClockType = std::chrono::system_clock;
-using TimePoint = std::chrono::time_point<ClockType>;
-inline auto Now() { return TimePoint::clock::now(); }
 
 enum class CompressionMethod : std::uint8_t {
   kNone = AE_NONE,

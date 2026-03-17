@@ -51,6 +51,7 @@ class ClientServerConnection {
   StreamInfo stream_info() const;
   ByteIStream::StreamUpdateEvent::Subscriber stream_update_event();
 
+  ActionPtr<WriteAction> LoginApiCall(SubApi<LoginApi> login_api);
   ActionPtr<WriteAction> AuthorizedApiCall(SubApi<AuthorizedApi> auth_api);
   ClientApiSafe& client_safe_api();
 
@@ -73,6 +74,7 @@ class ClientServerConnection {
   OwnActionPtr<Ping> ping_;
 
   Subscription ping_sub_;
+  Subscription wait_connection_sub_;
 };
 }  // namespace ae
 

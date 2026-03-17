@@ -23,48 +23,20 @@
 #include <optional>
 #include <type_traits>
 
-#include "aether/types/type_list.h"
+#include "aether/meta/arg_at.h"
+#include "aether/meta/type_list.h"
+#include "aether/meta/index_sequence.h"
 
 namespace ae {
 
 namespace _internal {
-template <typename T, T... N, std::size_t... Indices>
-constexpr auto reverse_sequence_helper(std::integer_sequence<T, N...>,
-                                       std::index_sequence<Indices...>) {
-  constexpr auto array = std::array<T, sizeof...(N)>{N...};
-  return std::integer_sequence<T, array[sizeof...(Indices) - Indices - 1]...>();
-}
-
-template <typename T, T min, T... N>
-constexpr auto make_range_sequence_helper(std::integer_sequence<T, N...>) {
-  return std::integer_sequence<T, (N + min)...>();
-}
-
 template <typename TFunc, std::size_t... Indices, typename... TArgs>
 decltype(auto) ApplyByIndices(TFunc&& func, std::index_sequence<Indices...>,
                               TArgs&&... args) {
   return std::forward<TFunc>(func)(
-      ArgAt<Indices>(std::forward<TArgs>(args)...)...);
+      VarAt<Indices>(std::forward<TArgs>(args)...)...);
 }
 }  // namespace _internal
-
-template <typename T, T... N>
-constexpr auto reverse_sequence(std::integer_sequence<T, N...> sequence) {
-  return _internal::reverse_sequence_helper(
-      sequence, std::make_index_sequence<sizeof...(N)>());
-}
-
-template <typename T, T from, T to>
-constexpr auto make_range_sequence() {
-  if constexpr (from <= to) {
-    return _internal::make_range_sequence_helper<T, from>(
-        std::make_integer_sequence<T, to - from + 1>());
-  } else {
-    // make reverse sequence from bigger to lesser
-    return reverse_sequence(_internal::make_range_sequence_helper<T, to>(
-        std::make_integer_sequence<T, from - to + 1>()));
-  }
-}
 
 template <typename TFunc, typename... T>
 decltype(auto) ApplyRerverse(TFunc&& func, T&&... args) {
@@ -178,45 +150,6 @@ struct IsFunctionPtr<
     TFuncPtr, T,
     std::void_t<decltype(static_cast<TFuncPtr>(std::declval<T>()))>>
     : std::true_type {};
-
-template <typename TSignature>
-struct FunctionSignatureImpl;
-
-template <typename TRet, typename... TArgs>
-struct FunctionSignatureImpl<TRet(TArgs...)> {
-  using Args = TypeList<TArgs...>;
-  using Ret = TRet;
-  using Signature = TRet(TArgs...);
-  using FuncPtr = TRet (*)(TArgs...);
-};
-
-template <typename TRes, typename... TArgs>
-auto GetSignatureImpl(TRes (*)(TArgs...))
-    -> FunctionSignatureImpl<TRes(TArgs...)>;
-
-template <typename TClass, typename TRes, typename... TArgs>
-auto GetSignatureImpl(TRes (TClass::*)(TArgs...) const)
-    -> FunctionSignatureImpl<TRes(TArgs...)>;
-
-template <typename TClass, typename TRes, typename... TArgs>
-auto GetSignatureImpl(TRes (TClass::*)(TArgs...))
-    -> FunctionSignatureImpl<TRes(TArgs...)>;
-
-template <typename TCallable>
-auto GetSignatureImpl(TCallable)
-    -> decltype(GetSignatureImpl(&TCallable::operator()));
-
-/**
- * \brief Get a signature of functor object, or function pointer.
- */
-template <typename TFunc, typename FuncSignatureImp =
-                              decltype(GetSignatureImpl(std::declval<TFunc>()))>
-struct FunctionSignature {
-  using Args = typename FuncSignatureImp::Args;
-  using Ret = typename FuncSignatureImp::Ret;
-  using Signature = typename FuncSignatureImp::Signature;
-  using FuncPtr = typename FuncSignatureImp::FuncPtr;
-};
 
 template <typename Array>
 struct ArraySize;

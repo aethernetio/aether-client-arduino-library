@@ -40,6 +40,7 @@
   #include "aether/all.h"
   #include "aether/mstream.h"
   #include "aether/memory_buffer.h"
+  #include "aether/clock.h"
   #include "aether/config_consts.h"
   #include "aether/aether_app.h"
   #include "aether/type_traits.h"
@@ -66,8 +67,8 @@
   #include "aether/types/address_parser.h"
   #include "aether/types/server_id.h"
   #include "aether/types/nullable_type.h"
-  #include "aether/types/type_list.h"
   #include "aether/types/aligned_storage.h"
+  #include "aether/types/result.h"
   #include "aether/types/uid.h"
   #include "aether/types/client_id.h"
   #include "aether/types/span.h"
@@ -87,6 +88,13 @@
   #include "aether/write_action/failed_write_action.h"
   #include "aether/write_action/write_action.h"
   #include "aether/write_action/done_write_action.h"
+
+  #include "aether/meta/tag_invoke.h"
+  #include "aether/meta/index_sequence.h"
+  #include "aether/meta/arg_at.h"
+  #include "aether/meta/function_signature.h"
+  #include "aether/meta/type_list.h"
+  #include "aether/meta/as_type.h"
 
   #include "aether/channels/ethernet_transport_factory.h"
   #include "aether/channels/modem_channel.h"
@@ -155,8 +163,8 @@
   #include "aether/obj/registry.h"
   #include "aether/obj/domain.h"
   #include "aether/obj/idomain_storage.h"
-  #include "aether/obj/component_context.h"
   #include "aether/obj/version_iterator.h"
+  #include "aether/obj/component_factory.h"
   #include "aether/obj/obj_ptr.h"
   #include "aether/obj/obj.h"
   #include "aether/obj/dummy_obj.h"
@@ -177,6 +185,8 @@
   #include "aether/api_protocol/api_class.h"
   #include "aether/api_protocol/api_class_impl.h"
   #include "aether/api_protocol/api_method.h"
+
+  #include "aether/uap/uap.h"
 
   #include "aether/server_connections/server_connection.h"
   #include "aether/server_connections/iserver_connection_factory.h"
@@ -307,6 +317,7 @@
   #include "aether/poller/unix_poller.h"
 
   #include "aether/ae_actions/select_client.h"
+  #include "aether/ae_actions/time_sync.h"
   #include "aether/ae_actions/telemetry.h"
   #include "aether/ae_actions/check_access_for_send_message.h"
   #include "aether/ae_actions/ping.h"
