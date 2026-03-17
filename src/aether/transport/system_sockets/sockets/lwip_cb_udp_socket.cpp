@@ -44,8 +44,8 @@ ISocket& LwipCBUdpSocket::Error(ErrorCb error_cb) {
 }
 
 std::optional<std::size_t> LwipCBUdpSocket::Send(Span<std::uint8_t> data) {
-  pbuf* p;
-  err_t err;
+  pbuf* p{};
+  err_t err{};
 
   assert(pcb_ != nullptr && "Not connected to the server");
 
@@ -85,6 +85,7 @@ void LwipCBUdpSocket::Disconnect() {
     return;
   }
   LOCK_TCPIP_CORE();
+  udp_recv(pcb_, nullptr, nullptr);
   udp_remove(pcb_);
   pcb_ = nullptr;
   UNLOCK_TCPIP_CORE();

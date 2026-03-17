@@ -43,6 +43,7 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "aether/clock.h"
 #include "aether/reflect/reflect.h"
 #include "aether/types/nullable_type.h"
 #include "aether/reflect/domain_visitor.h"  // IWYU pragma: keep
@@ -357,7 +358,7 @@ imstream<Ib>& operator>>(imstream<Ib>& s, std::map<T1, T2>& t) {
     return s;
   }
   t.clear();
-  for (uint32_t i = 0; i < static_cast<size_t>(size); i++) {
+  for (std::size_t i = 0; i < static_cast<std::size_t>(size); i++) {
     std::pair<T1, T2> kv;
     s >> kv;
     if (!data_was_read(s)) {
@@ -478,7 +479,7 @@ omstream<Ob>& operator<<(omstream<Ob>& s,
                          std::chrono::time_point<T...> const& t) {
   auto d = std::chrono::duration_cast<std::chrono::microseconds>(
       t.time_since_epoch());
-  s << static_cast<uint64_t>(d.count());
+  s << static_cast<std::uint64_t>(d.count());
   return s;
 }
 

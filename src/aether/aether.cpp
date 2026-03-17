@@ -18,16 +18,27 @@
 
 #include <utility>
 
-#include "aether/global_ids.h"
 #include "aether/obj/obj_ptr.h"
+#include "aether/ae_actions/time_sync.h"
+#include "aether/actions/action_processor.h"
+
+#include "aether/client.h"
+#include "aether/server.h"
+#include "aether/registration_cloud.h"
 
 #include "aether/work_cloud.h"
+#include "aether/registration/registration.h"
 
 #include "aether/aether_tele.h"
 
 namespace ae {
 
-Aether::Aether(ObjProp prop) : Obj{prop} { AE_TELE_DEBUG(AetherCreated); }
+Aether::Aether() : action_processor{make_unique<ActionProcessor>()} {}
+
+Aether::Aether(ObjProp prop)
+    : Obj{prop}, action_processor{make_unique<ActionProcessor>()} {
+  AE_TELE_DEBUG(AetherCreated);
+}
 
 Aether::~Aether() { AE_TELE_DEBUG(AetherDestroyed); }
 
@@ -35,10 +46,15 @@ void Aether::Update(TimePoint current_time) {
   update_time = action_processor->Update(current_time);
 }
 
+Aether::operator ActionContext() const {
+  return ActionContext{*action_processor};
+}
+
 Client::ptr Aether::CreateClient(ClientConfig const& config,
                                  std::string const& client_id) {
   auto client = FindClient(client_id);
   if (client.is_valid()) {
+    MakeTimeSyncAction(client);
     return client;
   }
   // create new client
@@ -72,6 +88,7 @@ Client::ptr Aether::CreateClient(ClientConfig const& config,
       });
   assert(res && "Failed to set client config");
 
+  MakeTimeSyncAction(client);
   StoreClient(client);
   return client;
 }
@@ -87,6 +104,7 @@ ActionPtr<SelectClientAction> Aether::SelectClient(
 
   auto client = FindClient(client_id);
   if (client.is_valid()) {
+    MakeTimeSyncAction(client);
     return MakeSelectClient(client);
   }
 // register new client
@@ -99,6 +117,7 @@ ActionPtr<SelectClientAction> Aether::SelectClient(
 }
 
 void Aether::StoreServer(Server::ptr s) {
+  s.SetFlags(ObjFlags::kUnloadedByDefault);
   servers_.insert({s->server_id, std::move(s)});
 }
 
@@ -115,6 +134,8 @@ Client::ptr Aether::FindClient(std::string const& client_id) {
   if (client_it == std::end(clients_)) {
     return {};
   }
+  // keep client loaded
+  client_it->second.Load();
   return client_it->second;
 }
 
@@ -161,4 +182,21 @@ ActionPtr<Registration> Aether::RegisterClient(Uid parent_uid) {
                                  parent_uid);
 }
 #endif
+
+void Aether::MakeTimeSyncAction([[maybe_unused]] Client::ptr const& client) {
+#if AE_TIME_SYNC_ENABLED
+  if (time_sync_action_ && !time_sync_action_->IsFinished()) {
+    return;
+  }
+
+  client.WithLoaded([this](auto const& c) {
+    static constexpr auto kTimeSyncInterval =
+        std::chrono::seconds{AE_TIME_SYNC_INTERVAL_S};
+    time_sync_action_ = ActionPtr<TimeSyncAction>{
+        *action_processor, Aether::ptr::MakeFromThis(this).Load(), c,
+        kTimeSyncInterval};
+  });
+#endif
+}
+
 }  // namespace ae

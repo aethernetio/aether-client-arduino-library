@@ -76,9 +76,6 @@ class ObjPtr : public ObjectPtrBase {
       omstream<DomainBufferWriter>& os, ObjPtr<U> const& ptr);
 
  public:
-  static_assert(obj_ptr_internal::IsObjType<T>::value,
-                "T Must be an object type");
-
   /**
    * \brief Create new object with given arguments.
    */
@@ -168,6 +165,8 @@ class ObjPtr : public ObjectPtrBase {
 template <typename T>
 template <typename... TArgs>
 ObjPtr<T> ObjPtr<T>::Create(CreateWith create_arg, TArgs&&... args) {
+  static_assert(obj_ptr_internal::IsObjType<T>::value,
+                "T Must be an object type");
   auto* domain = create_arg.domain;
   auto obj_id = create_arg.obj_id.value_or(ObjId::GenerateUnique());
   auto flags = create_arg.flags.value_or(ObjFlags{});
@@ -182,6 +181,8 @@ ObjPtr<T> ObjPtr<T>::Create(CreateWith create_arg, TArgs&&... args) {
 
 template <typename T>
 ObjPtr<T> ObjPtr<T>::Declare(CreateWith create_arg) {
+  static_assert(obj_ptr_internal::IsObjType<T>::value,
+                "T Must be an object type");
   auto* domain = create_arg.domain;
   auto obj_id = create_arg.obj_id.value_or(ObjId::GenerateUnique());
   auto flags = create_arg.flags.value_or(ObjFlags::kUnloaded);
@@ -190,6 +191,8 @@ ObjPtr<T> ObjPtr<T>::Declare(CreateWith create_arg) {
 
 template <typename T>
 ObjPtr<T> ObjPtr<T>::MakeFromThis(T* self) {
+  static_assert(obj_ptr_internal::IsObjType<T>::value,
+                "T Must be an object type");
   auto id = self->obj_id;
   auto* domain = self->domain;
   assert(id.IsValid() && (domain != nullptr) && "Object must be in domain");

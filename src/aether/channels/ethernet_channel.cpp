@@ -30,6 +30,8 @@
 
 #include "aether/channels/ethernet_transport_factory.h"
 
+#include "aether/tele/tele.h"
+
 namespace ae {
 namespace ethernet_access_point_internal {
 
@@ -183,7 +185,7 @@ class EthernetTransportBuilderAction final : public TransportBuilderAction {
   PtrView<IPoller> poller_;
   StateMachine<State> state_;
   std::vector<Endpoint> ip_addresses_;
-  std::vector<Endpoint>::iterator it_;
+  std::vector<Endpoint>::iterator it_{};
   std::unique_ptr<ByteIStream> transport_stream_;
   Subscription address_resolve_sub_;
   Subscription transport_stream_sub_;
@@ -226,10 +228,11 @@ EthernetChannel::EthernetChannel(ObjProp prop, ObjPtr<Aether> aether,
 }
 
 ActionPtr<TransportBuilderAction> EthernetChannel::TransportBuilder() {
-  auto resolver = DnsResolver::ptr{dns_resolver_}.Load();
-  auto poller = IPoller::ptr{poller_}.Load();
-
+  auto resolver = dns_resolver_.Load();
+#if AE_SUPPORT_CLOUD_DNS
   assert(resolver && "Resolver is not loaded");
+#endif
+  auto poller = poller_.Load();
   assert(poller && "Poller is not loaded");
 
   return ActionPtr<

@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include "aether/aether.h"
+#include "aether/client.h"
 #include "aether/registration/registration.h"
 
 #include "aether/ae_actions/ae_actions_tele.h"
@@ -77,7 +78,7 @@ UpdateStatus SelectClientAction::Update() {
   return {};
 }
 
-Client::ptr SelectClientAction::client() const { return client_; }
+Client::ptr const& SelectClientAction::client() const { return client_; }
 
 SelectClientAction::State SelectClientAction::state() const { return state_; }
 

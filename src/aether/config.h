@@ -111,7 +111,7 @@
  * Also choose one of the supported modem implementations.
  */
 #ifndef AE_SUPPORT_MODEMS
-#  define AE_SUPPORT_MODEMS 1
+#  define AE_SUPPORT_MODEMS 0
 #endif
 
 // Thingy91x modem implementation is enabled.
@@ -260,6 +260,16 @@
 // Cloud server quarantine time
 #ifndef AE_CLOUD_SERVER_QUARANTINE_TIME_MS
 #  define AE_CLOUD_SERVER_QUARANTINE_TIME_MS 10000
+#endif
+
+// Time synchronization enabled
+#ifndef AE_TIME_SYNC_ENABLED
+#  define AE_TIME_SYNC_ENABLED 1
+#endif
+
+// Time synchronization interval in seconds
+#ifndef AE_TIME_SYNC_INTERVAL_S
+#  define AE_TIME_SYNC_INTERVAL_S 4 * 60 * 60  // every 4 hours
 #endif
 
 // Telemetry configuration
@@ -420,5 +430,19 @@
 
 #ifndef NDEBUG
 #  define DEBUG 1
+#endif
+
+/**
+ * \brief Filtration is hybrid mode between distillation and production mode.
+ * It tries to load object from the saved state. And if there is no saved state,
+ * create a new object.
+ * It also defines AE_DISTILLATION so the object parts depending on that mode
+ * also would be compiled.
+ */
+#if AE_FILTRATION
+#  ifdef AE_DISTILLATION
+#    undef AE_DISTILLATION
+#  endif
+#  define AE_DISTILLATION 1
 #endif
 #endif  // AETHER_CONFIG_H_
